@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta http-equiv="Pragma" content="no-cache">
+  <title>VRX — QR Code Generator</title>
+  <link rel="stylesheet" href="../../style/modern.css">
+  <link rel="stylesheet" href="qr.css">
+  <script src="../../third_party/vue.min.js"></script>
+  <script src="../../third_party/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>
+</head>
+<body>
+<div id="app" class="qr-page">
+
+  <!-- ── Header ── -->
+  <header class="vrx-header">
+    <div class="vrx-logo">⚡ VRX</div>
+    <nav class="vrx-nav">
+      <a href="../../index.html">Home</a>
+      <a href="../../package_3d_viewer/camera/camera.html">3D Viewer</a>
+      <a href="../../package_upload/upload/upload.html">Upload</a>
+      <a href="../../package_gallery/gallery/gallery.html">Gallery</a>
+      <a href="#" class="active">QR / AR</a>
+    </nav>
+  </header>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="vrx-bottom-nav">
+    <a href="../../index.html"><i data-feather="home"></i><span>Home</span></a>
+    <a href="../../package_upload/upload/upload.html"><i data-feather="upload-cloud"></i><span>Upload</span></a>
+    <a href="../../package_gallery/gallery/gallery.html"><i data-feather="folder"></i><span>Gallery</span></a>
+    <a href="#" class="active"><i data-feather="smartphone"></i><span>QR / AR</span></a>
+    <a href="../../package_scanner/scanner/scanner.html"><i data-feather="camera"></i><span>Scanner</span></a>
+  </nav>
+
+  <!-- ── Content Grid ── -->
+  <div class="qr-container">
+
+    <!-- ===== Left: Input Panel ===== -->
+    <div class="qr-panel">
+      <div class="qr-panel-title"><span class="icon"><i data-feather="box"></i></span> เลือกโมเดล 3D</div>
+
+      <!-- Source tabs -->
+      <div class="qr-source-tabs">
+        <button class="qr-source-tab"
+                :class="{ active: sourceTab === 'library' }"
+                @click="sourceTab = 'library'"><i data-feather="folder"></i> จากไลบรารี</button>
+        <button class="qr-source-tab"
+                :class="{ active: sourceTab === 'url' }"
+                @click="sourceTab = 'url'"><i data-feather="link"></i> URL / Path</button>
+      </div>
+
+      <!-- Library source -->
+      <div v-if="sourceTab === 'library'">
+        <div v-if="modelFiles.length > 0" class="qr-file-list">
+          <div v-for="file in modelFiles"
+               class="qr-file-item"
+               :class="{ selected: selectedFile && selectedFile.id === file.id }"
+               @click="selectFile(file)">
+            <span class="file-icon"><i data-feather="box" style="width:16px;height:16px"></i></span>
+            <span class="file-name">{{ file.name || file.originalName }}</span>
+            <span class="file-date">{{ file.uploadedAtFormatted }}</span>
+          </div>
+        </div>
+        <div v-else class="qr-empty-history">
+          <p>ยังไม่มีไฟล์ 3D ในไลบรารี</p>
+          <p style="margin-top:0.5rem"><a href="../../package_upload/upload/upload.html" style="color:var(--vrx-primary)">อัปโหลดไฟล์</a></p>
+        </div>
+      </div>
+
+      <!-- URL source -->
+      <div v-if="sourceTab === 'url'">
+        <div class="qr-form-group">
+          <label>URL หรือ Path ของโมเดล</label>
+          <input type="text" v-model="urlInput" placeholder="https://... หรือ assets/model.glb">
+        </div>
+      </div>
+
+      <!-- Meta fields -->
+      <div class="qr-form-group" style="margin-top:1rem">
+        <label>ชื่อโมเดล (ไม่บังคับ)</label>
+        <input type="text" v-model="modelName" placeholder="เช่น Robot, Building">
+      </div>
+      <div class="qr-form-group">
+        <label>คำอธิบาย (ไม่บังคับ)</label>
+        <textarea v-model="modelDesc" rows="2" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
+      </div>
+
+      <!-- Generate -->
+      <button class="qr-generate-btn" :disabled="!canGenerate" @click="generate">
+        <span>⚡</span> สร้าง QR Code
+      </button>
+    </div>
+
+    <!-- ===== Right: QR Output ===== -->
+    <div class="qr-panel qr-output">
+      <div class="qr-panel-title"><span class="icon"><i data-feather="smartphone"></i></span> QR Code</div>
+
+      <!-- Placeholder -->
+      <div v-if="!generated" class="qr-placeholder">
+        <div class="placeholder-icon"><i data-feather="camera" style="width:48px;height:48px"></i></div>
+        <p>เลือกโมเดลแล้วกด "สร้าง QR Code"</p>
+        <p style="font-size:0.8rem;margin-top:0.3rem;color:var(--vrx-text-muted)">Scan QR เพื่อเปิดดู AR 3D</p>
+      </div>
+
+      <!-- Generated QR -->
+      <div v-if="generated">
+        <div class="qr-display">
+          <div id="qr-code-output"></div>
+        </div>
+
+        <div class="qr-model-label">{{ modelName || 'AR 3D Model' }}</div>
+        <div class="qr-model-sublabel" v-if="modelDesc">{{ modelDesc }}</div>
+
+        <div class="qr-actions">
+          <button class="qr-action-btn primary" @click="download"><i data-feather="download"></i> ดาวน์โหลด</button>
+          <button class="qr-action-btn" @click="copyLink"><i data-feather="clipboard"></i> คัดลอกลิงก์</button>
+          <button class="qr-action-btn" @click="share"><i data-feather="share-2"></i> แชร์</button>
+          <button class="qr-action-btn" @click="openAr"><i data-feather="zap"></i> ทดสอบ AR</button>
+        </div>
+
+        <div class="qr-url-box">
+          <div class="qr-url-text">{{ arUrl }}</div>
+          <button class="qr-url-copy" @click="copyLink">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== History ===== -->
+    <div class="qr-panel qr-history" v-if="history.length > 0">
+      <div class="qr-history-header">
+        <div class="qr-panel-title" style="margin-bottom:0"><span class="icon"><i data-feather="clock"></i></span> ประวัติ QR</div>
+        <button class="qr-history-clear" @click="clearAllHistory">ล้างทั้งหมด</button>
+      </div>
+
+      <div class="qr-history-grid">
+        <div v-for="item in history"
+             class="qr-history-card"
+             @click="loadHistoryItem(item)">
+          <div class="qr-history-mini-qr" :id="'hist-qr-' + item.id"></div>
+          <div class="qr-history-info">
+            <div class="qr-history-name">{{ item.modelName }}</div>
+            <div class="qr-history-date">{{ item.createdAtFormatted }}</div>
+          </div>
+          <button class="qr-history-delete" @click="deleteHistoryItem(item.id, $event)" title="ลบ">✕</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /qr-container -->
+
+  <!-- Toast -->
+  <div class="qr-toast" :class="{ show: toastMsg }">{{ toastMsg }}</div>
+
+</div>
+<script type="module" src="qr.js"></script>
+</body>
+</html>

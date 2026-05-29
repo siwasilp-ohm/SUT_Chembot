@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Pragma" content="no-cache">
+  <title>VRX — AR Viewer</title>
+  <link rel="stylesheet" href="../../style/modern.css">
+  <link rel="stylesheet" href="ar.css">
+  <script src="../../third_party/vue.min.js"></script>
+  <script src="../../third_party/three.js"></script>
+  <script src="../../third_party/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>
+</head>
+<body>
+<div id="app" class="ar-page" v-cloak>
+
+  <!-- ── Loading Overlay ── -->
+  <div class="ar-loading" v-if="loading">
+    <div class="ar-loading-spinner"></div>
+    <div class="ar-loading-text">{{ loadingText }}</div>
+  </div>
+
+  <!-- ── Error Page ── -->
+  <div class="ar-error-page" v-if="fatalError">
+    <div class="ar-error-icon"><i data-feather="alert-triangle" style="width:48px;height:48px"></i></div>
+    <div class="ar-error-title">{{ fatalError.title }}</div>
+    <div class="ar-error-desc">{{ fatalError.desc }}</div>
+    <button class="ar-error-btn" @click="goBack">← กลับ</button>
+  </div>
+
+  <!-- ── AR View ── -->
+  <template v-if="!fatalError">
+
+    <!-- Camera / Fallback Background -->
+    <div class="ar-video-layer">
+      <video v-show="hasCamera" id="ar-camera" autoplay playsinline muted></video>
+      <div v-show="!hasCamera" class="ar-fallback-bg">
+        <div class="grid-floor"></div>
+      </div>
+    </div>
+
+    <!-- Three.js Canvas -->
+    <div class="ar-canvas-layer"
+         @touchstart="onTouchstart"
+         @touchmove="onTouchmove"
+         @touchend="onTouchend"
+         @mousedown="onMousedown"
+         @mousemove="onMousemove"
+         @mouseup="onMouseup">
+      <canvas id="ar-canvas"></canvas>
+    </div>
+
+    <!-- HUD -->
+    <div class="ar-hud">
+
+      <!-- Top bar -->
+      <div class="ar-topbar">
+        <button class="ar-back-btn" @click="goBack">
+          <span>←</span> <span>กลับ</span>
+        </button>
+        <div class="ar-mode-badge" :class="{ 'mode-3d': !hasCamera }">
+          <span v-if="hasCamera">● AR Live</span>
+          <span v-else><i data-feather="box" style="width:14px;height:14px;vertical-align:-2px"></i> 3D Mode</span>
+        </div>
+      </div>
+
+      <!-- Notice -->
+      <div class="ar-notice" v-if="notice" :class="{ error: noticeError }">
+        {{ notice }}
+      </div>
+
+      <!-- Model info -->
+      <div class="ar-model-info" v-if="modelName">
+        <div class="ar-model-name">{{ modelName }}</div>
+        <div class="ar-model-desc" v-if="modelDesc">{{ modelDesc }}</div>
+      </div>
+
+      <!-- Bottom Controls -->
+      <div class="ar-controls">
+        <!-- Scale slider -->
+        <div class="ar-scale-row">
+          <span class="ar-scale-label">Size</span>
+          <input type="range" class="ar-scale-slider"
+                 min="10" max="300" :value="modelScalePercent"
+                 @input="onScaleInput($event)">
+          <span class="ar-scale-value">{{ modelScalePercent }}%</span>
+        </div>
+
+        <!-- Buttons -->
+        <div class="ar-btn-row">
+          <button class="ar-btn" :class="{ active: gyroActive }" @click="toggleGyro">
+            <span class="btn-icon"><i data-feather="refresh-cw"></i></span>
+            <span class="btn-label">Gyro</span>
+          </button>
+          <button class="ar-btn" @click="resetView">
+            <span class="btn-icon"><i data-feather="crosshair"></i></span>
+            <span class="btn-label">Reset</span>
+          </button>
+          <button class="ar-btn" @click="toggleFullscreen">
+            <span class="btn-icon"><i data-feather="maximize"></i></span>
+            <span class="btn-label">Full</span>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /ar-hud -->
+
+  </template>
+
+</div>
+<script type="module" src="ar.js"></script>
+</body>
+</html>

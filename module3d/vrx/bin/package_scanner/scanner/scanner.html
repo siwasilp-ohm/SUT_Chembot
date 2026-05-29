@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta http-equiv="Pragma" content="no-cache">
+  <title>VRX — QR Scanner</title>
+  <link rel="stylesheet" href="../../style/modern.css">
+  <link rel="stylesheet" href="scanner.css">
+  <script src="../../third_party/vue.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>
+</head>
+<body>
+<div id="app" class="scanner-page" v-cloak>
+
+  <!-- ── Header ── -->
+  <header class="vrx-header">
+    <div class="vrx-logo">
+      <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="url(#g1)"/>
+      <path d="M8 22L16 10L24 22H8Z" fill="white" opacity="0.9"/>
+      <defs><linearGradient id="g1" x1="0" y1="0" x2="32" y2="32">
+      <stop stop-color="#6C5CE7"/><stop offset="1" stop-color="#00CEC9"/>
+      </linearGradient></defs></svg>
+      <span>VRX Studio</span>
+    </div>
+    <nav class="vrx-nav">
+      <a href="../../index.php">Home</a>
+      <a href="../../package_upload/upload/upload.html">Upload</a>
+      <a href="../../package_gallery/gallery/gallery.html">Gallery</a>
+      <a href="../../package_ar/qr/qr.html">QR / AR</a>
+      <a href="#" class="active">Scanner</a>
+    </nav>
+  </header>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="vrx-bottom-nav">
+    <a href="../../index.php"><i data-feather="home"></i><span>Home</span></a>
+    <a href="../../package_upload/upload/upload.html"><i data-feather="upload-cloud"></i><span>Upload</span></a>
+    <a href="../../package_gallery/gallery/gallery.html"><i data-feather="folder"></i><span>Gallery</span></a>
+    <a href="../../package_ar/qr/qr.html"><i data-feather="smartphone"></i><span>QR / AR</span></a>
+    <a href="#" class="active"><i data-feather="camera"></i><span>Scanner</span></a>
+  </nav>
+
+  <!-- ── Main Content ── -->
+  <div class="scanner-container">
+
+    <!-- ===== Scanner Section ===== -->
+    <div class="scanner-main">
+
+      <!-- Camera Preview -->
+      <div class="scanner-viewport" :class="{ active: isScanning, 'has-result': lastResult }">
+
+        <!-- Scanning State -->
+        <div class="scanner-camera-wrap" v-show="isScanning">
+          <video id="scanner-video" autoplay playsinline muted></video>
+          <canvas id="scanner-canvas" style="display:none"></canvas>
+
+          <!-- Scan overlay -->
+          <div class="scanner-overlay">
+            <div class="scanner-frame">
+              <div class="frame-corner tl"></div>
+              <div class="frame-corner tr"></div>
+              <div class="frame-corner bl"></div>
+              <div class="frame-corner br"></div>
+              <div class="scan-line"></div>
+            </div>
+            <div class="scanner-hint">วาง QR Code ในกรอบ</div>
+          </div>
+        </div>
+
+        <!-- Idle State -->
+        <div class="scanner-idle" v-if="!isScanning && !lastResult && !scanError">
+          <div class="idle-icon">
+            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="10" width="30" height="30" rx="4" stroke="currentColor" stroke-width="3" fill="none"/>
+              <rect x="80" y="10" width="30" height="30" rx="4" stroke="currentColor" stroke-width="3" fill="none"/>
+              <rect x="10" y="80" width="30" height="30" rx="4" stroke="currentColor" stroke-width="3" fill="none"/>
+              <rect x="50" y="50" width="20" height="20" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+              <rect x="80" y="80" width="10" height="10" fill="currentColor" opacity="0.5"/>
+              <rect x="95" y="80" width="10" height="10" fill="currentColor" opacity="0.3"/>
+              <rect x="80" y="95" width="10" height="10" fill="currentColor" opacity="0.3"/>
+              <rect x="95" y="95" width="15" height="15" rx="2" fill="currentColor" opacity="0.5"/>
+              <line x1="60" y1="5" x2="60" y2="35" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+              <line x1="5" y1="60" x2="35" y2="60" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+            </svg>
+          </div>
+          <h2>QR Code Scanner</h2>
+          <p>สแกน QR Code ของระบบ VRX เพื่อดู 3D Model, AR และอื่นๆ</p>
+          <button class="scanner-start-btn" @click="startScan">
+            <span class="btn-pulse"></span>
+            <span><i data-feather="camera" style="width:18px;height:18px;vertical-align:-3px"></i> เปิดกล้องสแกน</span>
+          </button>
+
+          <!-- File upload fallback -->
+          <div class="scanner-or">หรือ</div>
+          <label class="scanner-upload-btn" for="qr-file-input">
+            <i data-feather="image" style="width:16px;height:16px;vertical-align:-2px"></i> เลือกรูป QR Code
+            <input type="file" id="qr-file-input" accept="image/*" @change="scanFromFile($event)" style="display:none">
+          </label>
+        </div>
+
+        <!-- Error State -->
+        <div class="scanner-idle scanner-error-state" v-if="scanError && !isScanning">
+          <div class="idle-icon error"><i data-feather="alert-triangle" style="width:48px;height:48px"></i></div>
+          <h2>ไม่สามารถเปิดกล้องได้</h2>
+          <p>{{ scanError }}</p>
+          <button class="scanner-start-btn" @click="startScan"><i data-feather="refresh-cw" style="width:16px;height:16px;vertical-align:-2px"></i> ลองใหม่</button>
+          <div class="scanner-or">หรือ</div>
+          <label class="scanner-upload-btn" for="qr-file-input2">
+            <i data-feather="image" style="width:16px;height:16px;vertical-align:-2px"></i> เลือกรูป QR Code
+            <input type="file" id="qr-file-input2" accept="image/*" @change="scanFromFile($event)" style="display:none">
+          </label>
+        </div>
+      </div>
+
+      <!-- Scan Controls -->
+      <div class="scanner-controls" v-if="isScanning">
+        <button class="sc-btn" @click="toggleFlash" :class="{ active: flashOn }" title="Flash">
+          <span><i data-feather="zap" style="width:18px;height:18px"></i></span><span>Flash</span>
+        </button>
+        <button class="sc-btn stop" @click="stopScan" title="หยุดสแกน">
+          <span><i data-feather="square" style="width:18px;height:18px"></i></span><span>หยุด</span>
+        </button>
+        <label class="sc-btn" for="qr-file-live" title="เลือกรูป">
+          <span><i data-feather="image" style="width:18px;height:18px"></i></span><span>รูปภาพ</span>
+          <input type="file" id="qr-file-live" accept="image/*" @change="scanFromFile($event)" style="display:none">
+        </label>
+      </div>
+
+    </div>
+
+    <!-- ===== Result Panel ===== -->
+    <div class="scanner-result-panel" v-if="lastResult" :class="{ vrx: lastResult.isVrx }">
+
+      <!-- Close button -->
+      <button class="result-close" @click="dismissResult" title="ปิด">✕</button>
+
+      <!-- Result Header -->
+      <div class="result-header">
+        <div class="result-detected-badge">
+          <span class="pulse-dot"></span>
+          ตรวจพบ QR Code!
+        </div>
+        <div class="result-type-badge" :style="{ background: lastResult.typeColor }">
+          {{ lastResult.typeLabel }}
+        </div>
+      </div>
+
+      <!-- VRX Result Content -->
+      <div class="result-body" v-if="lastResult.isVrx">
+
+        <!-- Model Info -->
+        <div class="result-info-card">
+          <div class="result-model-icon" v-html="featherIcon(getTypeIcon(lastResult.type), 28)"></div>
+          <div class="result-model-details">
+            <div class="result-model-name">{{ lastResult.name || 'VRX Content' }}</div>
+            <div class="result-model-desc" v-if="lastResult.desc">{{ lastResult.desc }}</div>
+            <div class="result-model-type">{{ lastResult.typeLabel }}</div>
+          </div>
+        </div>
+
+        <!-- Role-Based Actions -->
+        <div class="result-actions">
+
+          <!-- Everyone can view -->
+          <button class="result-action-btn primary" @click="openContent">
+            <span class="ra-icon"><i data-feather="play-circle"></i></span>
+            <span class="ra-text">
+              <strong>ดูเนื้อหา</strong>
+              <small>เปิดดู {{ lastResult.type === 'ar' ? 'AR 3D Model' : 'เนื้อหา' }}</small>
+            </span>
+          </button>
+
+          <!-- AR mode (all users) -->
+          <button class="result-action-btn ar" v-if="lastResult.type === 'ar' || lastResult.type === '3d'"
+                  @click="openAr">
+            <span class="ra-icon"><i data-feather="smartphone"></i></span>
+            <span class="ra-text">
+              <strong>เปิด AR Mode</strong>
+              <small>ดูโมเดลแบบ Augmented Reality</small>
+            </span>
+          </button>
+
+          <!-- Logged-in users: QR generate -->
+          <button class="result-action-btn" v-if="session.permissions.qr && (lastResult.type === 'ar' || lastResult.type === '3d')"
+                  @click="openQrGenerator">
+            <span class="ra-icon"><i data-feather="zap"></i></span>
+            <span class="ra-text">
+              <strong>สร้าง QR ใหม่</strong>
+              <small>สร้าง QR Code สำหรับโมเดลนี้</small>
+            </span>
+          </button>
+
+          <!-- Editors / Admin: Edit / Manage -->
+          <button class="result-action-btn manage" v-if="session.permissions.edit || session.permissions.edit_own"
+                  @click="openManager">
+            <span class="ra-icon"><i data-feather="edit-3"></i></span>
+            <span class="ra-text">
+              <strong>จัดการไฟล์</strong>
+              <small>แก้ไข, จัดหมวดหมู่, ตั้งค่า</small>
+            </span>
+          </button>
+
+          <!-- Admin: Analytics -->
+          <button class="result-action-btn admin" v-if="session.permissions.manage_users"
+                  @click="openAnalytics">
+            <span class="ra-icon"><i data-feather="bar-chart-2"></i></span>
+            <span class="ra-text">
+              <strong>ดูสถิติ</strong>
+              <small>จำนวนสแกน, ยอดเข้าชม, ข้อมูลผู้ใช้</small>
+            </span>
+          </button>
+
+          <!-- Share / Copy -->
+          <div class="result-share-row">
+            <button class="result-share-btn" @click="copyUrl"><i data-feather="clipboard" style="width:14px;height:14px;vertical-align:-2px"></i> คัดลอก URL</button>
+            <button class="result-share-btn" @click="shareUrl"><i data-feather="share-2" style="width:14px;height:14px;vertical-align:-2px"></i> แชร์</button>
+            <button class="result-share-btn" @click="downloadQr"><i data-feather="download" style="width:14px;height:14px;vertical-align:-2px"></i> บันทึก QR</button>
+          </div>
+        </div>
+
+        <!-- URL Display -->
+        <div class="result-url-box">
+          <div class="result-url-label">URL</div>
+          <div class="result-url-text">{{ lastResult.originalUrl }}</div>
+        </div>
+
+      </div>
+
+      <!-- External Result Content -->
+      <div class="result-body" v-else>
+        <div class="result-info-card external">
+          <div class="result-model-icon"><i data-feather="external-link" style="width:28px;height:28px"></i></div>
+          <div class="result-model-details">
+            <div class="result-model-name">External QR Code</div>
+            <div class="result-model-desc">QR Code นี้ไม่ได้มาจากระบบ VRX</div>
+          </div>
+        </div>
+        <div class="result-actions">
+          <button class="result-action-btn primary" @click="openExternal">
+            <span class="ra-icon"><i data-feather="external-link"></i></span>
+            <span class="ra-text">
+              <strong>เปิดลิงก์</strong>
+              <small>{{ lastResult.originalUrl }}</small>
+            </span>
+          </button>
+          <div class="result-share-row">
+            <button class="result-share-btn" @click="copyUrl"><i data-feather="clipboard" style="width:14px;height:14px;vertical-align:-2px"></i> คัดลอก</button>
+            <button class="result-share-btn" @click="shareUrl"><i data-feather="share-2" style="width:14px;height:14px;vertical-align:-2px"></i> แชร์</button>
+          </div>
+        </div>
+        <div class="result-url-box">
+          <div class="result-url-label">Decoded Data</div>
+          <div class="result-url-text">{{ lastResult.originalUrl }}</div>
+        </div>
+      </div>
+
+      <!-- Scan Again -->
+      <button class="result-scan-again" @click="scanAgain">
+                <i data-feather="camera" style="width:16px;height:16px;vertical-align:-2px"></i> สแกนอีกครั้ง
+      </button>
+    </div>
+
+    <!-- ===== Scan History ===== -->
+    <div class="scanner-history" v-if="scanHistory.length > 0 && !lastResult">
+      <div class="history-header">
+        <h3><span class="icon"><i data-feather="clock" style="width:16px;height:16px;vertical-align:-2px"></i></span> ประวัติการสแกน</h3>
+        <button class="history-clear" @click="clearHistory">ล้างทั้งหมด</button>
+      </div>
+      <div class="history-list">
+        <div v-for="item in scanHistory"
+             class="history-item"
+             :class="{ vrx: item.isVrx }"
+             @click="openHistoryItem(item)">
+          <div class="history-type-dot" :style="{ background: getTypeColor(item.type) }"></div>
+          <div class="history-info">
+            <div class="history-name">{{ item.name || item.url }}</div>
+            <div class="history-meta">
+              <span class="history-type-label">{{ getTypeLabel(item.type) }}</span>
+              <span class="history-date">{{ item.scannedAtFormatted }}</span>
+              <span class="history-count" v-if="item.scanCount > 1">×{{ item.scanCount }}</span>
+            </div>
+          </div>
+          <button class="history-delete" @click="deleteHistoryItem(item.id, $event)" title="ลบ">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Role Info Card ===== -->
+    <div class="scanner-role-card" v-if="!isScanning && !lastResult">
+      <div class="role-card-header">
+        <span class="role-icon"><i data-feather="shield" style="width:16px;height:16px;vertical-align:-2px"></i></span>
+        <span>สิทธิ์ตาม Role ของคุณ</span>
+      </div>
+      <div class="role-card-body" v-if="session.loggedIn">
+        <div class="role-user-info">
+          <span v-html="session.user ? session.user.role : 'viewer'" class="role-name"></span>
+          <span class="role-display">{{ session.user ? session.user.display_name : '' }}</span>
+        </div>
+        <div class="role-perms">
+          <div class="role-perm granted"><span>✓</span> ดูเนื้อหา</div>
+          <div class="role-perm" :class="session.permissions.ar ? 'granted' : 'denied'">
+            <span>{{ session.permissions.ar ? '✓' : '✕' }}</span> AR Mode
+          </div>
+          <div class="role-perm" :class="session.permissions.qr ? 'granted' : 'denied'">
+            <span>{{ session.permissions.qr ? '✓' : '✕' }}</span> สร้าง QR
+          </div>
+          <div class="role-perm" :class="session.permissions.edit_own ? 'granted' : 'denied'">
+            <span>{{ session.permissions.edit_own ? '✓' : '✕' }}</span> จัดการไฟล์
+          </div>
+          <div class="role-perm" :class="session.permissions.manage_users ? 'granted' : 'denied'">
+            <span>{{ session.permissions.manage_users ? '✓' : '✕' }}</span> ดูสถิติ & จัดการ
+          </div>
+        </div>
+      </div>
+      <div class="role-card-body" v-else>
+        <p class="role-guest-text">คุณยังไม่ได้เข้าสู่ระบบ — สามารถดูเนื้อหาได้อย่างเดียว</p>
+        <a href="../../auth/login.php" class="role-login-btn"><i data-feather="log-in" style="width:14px;height:14px;vertical-align:-2px"></i> เข้าสู่ระบบ</a>
+      </div>
+    </div>
+
+  </div><!-- /scanner-container -->
+
+  <!-- Toast -->
+  <div class="scanner-toast" :class="{ show: toastMsg }">{{ toastMsg }}</div>
+
+  <!-- Audio feedback -->
+  <audio id="scan-beep" preload="auto">
+    <source src="data:audio/wav;base64,UklGRl4BAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToBAAB/f39/f39/f39/f39/f39/f39/f39/f39/f4B/gH+Bf4J/g3+Ef4V/hn+Hf4h/in+Lf4x/jn+Pf5F/kn+Uf5V/l3+Yf5p/m3+df55/oH+hf6N/pH+mf6d/qX+qf6x/rX+vf7B/sn+zf7V/tn+4f7l/u3+8f71/v3/Af8F/w3/Ef8Z/x3/If8p/y3/Mf85/z3/Qf9J/03/Uf9Z/13/Yf9l/23/cf91/33/gf+F/4n/kf+V/5n/of+l/6n/rf+1/7n/vf/B/8X/zf/R/9X/2f/h/+X/6f/t//H/+f/9/" type="audio/wav">
+  </audio>
+
+</div>
+<script type="module" src="scanner.js"></script>
+</body>
+</html>

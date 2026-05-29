@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta http-equiv="Pragma" content="no-cache">
+  <title>VRX — Embed Viewer</title>
+  <link rel="stylesheet" href="../../style/modern.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    .embed-viewer {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--vrx-bg, #0f0f17);
+      color: #fff;
+    }
+
+    /* ── Top Bar ── */
+    .embed-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+      padding: 0.6rem 1rem;
+      background: var(--vrx-surface, #1a1a2e);
+      border-bottom: 1px solid var(--vrx-border, #2a2a3e);
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .embed-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      min-width: 0;
+    }
+
+    .embed-back-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 500;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 0.4rem 0.75rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .embed-back-btn:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    .embed-info {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .embed-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .embed-desc {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+
+    .embed-topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .embed-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: linear-gradient(135deg, #e17055, #d63031);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+    }
+
+    .embed-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      color: #fff;
+      font-size: 0.8rem;
+      background: rgba(108,92,231,0.3);
+      border: 1px solid rgba(108,92,231,0.4);
+      border-radius: 8px;
+      padding: 0.35rem 0.7rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .embed-action-btn:hover {
+      background: rgba(108,92,231,0.5);
+    }
+
+    /* ── iframe Content ── */
+    .embed-content {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .embed-content iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* ── Loading ── */
+    .embed-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--vrx-bg, #0f0f17);
+      z-index: 5;
+      transition: opacity 0.4s ease;
+    }
+
+    .embed-loading.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .embed-loading-spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--vrx-primary, #6C5CE7);
+      border-radius: 50%;
+      animation: embedSpin 0.8s linear infinite;
+    }
+
+    @keyframes embedSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    .embed-loading-text {
+      margin-top: 0.8rem;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* ── Error ── */
+    .embed-error {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: var(--vrx-bg, #0f0f17);
+      z-index: 5;
+      padding: 2rem;
+    }
+
+    .embed-error-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .embed-error-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+
+    .embed-error-desc {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+      max-width: 360px;
+      margin-bottom: 1.2rem;
+    }
+
+    /* ── Fullscreen toggle ── */
+    .embed-fullscreen-btn {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      z-index: 8;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      color: #fff;
+      padding: 0.45rem 0.7rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      transition: background 0.2s;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .embed-content:hover .embed-fullscreen-btn {
+      opacity: 1;
+    }
+
+    .embed-fullscreen-btn:hover {
+      background: rgba(108,92,231,0.5);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .embed-topbar { padding: 0.5rem 0.6rem; gap: 0.5rem; }
+      .embed-back-btn { padding: 0.35rem 0.6rem; font-size: 0.8rem; }
+      .embed-title { font-size: 0.85rem; }
+      .embed-action-btn { display: none; }
+    }
+  </style>
+  <script src="../../third_party/vue.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>
+</head>
+<body>
+<div id="app" class="embed-viewer" v-cloak>
+
+  <!-- Error state -->
+  <div class="embed-error" v-if="error">
+    <div class="embed-error-icon"><i data-feather="alert-triangle" style="width:48px;height:48px"></i></div>
+    <div class="embed-error-title">ไม่สามารถโหลด Embed</div>
+    <div class="embed-error-desc">{{ error }}</div>
+    <button class="embed-back-btn" @click="goBack">← กลับ</button>
+  </div>
+
+  <!-- Normal state -->
+  <template v-if="!error">
+
+    <!-- Top Bar -->
+    <div class="embed-topbar">
+      <div class="embed-topbar-left">
+        <button class="embed-back-btn" @click="goBack">
+          <span>←</span> <span>กลับ</span>
+        </button>
+        <div class="embed-info">
+          <div class="embed-title">{{ name || 'Embed Viewer' }}</div>
+          <div class="embed-desc" v-if="desc">{{ desc }}</div>
+        </div>
+      </div>
+      <div class="embed-topbar-right">
+        <span class="embed-badge"><i data-feather="monitor" style="width:14px;height:14px;vertical-align:-2px"></i> Embed</span>
+        <button class="embed-action-btn" @click="openInNew" title="Open in new tab">
+          <i data-feather="external-link" style="width:14px;height:14px;vertical-align:-2px"></i> เปิดในแท็บใหม่
+        </button>
+      </div>
+    </div>
+
+    <!-- iframe Content -->
+    <div class="embed-content">
+      <!-- Loading -->
+      <div class="embed-loading" :class="{ hidden: loaded }">
+        <div class="embed-loading-spinner"></div>
+        <div class="embed-loading-text">กำลังโหลด Embed...</div>
+      </div>
+
+      <iframe
+        v-if="src"
+        :src="src"
+        :title="name || 'Embed'"
+        frameborder="0"
+        allowfullscreen
+        mozallowfullscreen
+        webkitallowfullscreen
+        allow="autoplay; fullscreen; xr-spatial-tracking;"
+        @load="onIframeLoad"
+        @error="onIframeError"
+      ></iframe>
+
+      <button class="embed-fullscreen-btn" @click="toggleFullscreen" title="Fullscreen">
+        <i data-feather="maximize"></i> เต็มจอ
+      </button>
+    </div>
+
+  </template>
+
+</div>
+
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    src: '',
+    name: '',
+    desc: '',
+    error: '',
+    loaded: false,
+  },
+  mounted: function () {
+    var params = new URLSearchParams(window.location.search);
+    this.src = params.get('src') || '';
+    this.name = params.get('name') || '';
+    this.desc = params.get('desc') || '';
+
+    if (!this.src) {
+      this.error = 'ไม่ได้ระบุ URL ของ Embed กรุณาเปิดจากหน้า Upload';
+    }
+
+    // Replace Feather icons
+    this.$nextTick(function () {
+      if (typeof feather !== 'undefined') feather.replace();
+    });
+
+    // Safety timeout: hide loading after 10s even if onload didn't fire
+    var self = this;
+    setTimeout(function () {
+      self.loaded = true;
+    }, 10000);
+  },
+  updated: function () {
+    this.$nextTick(function () {
+      if (typeof feather !== 'undefined') feather.replace();
+    });
+  },
+  methods: {
+    onIframeLoad: function () {
+      this.loaded = true;
+    },
+    onIframeError: function () {
+      this.loaded = true;
+      // Note: cross-origin iframes often don't trigger onerror
+    },
+    goBack: function () {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = '../upload/upload.html';
+      }
+    },
+    openInNew: function () {
+      if (this.src) {
+        window.open(this.src, '_blank');
+      }
+    },
+    toggleFullscreen: function () {
+      var doc = document.documentElement;
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (doc.requestFullscreen) doc.requestFullscreen();
+        else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      }
+    },
+  },
+});
+</script>
+</body>
+</html>

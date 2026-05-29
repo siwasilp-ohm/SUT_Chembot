@@ -1,0 +1,1095 @@
+/* ============================================
+   VRX Modern Design System
+   ============================================ */
+
+:root {
+  /* Colors */
+  --vrx-primary: #6C5CE7;
+  --vrx-primary-light: #A29BFE;
+  --vrx-primary-dark: #5A4BD1;
+  --vrx-secondary: #00CEC9;
+  --vrx-accent: #FD79A8;
+  --vrx-success: #00B894;
+  --vrx-warning: #FDCB6E;
+  --vrx-danger: #E17055;
+  --vrx-info: #74B9FF;
+
+  /* Backgrounds */
+  --vrx-bg: #0F0F1A;
+  --vrx-bg-secondary: #1A1A2E;
+  --vrx-bg-card: #16213E;
+  --vrx-bg-card-hover: #1E2D50;
+  --vrx-bg-overlay: rgba(15, 15, 26, 0.85);
+  --vrx-bg-glass: rgba(255, 255, 255, 0.05);
+
+  /* Text */
+  --vrx-text: #E8E8F0;
+  --vrx-text-secondary: #9D9DB5;
+  --vrx-text-muted: #6C6C85;
+
+  /* Borders */
+  --vrx-border: rgba(255, 255, 255, 0.08);
+  --vrx-border-focus: var(--vrx-primary);
+
+  /* Shadows */
+  --vrx-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --vrx-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4);
+  --vrx-glow: 0 0 20px rgba(108, 92, 231, 0.3);
+
+  /* Radius */
+  --vrx-radius: 12px;
+  --vrx-radius-lg: 20px;
+  --vrx-radius-sm: 8px;
+
+  /* Transitions */
+  --vrx-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+  background: var(--vrx-bg);
+  color: var(--vrx-text);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Background gradient animation */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(ellipse at 20% 50%, rgba(108, 92, 231, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(0, 206, 201, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(253, 121, 168, 0.05) 0%, transparent 50%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+a {
+  color: var(--vrx-primary-light);
+  text-decoration: none;
+  transition: var(--vrx-transition);
+}
+
+a:hover {
+  color: var(--vrx-primary);
+}
+
+/* ============================================
+   Typography
+   ============================================ */
+.vrx-title {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--vrx-primary-light), var(--vrx-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.vrx-subtitle {
+  font-size: 1rem;
+  color: var(--vrx-text-secondary);
+  margin-top: 4px;
+}
+
+/* ============================================
+   Container
+   ============================================ */
+.vrx-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ============================================
+   Header / Navbar
+   ============================================ */
+.vrx-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--vrx-bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--vrx-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.vrx-header .vrx-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--vrx-text);
+}
+
+.vrx-header .vrx-logo svg {
+  width: 32px;
+  height: 32px;
+}
+
+.vrx-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.vrx-nav a {
+  padding: 8px 16px;
+  border-radius: var(--vrx-radius-sm);
+  color: var(--vrx-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: var(--vrx-transition);
+}
+
+.vrx-nav a:hover,
+.vrx-nav a.active {
+  color: var(--vrx-text);
+  background: var(--vrx-bg-glass);
+}
+
+/* ============================================
+   Nav User Section (PHP auth)
+   ============================================ */
+.vrx-nav-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid var(--vrx-border);
+}
+
+.vrx-nav-username {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--vrx-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vrx-role-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+}
+
+.vrx-role-badge.admin  { background: rgba(108,92,231,.25);  color: var(--vrx-primary-light); }
+.vrx-role-badge.editor { background: rgba(0,206,201,.2);    color: var(--vrx-secondary); }
+.vrx-role-badge.user   { background: rgba(116,185,255,.2);  color: var(--vrx-info); }
+.vrx-role-badge.viewer { background: rgba(253,203,110,.2);  color: var(--vrx-warning); }
+.vrx-role-badge.guest  { background: rgba(255,255,255,.08); color: var(--vrx-text-muted); }
+
+.vrx-nav-logout {
+  padding: 6px 10px;
+  border-radius: var(--vrx-radius-sm);
+  background: rgba(225,112,85,.15);
+  color: var(--vrx-danger);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: var(--vrx-transition);
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+}
+
+.vrx-nav-logout svg {
+  width: 16px;
+  height: 16px;
+}
+
+.vrx-nav-logout:hover {
+  background: rgba(225,112,85,.3);
+  border-color: rgba(225,112,85,.4);
+  color: #ff7675;
+}
+
+.vrx-nav-login {
+  padding: 6px 14px;
+  border-radius: var(--vrx-radius-sm);
+  background: linear-gradient(135deg, var(--vrx-primary), var(--vrx-primary-dark));
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--vrx-transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.vrx-nav-login svg {
+  width: 14px;
+  height: 14px;
+}
+
+.vrx-nav-login:hover {
+  box-shadow: var(--vrx-glow);
+  transform: translateY(-1px);
+  color: #fff;
+}
+
+/* ============================================
+   Cards
+   ============================================ */
+.vrx-card {
+  background: var(--vrx-bg-card);
+  border: 1px solid var(--vrx-border);
+  border-radius: var(--vrx-radius-lg);
+  padding: 24px;
+  transition: var(--vrx-transition);
+}
+
+.vrx-card:hover {
+  background: var(--vrx-bg-card-hover);
+  border-color: rgba(108, 92, 231, 0.3);
+  box-shadow: var(--vrx-glow);
+  transform: translateY(-2px);
+}
+
+.vrx-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--vrx-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  font-size: 1.5rem;
+}
+
+.vrx-card-icon.model {
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.2), rgba(162, 155, 254, 0.2));
+}
+
+.vrx-card-icon.panorama {
+  background: linear-gradient(135deg, rgba(0, 206, 201, 0.2), rgba(116, 185, 255, 0.2));
+}
+
+.vrx-card-icon.upload {
+  background: linear-gradient(135deg, rgba(253, 121, 168, 0.2), rgba(253, 203, 110, 0.2));
+}
+
+.vrx-card h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.vrx-card p {
+  font-size: 0.9rem;
+  color: var(--vrx-text-secondary);
+  margin-bottom: 16px;
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+.vrx-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: var(--vrx-radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--vrx-transition);
+  text-decoration: none;
+  outline: none;
+  user-select: none;
+}
+
+.vrx-btn-primary {
+  background: linear-gradient(135deg, var(--vrx-primary), var(--vrx-primary-dark));
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+}
+
+.vrx-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+  color: #fff;
+}
+
+.vrx-btn-secondary {
+  background: var(--vrx-bg-glass);
+  color: var(--vrx-text);
+  border: 1px solid var(--vrx-border);
+}
+
+.vrx-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--vrx-primary-light);
+  color: var(--vrx-text);
+}
+
+.vrx-btn-success {
+  background: linear-gradient(135deg, var(--vrx-success), #00A381);
+  color: #fff;
+}
+
+.vrx-btn-danger {
+  background: linear-gradient(135deg, var(--vrx-danger), #D63031);
+  color: #fff;
+}
+
+.vrx-btn-sm {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+}
+
+.vrx-btn-lg {
+  padding: 14px 32px;
+  font-size: 1rem;
+}
+
+.vrx-btn-block {
+  width: 100%;
+}
+
+.vrx-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ============================================
+   Form Inputs
+   ============================================ */
+.vrx-input-group {
+  margin-bottom: 16px;
+}
+
+.vrx-input-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--vrx-text-secondary);
+  margin-bottom: 6px;
+}
+
+.vrx-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--vrx-bg-glass);
+  border: 1px solid var(--vrx-border);
+  border-radius: var(--vrx-radius-sm);
+  color: var(--vrx-text);
+  font-size: 0.9rem;
+  outline: none;
+  transition: var(--vrx-transition);
+}
+
+.vrx-input:focus {
+  border-color: var(--vrx-primary);
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+}
+
+.vrx-input::placeholder {
+  color: var(--vrx-text-muted);
+}
+
+textarea.vrx-input {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+/* ============================================
+   Upload Dropzone
+   ============================================ */
+.vrx-dropzone {
+  border: 2px dashed var(--vrx-border);
+  border-radius: var(--vrx-radius-lg);
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--vrx-transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.vrx-dropzone:hover,
+.vrx-dropzone.dragover {
+  border-color: var(--vrx-primary);
+  background: rgba(108, 92, 231, 0.05);
+}
+
+.vrx-dropzone.dragover {
+  transform: scale(1.01);
+}
+
+.vrx-dropzone-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.vrx-dropzone h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.vrx-dropzone p {
+  font-size: 0.85rem;
+  color: var(--vrx-text-muted);
+}
+
+.vrx-dropzone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* ============================================
+   File List / Grid
+   ============================================ */
+.vrx-file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.vrx-file-item {
+  background: var(--vrx-bg-card);
+  border: 1px solid var(--vrx-border);
+  border-radius: var(--vrx-radius);
+  overflow: hidden;
+  transition: var(--vrx-transition);
+  cursor: pointer;
+}
+
+.vrx-file-item:hover {
+  border-color: rgba(108, 92, 231, 0.3);
+  box-shadow: var(--vrx-glow);
+  transform: translateY(-2px);
+}
+
+.vrx-file-preview {
+  height: 160px;
+  background: var(--vrx-bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.vrx-file-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vrx-file-preview .vrx-file-type-icon {
+  font-size: 3rem;
+  opacity: 0.4;
+}
+
+.vrx-file-preview .vrx-file-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vrx-file-badge.model {
+  background: rgba(108, 92, 231, 0.8);
+  color: #fff;
+}
+
+.vrx-file-badge.panorama {
+  background: rgba(0, 206, 201, 0.8);
+  color: #fff;
+}
+
+.vrx-file-badge.image {
+  background: rgba(253, 121, 168, 0.8);
+  color: #fff;
+}
+
+.vrx-file-info {
+  padding: 14px;
+}
+
+.vrx-file-info h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vrx-file-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: var(--vrx-text-muted);
+  margin-top: 6px;
+}
+
+.vrx-file-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vrx-file-actions {
+  display: flex;
+  gap: 6px;
+  padding: 0 14px 14px;
+}
+
+/* ============================================
+   Overlay / Info Panel
+   ============================================ */
+.vrx-overlay {
+  position: fixed;
+  z-index: 50;
+  transition: var(--vrx-transition);
+  pointer-events: none;
+}
+
+.vrx-overlay.visible {
+  pointer-events: auto;
+}
+
+.vrx-info-panel {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  width: 300px;
+  background: var(--vrx-bg-overlay);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--vrx-border);
+  border-radius: var(--vrx-radius-lg);
+  padding: 20px;
+  z-index: 50;
+  transition: var(--vrx-transition);
+  transform: translateX(120%);
+  opacity: 0;
+}
+
+.vrx-info-panel.visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.vrx-info-panel h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vrx-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--vrx-border);
+  font-size: 0.85rem;
+}
+
+.vrx-info-row:last-child {
+  border-bottom: none;
+}
+
+.vrx-info-label {
+  color: var(--vrx-text-muted);
+  flex-shrink: 0;
+}
+
+.vrx-info-value {
+  color: var(--vrx-text);
+  text-align: right;
+  word-break: break-all;
+  max-width: 180px;
+}
+
+/* ============================================
+   Toolbar (Viewer controls)
+   ============================================ */
+.vrx-toolbar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--vrx-bg-overlay);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--vrx-border);
+  border-radius: 50px;
+  z-index: 50;
+}
+
+.vrx-toolbar button {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--vrx-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--vrx-transition);
+  font-size: 1.1rem;
+}
+
+.vrx-toolbar button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.vrx-toolbar button.active {
+  background: var(--vrx-primary);
+  color: #fff;
+}
+
+.vrx-toolbar .separator {
+  width: 1px;
+  height: 24px;
+  background: var(--vrx-border);
+}
+
+/* ============================================
+   Tabs
+   ============================================ */
+.vrx-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--vrx-bg-glass);
+  border-radius: var(--vrx-radius-sm);
+  border: 1px solid var(--vrx-border);
+  margin-bottom: 20px;
+}
+
+.vrx-tab {
+  flex: 1;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--vrx-transition);
+  color: var(--vrx-text-secondary);
+  border: none;
+  background: none;
+}
+
+.vrx-tab:hover {
+  color: var(--vrx-text);
+}
+
+.vrx-tab.active {
+  background: var(--vrx-primary);
+  color: #fff;
+}
+
+/* ============================================
+   Category Tags
+   ============================================ */
+.vrx-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.vrx-category-tag {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--vrx-transition);
+  border: 1px solid var(--vrx-border);
+  background: transparent;
+  color: var(--vrx-text-secondary);
+}
+
+.vrx-category-tag:hover,
+.vrx-category-tag.active {
+  border-color: var(--vrx-primary);
+  background: rgba(108, 92, 231, 0.15);
+  color: var(--vrx-primary-light);
+}
+
+/* ============================================
+   Modal
+   ============================================ */
+.vrx-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--vrx-transition);
+}
+
+.vrx-modal-backdrop.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.vrx-modal {
+  background: var(--vrx-bg-card);
+  border: 1px solid var(--vrx-border);
+  border-radius: var(--vrx-radius-lg);
+  padding: 28px;
+  max-width: 500px;
+  width: 90%;
+  transform: scale(0.9);
+  transition: var(--vrx-transition);
+}
+
+.vrx-modal-backdrop.visible .vrx-modal {
+  transform: scale(1);
+}
+
+.vrx-modal h2 {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.vrx-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* ============================================
+   Toast Notifications
+   ============================================ */
+.vrx-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vrx-toast {
+  padding: 12px 20px;
+  border-radius: var(--vrx-radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: vrx-slideIn 0.3s ease-out;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 250px;
+  box-shadow: var(--vrx-shadow);
+}
+
+.vrx-toast.success {
+  background: var(--vrx-success);
+  color: #fff;
+}
+
+.vrx-toast.error {
+  background: var(--vrx-danger);
+  color: #fff;
+}
+
+.vrx-toast.info {
+  background: var(--vrx-info);
+  color: #fff;
+}
+
+@keyframes vrx-slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ============================================
+   Progress Bar
+   ============================================ */
+.vrx-progress {
+  height: 4px;
+  background: var(--vrx-border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.vrx-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--vrx-primary), var(--vrx-secondary));
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* ============================================
+   Empty State
+   ============================================ */
+.vrx-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--vrx-text-muted);
+}
+
+.vrx-empty-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+
+.vrx-empty h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--vrx-text-secondary);
+}
+
+/* ============================================
+   Mobile Bottom Navigation Bar
+   ============================================ */
+.vrx-bottom-nav {
+  display: none; /* Hidden on desktop */
+}
+
+/* On viewer pages (3D / Panorama), hide bottom nav since toolbar is used */
+.vrx-page-viewer .vrx-bottom-nav {
+  display: none !important;
+}
+
+.vrx-page-viewer {
+  padding-bottom: 0 !important;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (max-width: 768px) {
+  /* ── Show mobile bottom nav ── */
+  .vrx-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: var(--vrx-bg-secondary);
+    border-top: 1px solid var(--vrx-border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    justify-content: space-around;
+    align-items: stretch;
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: calc(56px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .vrx-bottom-nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 2px;
+    padding: 6px 0;
+    color: var(--vrx-text-muted);
+    font-size: 0.62rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s, background 0.2s;
+    position: relative;
+    letter-spacing: 0.3px;
+    min-width: 0;
+  }
+
+  .vrx-bottom-nav a svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 1.8;
+    flex-shrink: 0;
+    transition: color 0.2s;
+  }
+
+  .vrx-bottom-nav a.active {
+    color: var(--vrx-primary-light);
+  }
+
+  .vrx-bottom-nav a.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 25%;
+    right: 25%;
+    height: 2.5px;
+    border-radius: 0 0 4px 4px;
+    background: var(--vrx-primary);
+  }
+
+  .vrx-bottom-nav a:active {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  /* ── Hide top nav links on mobile (replaced by bottom nav) ── */
+  .vrx-nav a:not(.vrx-nav-login) {
+    display: none;
+  }
+
+  .vrx-nav-user {
+    border-left: none;
+    margin-left: auto;
+    gap: 6px;
+  }
+
+  .vrx-nav-username {
+    display: none;
+  }
+
+  /* ── Body bottom padding so content isn't hidden behind bottom nav ── */
+  body {
+    padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .vrx-container {
+    padding: 12px;
+  }
+
+  .vrx-header {
+    padding: 12px 16px;
+  }
+
+  .vrx-role-badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
+
+  .vrx-file-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+
+  .vrx-info-panel {
+    top: auto;
+    bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 16px);
+    right: 10px;
+    left: 10px;
+    width: auto;
+  }
+
+  .vrx-toolbar {
+    bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 12px);
+    padding: 8px 12px;
+  }
+
+  /* On viewer pages, toolbar reverts to normal position (no bottom nav) */
+  .vrx-page-viewer .vrx-info-panel {
+    bottom: 80px;
+  }
+
+  .vrx-page-viewer .vrx-toolbar {
+    bottom: 16px;
+  }
+
+  .vrx-title {
+    font-size: 1.5rem;
+  }
+
+  .vrx-modal {
+    width: 95%;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .vrx-file-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vrx-header .vrx-logo {
+    font-size: 1.1rem;
+  }
+}
+
+/* ============================================
+   Scrollbar
+   ============================================ */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vrx-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vrx-text-muted);
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.gap-1 { gap: 8px; }
+.gap-2 { gap: 16px; }
+.hidden { display: none !important; }

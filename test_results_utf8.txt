@@ -1,0 +1,114 @@
+﻿
+============================================================
+  SUT chemBot - Automated System Test
+============================================================
+
+[Config Tests]
+
+[Database Tests]
+
+[Security Tests]
+
+[Auth Tests]
+
+[File Structure Tests]
+
+[QR Generator Tests]
+
+[Dependency Tests]
+
+[Data Integrity Tests]
+
+[URL Path Tests]
+
+============================================================
+  TEST RESULTS
+============================================================
+
+  Γ£ô [PASS] Config file loads
+  Γ£ô [PASS] DB_NAME is chem_inventory_db
+  Γ£ô [PASS] APP_URL is http://localhost/v1
+  Γ£ô [PASS] .env file exists
+  Γ£ô [PASS] .htaccess file exists
+  Γ£ô [PASS] Composer vendor directory exists
+  Γ£ô [PASS] Database connection works
+  Γ£ô [PASS] All 27 tables exist
+  Γ£ù [FAIL] Users table has 14 records - Found 44 users, expected 14
+  Γ£ù [FAIL] Chemicals table has 17 records - Found 7389 chemicals, expected 17
+  Γ£ù [FAIL] Containers table has 30 records - Found 0 containers, expected 30
+  Γ£ô [PASS] Containers table has is_active column
+  Γ£ô [PASS] Roles table has 5 roles
+  Γ£ô [PASS] Labs table has 5 labs
+  Γ£ô [PASS] Borrow requests exist
+  Γ£ô [PASS] Alerts exist
+  Γ£ô [PASS] LIMIT/OFFSET query works (PDO fix)
+  Γ£ô [PASS] Database::insert validates table name
+  Γ£ô [PASS] Database::update validates table name
+  Γ£ô [PASS] Database::insert validates column name
+  Γ£ô [PASS] Auth class loads
+  Γ£ù [FAIL] Admin user exists and password verified - Returned false
+  Γ£ù [FAIL] CEO user exists and password verified - Returned false
+  Γ£ù [FAIL] Lab Manager user exists and password verified - Returned false
+  Γ£ù [FAIL] Regular user exists and password verified - Returned false
+  Γ£ù [FAIL] All user roles assigned correctly - Expected 2 admins, got 5
+  Γ£ô [PASS] File exists: index.php
+  Γ£ô [PASS] File exists: composer.json
+  Γ£ô [PASS] File exists: composer.lock
+  Γ£ô [PASS] File exists: includes/config.php
+  Γ£ô [PASS] File exists: includes/database.php
+  Γ£ô [PASS] File exists: includes/auth.php
+  Γ£ô [PASS] File exists: includes/i18n.php
+  Γ£ô [PASS] File exists: includes/qr_generator.php
+  Γ£ô [PASS] File exists: pages/login.php
+  Γ£ô [PASS] File exists: pages/register.php
+  Γ£ô [PASS] File exists: pages/dashboard.php
+  Γ£ô [PASS] File exists: pages/chemicals.php
+  Γ£ô [PASS] File exists: pages/containers.php
+  Γ£ô [PASS] File exists: pages/locations.php
+  Γ£ô [PASS] File exists: pages/borrow.php
+  Γ£ô [PASS] File exists: pages/users.php
+  Γ£ô [PASS] File exists: pages/reports.php
+  Γ£ô [PASS] File exists: pages/qr-scanner.php
+  Γ£ô [PASS] File exists: pages/ai-assistant.php
+  Γ£ô [PASS] File exists: api/auth.php
+  Γ£ô [PASS] File exists: api/chemicals.php
+  Γ£ô [PASS] File exists: api/containers.php
+  Γ£ô [PASS] File exists: api/dashboard.php
+  Γ£ô [PASS] File exists: api/borrow.php
+  Γ£ô [PASS] File exists: api/alerts.php
+  Γ£ô [PASS] File exists: api/locations.php
+  Γ£ô [PASS] File exists: api/ai_assistant.php
+  Γ£ô [PASS] File exists: ar/view_ar.php
+  Γ£ô [PASS] File exists: lang/en.php
+  Γ£ô [PASS] File exists: lang/th.php
+  Γ£ô [PASS] File exists: sql/setup_database.sql
+  Γ£ô [PASS] Upload directories exist
+  Γ£ô [PASS] QRGenerator class loads
+  Γ£ô [PASS] Endroid QR code library available
+  Γ£ô [PASS] QR code can be generated
+  Γ£ô [PASS] firebase/php-jwt loaded
+  Γ£ô [PASS] PHPMailer loaded
+  Γ£ô [PASS] vlucas/phpdotenv loaded
+  Γ£ô [PASS] endroid/qr-code loaded
+  Γ£ô [PASS] All containers reference valid chemicals
+  Γ£ô [PASS] All containers reference valid owners
+  Γ£ô [PASS] All containers reference valid labs
+  Γ£ô [PASS] All users have valid roles
+  Γ£ô [PASS] Container remaining_percentage calculated correctly
+  Γ£ô [PASS] Chemical categories hierarchy intact
+  Γ£ù [FAIL] Location hierarchy complete - Only 2 cabinets
+  Γ£ô [PASS] No /chem_inventory/ in pages/dashboard.php
+  Γ£ô [PASS] No /chem_inventory/ in pages/chemicals.php
+  Γ£ô [PASS] No /chem_inventory/ in pages/qr-scanner.php
+  Γ£ô [PASS] No /chem_inventory/ in pages/ai-assistant.php
+  Γ£ô [PASS] No /chem_inventory/ in pages/login.php
+  Γ£ô [PASS] No /chem_inventory/ in pages/register.php
+  Γ£ô [PASS] No /chem_inventory/ in includes/config.php
+  Γ£ô [PASS] No /chem_inventory/ in ar/view_ar.php
+
+------------------------------------------------------------
+  Total: 80 tests | Passed: 71 | Failed: 9 | Time: 642ms
+------------------------------------------------------------
+
+  ΓÜá 9 test(s) failed. Check results above.
+

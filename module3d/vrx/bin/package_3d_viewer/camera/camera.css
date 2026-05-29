@@ -1,0 +1,74 @@
+/* ============================================
+   3D Viewer Page Styles
+   ============================================ */
+
+.viewer-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.camera-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.canvas-webgl {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: move;
+  touch-action: none;
+}
+
+/* Toolbar upload label styling */
+.toolbar-upload {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--vrx-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--vrx-transition);
+  font-size: 1.1rem;
+}
+
+.toolbar-upload:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.close-info {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--vrx-text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px;
+  border-radius: 4px;
+  transition: var(--vrx-transition);
+}
+
+.close-info:hover {
+  color: var(--vrx-text);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Override header for viewer pages */
+.vrx-header {
+  background: var(--vrx-bg-overlay);
+  z-index: 60;
+}

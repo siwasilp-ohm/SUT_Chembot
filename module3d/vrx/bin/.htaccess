@@ -1,0 +1,37 @@
+# VRX Studio - Development Cache Control
+# Prevent aggressive browser caching of JS modules during development
+
+<IfModule mod_headers.c>
+    # Disable caching for JavaScript files (ES modules)
+    <FilesMatch "\.(js|mjs)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+
+    # Disable caching for CSS files during development
+    <FilesMatch "\.css$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+
+    # Disable caching for HTML files
+    <FilesMatch "\.html?$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+
+    # Disable caching for PHP files
+    <FilesMatch "\.php$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>
+
+# Enable mod_rewrite for clean URLs (future use)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+</IfModule>

@@ -1,0 +1,288 @@
+/* ============================================
+   Upload Page Specific Styles
+   ============================================ */
+
+.upload-hero {
+  text-align: center;
+  padding: 32px 0 24px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.section-header h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.search-box {
+  width: 260px;
+}
+
+.search-box .vrx-input {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+}
+
+.file-desc {
+  font-size: 0.82rem !important;
+  color: var(--vrx-text-muted) !important;
+  margin-top: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.file-meta-preview {
+  background: var(--vrx-bg-glass);
+  border-radius: var(--vrx-radius-sm);
+  padding: 12px;
+  margin-top: 8px;
+}
+
+/* Dropzone enhancements */
+.vrx-dropzone {
+  background: var(--vrx-bg-card);
+  margin-bottom: 12px;
+}
+
+.vrx-dropzone::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--vrx-primary), var(--vrx-secondary), var(--vrx-accent));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.vrx-dropzone:hover::before,
+.vrx-dropzone.dragover::before {
+  opacity: 0.6;
+}
+
+/* Upload progress animation */
+@keyframes uploadPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.uploading .vrx-dropzone-icon {
+  animation: uploadPulse 1.5s infinite;
+}
+
+/* File item hover overlay */
+.vrx-file-preview::after {
+  content: 'Click to View';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.vrx-file-preview:hover::after {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .search-box {
+    width: 100%;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .upload-hero {
+    padding: 20px 0 16px;
+  }
+}
+
+/* ============================================
+   3D Model Preview
+   ============================================ */
+
+.preview-section {
+  margin-top: 14px;
+}
+
+.preview-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--vrx-text);
+  margin-bottom: 8px;
+}
+
+.preview-canvas-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  min-height: 200px;
+  max-height: 320px;
+  background: var(--vrx-bg);
+  border: 1px solid var(--vrx-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.preview-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.preview-hint {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--vrx-text-muted);
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
+/* Loading overlay */
+.preview-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(26, 26, 46, 0.85);
+  color: var(--vrx-text-secondary);
+  font-size: 0.85rem;
+  z-index: 2;
+  border-radius: 10px;
+}
+
+.preview-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--vrx-border);
+  border-top-color: var(--vrx-primary);
+  border-radius: 50%;
+  animation: previewSpin 0.8s linear infinite;
+}
+
+@keyframes previewSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Spinner animation for loading icons */
+.spin {
+  animation: previewSpin 1s linear infinite;
+  display: inline-block;
+}
+
+/* Error overlay */
+.preview-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26, 26, 46, 0.85);
+  color: var(--vrx-danger);
+  font-size: 0.85rem;
+  font-weight: 500;
+  z-index: 2;
+  border-radius: 10px;
+}
+
+/* Placeholder (URL tab before clicking Preview) */
+.preview-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--vrx-text-muted);
+  z-index: 2;
+}
+
+.preview-placeholder span {
+  font-size: 2.2rem;
+  opacity: 0.4;
+}
+
+.preview-placeholder p {
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+/* Make modal taller when preview is shown */
+.vrx-modal {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ============================================
+   Embed / iframe Import
+   ============================================ */
+
+.embed-textarea {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  min-height: 100px;
+  resize: vertical;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.embed-preview-section {
+  margin-top: 14px;
+  margin-bottom: 14px;
+}
+
+.embed-preview-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  min-height: 220px;
+  max-height: 360px;
+  background: var(--vrx-bg);
+  border: 1px solid var(--vrx-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.embed-preview-frame iframe {
+  border-radius: 10px;
+}
+
+.embed-parsed-info {
+  background: var(--vrx-bg-glass);
+  border-radius: var(--vrx-radius-sm);
+  padding: 10px 12px;
+  margin-top: 8px;
+}
+
+.embed-src-text {
+  word-break: break-all;
+  font-size: 0.78rem;
+  opacity: 0.7;
+}
+
+/* Embed badge color */
+.vrx-file-badge.embed {
+  background: linear-gradient(135deg, #e17055, #d63031);
+}
+

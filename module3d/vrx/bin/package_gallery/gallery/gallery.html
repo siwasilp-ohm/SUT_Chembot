@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>VRX Studio — File Library</title>
+  <link rel="stylesheet" href="../../style/modern.css">
+  <link rel="stylesheet" href="gallery.css">
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="vrx-header">
+    <div class="vrx-logo">
+      <svg viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill="url(#g1)" />
+        <path d="M8 22L16 10L24 22H8Z" fill="white" opacity="0.9" />
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="32" y2="32">
+            <stop stop-color="#6C5CE7" />
+            <stop offset="1" stop-color="#00CEC9" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <span>VRX Studio</span>
+    </div>
+    <nav class="vrx-nav">
+      <a href="../../index.html">Home</a>
+      <a href="../../package_upload/upload/upload.html">Upload</a>
+      <a href="gallery.html" class="active">Gallery</a>
+      <a href="../../package_ar/qr/qr.html">QR / AR</a>
+    </nav>
+  </header>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="vrx-bottom-nav">
+    <a href="../../index.html"><i data-feather="home"></i><span>Home</span></a>
+    <a href="../../package_upload/upload/upload.html"><i data-feather="upload-cloud"></i><span>Upload</span></a>
+    <a href="gallery.html" class="active"><i data-feather="folder"></i><span>Gallery</span></a>
+    <a href="../../package_ar/qr/qr.html"><i data-feather="smartphone"></i><span>QR / AR</span></a>
+    <a href="../../package_scanner/scanner/scanner.html"><i data-feather="camera"></i><span>Scanner</span></a>
+  </nav>
+
+  <div id="galleryApp" class="vrx-container">
+    <!-- Hero -->
+    <div class="gallery-hero">
+      <h1><i data-feather="folder" style="width:28px;height:28px;vertical-align:-4px"></i> File Library</h1>
+      <p>Browse, preview, and manage all your uploaded assets in one place.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="gallery-stats">
+      <div class="stat-card">
+        <div class="stat-value">{{ stats.total }}</div>
+        <div class="stat-label">Total Files</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ stats.models }}</div>
+        <div class="stat-label">3D Models</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ stats.panoramas }}</div>
+        <div class="stat-label">Panoramas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ stats.images }}</div>
+        <div class="stat-label">Images</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ stats.embeds }}</div>
+        <div class="stat-label">Embeds</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ stats.totalSizeFormatted }}</div>
+        <div class="stat-label">Storage</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="gallery-toolbar">
+      <div class="toolbar-left">
+        <!-- Search -->
+        <div class="gallery-search">
+          <span class="search-icon"><i data-feather="search"></i></span>
+          <input type="text"
+                 v-model="searchQuery"
+                 @input="onSearchChange"
+                 placeholder="Search files…">
+        </div>
+
+        <!-- Category Filters -->
+        <div class="gallery-filters">
+          <button class="filter-pill"
+                  :class="{ active: filterCategory === 'all' }"
+                  @click="setFilter('all')">
+            All <span class="pill-count">({{ categoryCounts.all }})</span>
+          </button>
+          <button class="filter-pill"
+                  :class="{ active: filterCategory === 'model' }"
+                  @click="setFilter('model')">
+            <span v-html="getCategoryIconHtml('model', 14)"></span> Models <span class="pill-count">({{ categoryCounts.model }})</span>
+          </button>
+          <button class="filter-pill"
+                  :class="{ active: filterCategory === 'panorama' }"
+                  @click="setFilter('panorama')">
+            <span v-html="getCategoryIconHtml('panorama', 14)"></span> Panorama <span class="pill-count">({{ categoryCounts.panorama }})</span>
+          </button>
+          <button class="filter-pill"
+                  :class="{ active: filterCategory === 'image' }"
+                  @click="setFilter('image')">
+            <span v-html="getCategoryIconHtml('image', 14)"></span> Images <span class="pill-count">({{ categoryCounts.image }})</span>
+          </button>
+          <button class="filter-pill"
+                  :class="{ active: filterCategory === 'embed' }"
+                  @click="setFilter('embed')">
+            <span v-html="getCategoryIconHtml('embed', 14)"></span> Embeds <span class="pill-count">({{ categoryCounts.embed }})</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        <!-- Sort -->
+        <div class="gallery-sort">
+          <select v-model="sortKey" @change="applyChanges">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="name_asc">Name A→Z</option>
+            <option value="name_desc">Name Z→A</option>
+            <option value="largest">Largest</option>
+            <option value="smallest">Smallest</option>
+            <option value="type">By Type</option>
+          </select>
+        </div>
+
+        <!-- View Modes -->
+        <div class="view-toggle">
+          <button class="view-btn" :class="{ active: viewMode === 'grid' }"
+                  @click="setView('grid')" title="Grid View">▦</button>
+          <button class="view-btn" :class="{ active: viewMode === 'large' }"
+                  @click="setView('large')" title="Large Grid">⊞</button>
+          <button class="view-btn" :class="{ active: viewMode === 'masonry' }"
+                  @click="setView('masonry')" title="Masonry">▧</button>
+          <button class="view-btn" :class="{ active: viewMode === 'list' }"
+                  @click="setView('list')" title="List View">☰</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gallery Grid -->
+    <div v-if="pagedFiles.length"
+         class="gallery-grid"
+         :class="'view-' + viewMode">
+
+      <div class="gallery-item"
+           v-for="file in pagedFiles"
+           :key="file.id">
+
+        <!-- Preview Area -->
+        <div class="gi-preview" @click="openDetail(file)">
+          <!-- Category Badge -->
+          <span class="gi-badge" :class="getBadgeClass(file.category)">
+            <span v-html="getCategoryIconHtml(file.category, 14)"></span> {{ getCategoryLabel(file.category) }}
+          </span>
+
+          <!-- Thumbnail for images -->
+          <img v-if="canShowThumb(file)"
+               :src="getThumbSrc(file)"
+               :alt="file.name"
+               loading="lazy">
+
+          <!-- Icon placeholder for non-image -->
+          <span v-else class="gi-preview-icon" v-html="getCategoryIconHtml(file.category, 48)"></span>
+
+          <!-- Hover overlay with action buttons -->
+          <div class="gi-preview-overlay">
+            <button class="gi-overlay-btn" @click.stop="openViewer(file)" title="Open Viewer"><i data-feather="play"></i></button>
+            <button class="gi-overlay-btn" @click.stop="openDetail(file)" title="Details"><i data-feather="info"></i></button>
+            <button v-if="file.category === 'model'"
+                    class="gi-overlay-btn" @click.stop="openQR(file)" title="QR / AR"><i data-feather="smartphone"></i></button>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="gi-body">
+          <div class="gi-name" :title="file.name">{{ file.name }}</div>
+          <div class="gi-desc" v-if="file.description">{{ file.description }}</div>
+          <div class="gi-meta">
+            <span><i data-feather="file" style="width:12px;height:12px;vertical-align:-2px"></i> {{ file.extension || '—' }}</span>
+            <span><i data-feather="hard-drive" style="width:12px;height:12px;vertical-align:-2px"></i> {{ file.sizeFormatted || '—' }}</span>
+            <span><i data-feather="clock" style="width:12px;height:12px;vertical-align:-2px"></i> {{ getRelTime(file.uploadedAt) }}</span>
+          </div>
+          <div class="gi-tags" v-if="file.tags && file.tags.length">
+            <span class="gi-tag" v-for="tag in file.tags" :key="tag">{{ tag }}</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="gi-actions">
+          <button class="gi-action-btn" @click="openViewer(file)"><i data-feather="eye" style="width:14px;height:14px;vertical-align:-2px"></i> View</button>
+          <button class="gi-action-btn" v-if="file.category === 'model'" @click="openQR(file)"><i data-feather="smartphone" style="width:14px;height:14px;vertical-align:-2px"></i> QR</button>
+          <button class="gi-action-btn danger" @click="deleteFile(file)"><i data-feather="trash-2" style="width:14px;height:14px;vertical-align:-2px"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else class="gallery-empty">
+      <div class="gallery-empty-icon"><i data-feather="folder" style="width:48px;height:48px"></i></div>
+      <h3 v-if="searchQuery || filterCategory !== 'all'">No matching files</h3>
+      <h3 v-else>Your library is empty</h3>
+      <p v-if="searchQuery || filterCategory !== 'all'">Try adjusting your search or filter.</p>
+      <p v-else>Upload files to start building your gallery.</p>
+      <a href="../../package_upload/upload/upload.html" class="vrx-btn vrx-btn-primary"><i data-feather="upload-cloud" style="width:14px;height:14px;vertical-align:-2px"></i> Go to Upload</a>
+    </div>
+
+    <!-- Pagination -->
+    <div v-if="totalPages > 1" class="gallery-pagination">
+      <button class="page-btn" :disabled="currentPage <= 1" @click="goPage(currentPage - 1)">‹</button>
+      <template v-for="p in pages">
+        <span v-if="p === '...'" class="page-info" :key="'e'+p">…</span>
+        <button v-else class="page-btn"
+                :class="{ active: p === currentPage }"
+                :key="p"
+                @click="goPage(p)">{{ p }}</button>
+      </template>
+      <button class="page-btn" :disabled="currentPage >= totalPages" @click="goPage(currentPage + 1)">›</button>
+      <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
+    </div>
+
+    <!-- ─── Detail Lightbox ─── -->
+    <div v-if="detailFile" class="gallery-detail-overlay" @click.self="closeDetail">
+      <div class="gallery-detail">
+        <!-- Preview side -->
+        <div class="detail-preview">
+          <button class="detail-close" @click="closeDetail">✕</button>
+
+          <!-- Image -->
+          <img v-if="canShowThumb(detailFile)"
+               :src="getThumbSrc(detailFile)"
+               :alt="detailFile.name">
+
+          <!-- Embed iframe -->
+          <iframe v-else-if="detailFile.category === 'embed' && (detailFile.embedSrc || detailFile.url)"
+                  :src="detailFile.embedSrc || detailFile.url"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+                  allowfullscreen
+                  loading="lazy"></iframe>
+
+          <!-- 3D preview canvas -->
+          <div v-else-if="detailFile.category === 'model'"
+               :id="'detail-preview-3d'"
+               style="width:100%;height:100%;"></div>
+
+          <!-- Fallback icon -->
+          <span v-else class="detail-preview-icon" v-html="getCategoryIconHtml(detailFile.category, 64)"></span>
+        </div>
+
+        <!-- Sidebar info -->
+        <div class="detail-sidebar">
+          <div class="detail-title">{{ detailFile.name }}</div>
+          <div class="detail-desc" v-if="detailFile.description">{{ detailFile.description }}</div>
+
+          <table class="detail-meta-table">
+            <tr>
+              <td>Category</td>
+              <td>
+                <span class="gi-badge" :class="getBadgeClass(detailFile.category)" style="position:static;">
+                  <span v-html="getCategoryIconHtml(detailFile.category, 14)"></span> {{ getCategoryLabel(detailFile.category) }}
+                </span>
+              </td>
+            </tr>
+            <tr v-if="detailFile.originalName">
+              <td>Original</td>
+              <td>{{ detailFile.originalName }}</td>
+            </tr>
+            <tr>
+              <td>Extension</td>
+              <td>.{{ detailFile.extension || '—' }}</td>
+            </tr>
+            <tr>
+              <td>Size</td>
+              <td>{{ detailFile.sizeFormatted || 'External' }}</td>
+            </tr>
+            <tr>
+              <td>Uploaded</td>
+              <td>{{ detailFile.uploadedAtFormatted || '—' }}</td>
+            </tr>
+            <tr v-if="detailFile.isExternal || detailFile.url">
+              <td>Source</td>
+              <td>{{ detailFile.isEmbed ? 'Embed' : 'URL' }}</td>
+            </tr>
+            <tr v-if="detailFile.embedSrc">
+              <td>Embed URL</td>
+              <td style="font-size:0.72rem;">{{ detailFile.embedSrc }}</td>
+            </tr>
+          </table>
+
+          <!-- Tags -->
+          <div v-if="detailFile.tags && detailFile.tags.length" class="gi-tags" style="margin-top:4px;">
+            <span class="gi-tag" v-for="tag in detailFile.tags" :key="tag">{{ tag }}</span>
+          </div>
+
+          <!-- Actions -->
+          <div class="detail-actions">
+            <button class="vrx-btn vrx-btn-primary" @click="openViewer(detailFile)"><i data-feather="play" style="width:14px;height:14px;vertical-align:-2px"></i> Open Viewer</button>
+            <button v-if="detailFile.category === 'model'"
+                    class="vrx-btn vrx-btn-outline" @click="openQR(detailFile)"><i data-feather="smartphone" style="width:14px;height:14px;vertical-align:-2px"></i> QR / AR</button>
+            <button class="vrx-btn vrx-btn-outline danger" @click="deleteFile(detailFile); closeDetail()"><i data-feather="trash-2" style="width:14px;height:14px;vertical-align:-2px"></i> Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="gallery-footer">
+      VRX Studio — File Library &bull; Built with Three.js &amp; Vue.js
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../../third_party/vue.min.js"></script>
+  <script src="../../third_party/three.js"></script>
+  <script src="../../third_party/GLTFLoader.js"></script>
+  <script type="module" src="gallery.js"></script>
+</body>
+
+</html>

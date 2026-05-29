@@ -1,0 +1,33 @@
+# VRX Studio — Apache Configuration
+# ─────────────────────────────────
+
+# CORS for API
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|mjs|css|html?)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+    </FilesMatch>
+    <FilesMatch "\.php$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+# Proper MIME types
+<IfModule mod_mime.c>
+    AddType application/javascript .js .mjs
+    AddType application/json .json
+    AddType model/gltf-binary .glb
+    AddType model/gltf+json .gltf
+    AddType image/webp .webp
+</IfModule>
+
+# Block access to sensitive files
+<FilesMatch "(\.sql|\.log|\.env)$">
+    Require all denied
+</FilesMatch>
+
+# Deny access to bin/ archive
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^bin/ - [F,L]
+</IfModule>

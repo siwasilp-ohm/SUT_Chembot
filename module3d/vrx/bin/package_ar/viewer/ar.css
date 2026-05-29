@@ -1,0 +1,387 @@
+/* ========== VRX AR Viewer ========== */
+
+.ar-page {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ---- Camera / Background ---- */
+.ar-video-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.ar-video-layer video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ar-fallback-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, #1a1a2e 0%, #0d0d1a 70%, #000 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ar-fallback-bg .grid-floor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background:
+    linear-gradient(180deg, transparent 0%, rgba(108,92,231,0.05) 100%),
+    repeating-linear-gradient(90deg, rgba(108,92,231,0.08) 0px, rgba(108,92,231,0.08) 1px, transparent 1px, transparent 60px),
+    repeating-linear-gradient(0deg, rgba(108,92,231,0.08) 0px, rgba(108,92,231,0.08) 1px, transparent 1px, transparent 60px);
+  perspective: 400px;
+  transform: rotateX(45deg);
+  transform-origin: bottom;
+}
+
+/* ---- Three.js Canvas ---- */
+.ar-canvas-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.ar-canvas-layer canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---- HUD Overlay ---- */
+.ar-hud {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.ar-hud > * {
+  pointer-events: auto;
+}
+
+/* Top bar */
+.ar-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1rem;
+  background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, transparent 100%);
+}
+
+.ar-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: rgba(255,255,255,0.12);
+  border: none;
+  border-radius: 20px;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background 0.2s;
+}
+
+.ar-back-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.ar-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(108,92,231,0.85);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.7rem;
+  border-radius: 12px;
+  letter-spacing: 0.03em;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.ar-mode-badge.mode-3d {
+  background: rgba(0,200,83,0.85);
+}
+
+/* ---- Model info ---- */
+.ar-model-info {
+  position: absolute;
+  bottom: 150px;
+  left: 1rem;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  color: #fff;
+  max-width: 260px;
+}
+
+.ar-model-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ar-model-desc {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.65);
+  margin-top: 0.2rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---- Bottom Controls ---- */
+.ar-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, transparent 100%);
+}
+
+/* Scale slider row */
+.ar-scale-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+  padding: 0 0.5rem;
+}
+
+.ar-scale-label {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.75rem;
+  font-weight: 500;
+  min-width: 32px;
+}
+
+.ar-scale-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.2);
+  outline: none;
+}
+
+.ar-scale-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--vrx-primary, #6C5CE7);
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.ar-scale-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--vrx-primary, #6C5CE7);
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.ar-scale-value {
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Action buttons row */
+.ar-btn-row {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.ar-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 0.65rem 1.1rem;
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 0.2s;
+  min-width: 56px;
+}
+
+.ar-btn:hover {
+  background: rgba(255,255,255,0.18);
+}
+
+.ar-btn.active {
+  background: rgba(108,92,231,0.6);
+  border-color: rgba(108,92,231,0.8);
+}
+
+.ar-btn .btn-icon {
+  font-size: 1.3rem;
+}
+
+.ar-btn .btn-label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* ---- Loading Overlay ---- */
+.ar-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.ar-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255,255,255,0.15);
+  border-top-color: var(--vrx-primary, #6C5CE7);
+  border-radius: 50%;
+  animation: arSpin 0.8s linear infinite;
+}
+
+@keyframes arSpin {
+  to { transform: rotate(360deg); }
+}
+
+.ar-loading-text {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.7);
+}
+
+/* ---- Notice / Warning ---- */
+.ar-notice {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  background: rgba(255, 159, 67, 0.9);
+  color: #fff;
+  font-size: 0.78rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 320px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeInDown 0.4s ease;
+}
+
+.ar-notice.error {
+  background: rgba(231, 76, 60, 0.9);
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ---- Error page ---- */
+.ar-error-page {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  background: var(--vrx-bg, #0f0f17);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-align: center;
+  padding: 2rem;
+}
+
+.ar-error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.ar-error-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.ar-error-desc {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 1.5rem;
+  max-width: 300px;
+}
+
+.ar-error-btn {
+  background: var(--vrx-primary, #6C5CE7);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.ar-error-btn:hover {
+  opacity: 0.85;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 480px) {
+  .ar-topbar { padding: 0.6rem 0.7rem; }
+  .ar-back-btn { font-size: 0.82rem; padding: 0.4rem 0.7rem; }
+  .ar-model-info { bottom: 140px; max-width: 200px; }
+  .ar-btn { padding: 0.55rem 0.8rem; min-width: 48px; }
+  .ar-btn .btn-icon { font-size: 1.1rem; }
+}
+
+@media (min-width: 768px) {
+  .ar-btn-row { gap: 1.3rem; }
+  .ar-btn { padding: 0.7rem 1.3rem; min-width: 68px; }
+}

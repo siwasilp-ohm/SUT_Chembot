@@ -1,0 +1,52 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+x.env
+x.env.example
+
+# Vendor dependencies
+vendor/
+
+# Logs
+logs/
+*.log
+error.log
+
+# Uploaded files
+assets/uploads/*
+!assets/uploads/.gitkeep
+
+# Temporary files
+tmp/
+temp/
+cache/
+*.tmp
+*.swp
+*.bak
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# Test files
+test_results.txt
+test_results_utf8.txt
+test_system.php
+
+# Debug files
+debug_*.php
+
+# Backup files
+*.bak
+backup.*
+backups/
+
+# Claude Code local settings
+.claude/

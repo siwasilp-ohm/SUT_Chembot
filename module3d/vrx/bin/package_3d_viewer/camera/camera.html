@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="Cache-Control" content="no-cache">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>3D Viewer — VRX Studio</title>
+  <link rel="stylesheet" href="../../style/modern.css">
+  <link rel="stylesheet" href="camera.css">
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>
+</head>
+
+<body>
+  <div id="app" class="vrx-page-viewer">
+    <!-- Header -->
+    <header class="vrx-header">
+      <div class="vrx-logo">
+        <svg viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="url(#g1)" />
+          <path d="M8 22L16 10L24 22H8Z" fill="white" opacity="0.9" />
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="32" y2="32">
+              <stop stop-color="#6C5CE7" />
+              <stop offset="1" stop-color="#00CEC9" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>VRX Studio</span>
+      </div>
+      <nav class="vrx-nav">
+        <a href="../../index.html">Home</a>
+        <a href="../../package_upload/upload/upload.html">Upload</a>
+        <a href="../../package_gallery/gallery/gallery.html">Gallery</a>
+        <a href="../../package_ar/qr/qr.html">QR / AR</a>
+      </nav>
+    </header>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="vrx-bottom-nav">
+      <a href="../../index.html"><i data-feather="home"></i><span>Home</span></a>
+      <a href="../../package_upload/upload/upload.html"><i data-feather="upload-cloud"></i><span>Upload</span></a>
+      <a href="../../package_gallery/gallery/gallery.html"><i data-feather="folder"></i><span>Gallery</span></a>
+      <a href="../../package_ar/qr/qr.html"><i data-feather="smartphone"></i><span>QR / AR</span></a>
+      <a href="../../package_scanner/scanner/scanner.html"><i data-feather="camera"></i><span>Scanner</span></a>
+    </nav>
+
+    <!-- 3D Canvas Area -->
+    <div class="viewer-container">
+      <video id="inputData" autoplay muted playsinline webkit-playsinline class="camera-video"></video>
+      <canvas id="canvasWebGL" class="canvas-webgl"></canvas>
+    </div>
+
+    <!-- File Info Overlay Panel -->
+    <div class="vrx-info-panel" :class="{ visible: showInfo }">
+      <h3><i data-feather="clipboard"></i> File Details <button class="close-info" @click="showInfo = false">✕</button></h3>
+      <div class="vrx-info-row" v-if="fileMeta.name">
+        <span class="vrx-info-label">Name</span>
+        <span class="vrx-info-value">{{ fileMeta.name }}</span>
+      </div>
+      <div class="vrx-info-row" v-if="fileMeta.description">
+        <span class="vrx-info-label">Description</span>
+        <span class="vrx-info-value">{{ fileMeta.description }}</span>
+      </div>
+      <div class="vrx-info-row" v-if="fileMeta.size">
+        <span class="vrx-info-label">Size</span>
+        <span class="vrx-info-value">{{ fileMeta.size }}</span>
+      </div>
+      <div class="vrx-info-row" v-if="fileMeta.date">
+        <span class="vrx-info-label">Date</span>
+        <span class="vrx-info-value">{{ fileMeta.date }}</span>
+      </div>
+      <div class="vrx-info-row" v-if="fileMeta.extension">
+        <span class="vrx-info-label">Format</span>
+        <span class="vrx-info-value">.{{ fileMeta.extension }}</span>
+      </div>
+      <div class="vrx-info-row" v-if="fileMeta.category">
+        <span class="vrx-info-label">Category</span>
+        <span class="vrx-info-value">{{ fileMeta.category }}</span>
+      </div>
+    </div>
+
+    <!-- Bottom Toolbar -->
+    <div class="vrx-toolbar">
+      <button title="Info" @click="showInfo = !showInfo" :class="{ active: showInfo }"><i data-feather="info"></i></button>
+      <div class="separator"></div>
+      <button title="Start Camera" @click="takePhoto" :class="{ active: cameraActive }"><i data-feather="camera"></i></button>
+      <div class="separator"></div>
+      <button title="Device Motion" @click="toggleDeviceMotion" :class="{ active: isDeviceMotion }">
+        <i data-feather="refresh-cw"></i>
+      </button>
+      <div class="separator"></div>
+      <button title="Generate QR / AR" @click="openQR"><i data-feather="smartphone"></i></button>
+      <div class="separator"></div>
+      <label class="toolbar-upload" title="Load Model">
+        <i data-feather="folder"></i>
+        <input id="uploaderInput" type="file" accept=".glb,.gltf,.obj" style="display:none">
+      </label>
+    </div>
+
+    <!-- Notice toast -->
+    <div class="vrx-toast-container">
+      <div v-if="notice" class="vrx-toast info">{{ notice }}</div>
+    </div>
+  </div>
+
+  <!-- 3D -->
+  <script src="../../third_party/three.js"></script>
+  <script src="../../third_party/GLTFLoader.js"></script>
+  <!-- Vue -->
+  <script src="../../third_party/vue.min.js"></script>
+  <script type="module" src="camera.js"></script>
+</body>
+
+</html>

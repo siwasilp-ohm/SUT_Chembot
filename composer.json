@@ -1,0 +1,23 @@
+{
+    "name": "cheminventory/chem-inventory-ai",
+    "description": "AI-Driven Chemical Inventory Management System with AR",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.0",
+        "firebase/php-jwt": "^6.0",
+        "endroid/qr-code": "^4.0",
+        "phpmailer/phpmailer": "^6.8",
+        "vlucas/phpdotenv": "^5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "ChemInventory\\": "includes/"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@php -r \"@mkdir('assets/uploads/qr_codes', 0755, true); @mkdir('assets/uploads/labels', 0755, true); @mkdir('assets/uploads/models', 0755, true); @mkdir('assets/logs', 0755, true);\""
+        ]
+    }
+}

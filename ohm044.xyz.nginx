@@ -1,0 +1,222 @@
+# ============================================================================
+# Nginx Configuration for ChemInventory AI
+# File Location: /etc/nginx/sites-available/ohm044.xyz
+# Domain: https://ohm044.xyz/v1
+# Note: Use this if your VPS runs Nginx instead of Apache
+# ============================================================================
+
+# ════════════════════════════════════════════════════════════
+# HTTP to HTTPS Redirect
+# ════════════════════════════════════════════════════════════
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ohm044.xyz www.ohm044.xyz;
+    server_tokens off;
+    
+    # Redirect all HTTP to HTTPS
+    return 301 https://$server_name$request_uri;
+}
+
+# ════════════════════════════════════════════════════════════
+# HTTPS Configuration (Main)
+# ════════════════════════════════════════════════════════════
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    
+    server_name ohm044.xyz www.ohm044.xyz;
+    server_tokens off;
+    
+    # ── SSL Certificates ──
+    ssl_certificate /etc/letsencrypt/live/ohm044.xyz/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/ohm044.xyz/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/ohm044.xyz/chain.pem;
+    
+    # ── SSL Configuration ──
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+    ssl_session_tickets off;
+    
+    # ── HSTS (HTTP Strict Transport Security) ──
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+    
+    # ── Security Headers ──
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+    
+    # ── Performance ──
+    add_header Cache-Control "public, max-age=31536000, immutable" always;
+    
+    # ── Document Root ──
+    root /var/www/html;
+    
+    # ── Logging ──
+    access_log /var/log/nginx/ohm044.xyz-access.log combined;
+    error_log /var/log/nginx/ohm044.xyz-error.log;
+    
+    # ── Charset ──
+    charset utf-8;
+    
+    # ──────────────────────────────────────────────────────────
+    # Location blocks for different paths
+    # ──────────────────────────────────────────────────────────
+    
+    # ── Root location (main app) ──
+    location / {
+        rewrite ^/v1/(.*)$ /$1 permanent;
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+    
+    # ── PHP-FPM configuration ──
+    location ~ \.php$ {
+        fastcgi_pass unix:/run/php/php8.1-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+        
+        # Timeout settings
+        fastcgi_connect_timeout 60s;
+        fastcgi_send_timeout 300s;
+        fastcgi_read_timeout 300s;
+    }
+    
+    # ── API endpoints ──
+    location ~ ^/v1/api/ {
+        try_files $uri $uri/ /v1/index.php?$query_string;
+        
+        location ~ \.php$ {
+            fastcgi_pass unix:/run/php/php8.1-fpm.sock;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            include fastcgi_params;
+        }
+    }
+    
+    # ── Pages ──
+    location ~ ^/v1/pages/ {
+        try_files $uri $uri/ /v1/index.php?$query_string;
+        
+        location ~ \.php$ {
+            fastcgi_pass unix:/run/php/php8.1-fpm.sock;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            include fastcgi_params;
+        }
+    }
+    
+    # ── 3D Module ──
+    location ~ ^/v1/module3d/ {
+        try_files $uri $uri/ /v1/module3d/index.php?$query_string;
+        
+        location ~ \.php$ {
+            fastcgi_pass unix:/run/php/php8.1-fpm.sock;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            include fastcgi_params;
+        }
+    }
+    
+    # ── AR Module ──
+    location ~ ^/v1/ar/ {
+        try_files $uri $uri/ /v1/index.php?$query_string;
+        
+        location ~ \.php$ {
+            fastcgi_pass unix:/run/php/php8.1-fpm.sock;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            include fastcgi_params;
+        }
+    }
+    
+    # ── Static assets (cache aggressively) ──
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|eot|ttf|otf|pdf)$ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        expires 365d;
+        access_log off;
+    }
+    
+    # ── 3D Model Files ──
+    location ~* \.(glb|gltf|usdz)$ {
+        add_header Cache-Control "public, max-age=86400";
+        expires 1d;
+    }
+    
+    # ── Assets directory ──
+    location /v1/assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+    
+    # ── Uploads directory (protect PHP execution) ──
+    location /v1/assets/uploads/ {
+        location ~ \.php$ {
+            deny all;
+        }
+        expires 30d;
+        add_header Cache-Control "public";
+    }
+    
+    # ── Deny access to sensitive files and directories ──
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+    
+    location ~ /\.env {
+        deny all;
+    }
+    
+    location ~ /\.ht {
+        deny all;
+    }
+    
+    location ~ ^/v1/(sql|logs|data|ref_data|includes)/ {
+        deny all;
+    }
+    
+    location ~ ^/v1/(debug_|test_) {
+        deny all;
+    }
+    
+    location ~ ^/v1/.*_backup\.php$ {
+        deny all;
+    }
+    
+    location ~ /(composer|vendor)/ {
+        deny all;
+    }
+    
+    # ── Deny PHP execution in upload directory ──
+    location ~ /v1/assets/uploads/.*\.php$ {
+        deny all;
+    }
+    
+    # ── Deny .bak files ──
+    location ~ \.(bak|tmp|log|db|sql)$ {
+        deny all;
+    }
+    
+    # ── 404 handling ──
+    error_page 404 /404.html;
+    
+    # ── 50x handling ──
+    error_page 500 502 503 504 /50x.html;
+}
+
+# ════════════════════════════════════════════════════════════
+# Gzip Compression
+# ════════════════════════════════════════════════════════════
+gzip on;
+gzip_vary on;
+gzip_min_length 1000;
+gzip_proxied any;
+gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/json application/javascript;
+gzip_disable "MSIE [1-6]\.";

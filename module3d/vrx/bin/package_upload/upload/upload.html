@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>VRX Upload &amp; File Manager</title>
+  <link rel="stylesheet" href="../../style/modern.css">
+  <link rel="stylesheet" href="upload.css">
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="vrx-header">
+      <div class="vrx-logo">
+        <svg viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="url(#g1)" />
+          <path d="M8 22L16 10L24 22H8Z" fill="white" opacity="0.9" />
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="32" y2="32">
+              <stop stop-color="#6C5CE7" />
+              <stop offset="1" stop-color="#00CEC9" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>VRX Studio</span>
+      </div>
+      <nav class="vrx-nav">
+        <a href="../../index.html">Home</a>
+        <a href="#" class="active">Upload</a>
+        <a href="../../package_gallery/gallery/gallery.html">Gallery</a>
+        <a href="../../package_ar/qr/qr.html">QR / AR</a>
+      </nav>
+    </header>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="vrx-bottom-nav">
+      <a href="../../index.html"><i data-feather="home"></i><span>Home</span></a>
+      <a href="#" class="active"><i data-feather="upload-cloud"></i><span>Upload</span></a>
+      <a href="../../package_gallery/gallery/gallery.html"><i data-feather="folder"></i><span>Gallery</span></a>
+      <a href="../../package_ar/qr/qr.html"><i data-feather="smartphone"></i><span>QR / AR</span></a>
+      <a href="../../package_scanner/scanner/scanner.html"><i data-feather="camera"></i><span>Scanner</span></a>
+    </nav>
+
+    <div class="vrx-container">
+      <!-- Title -->
+      <div class="upload-hero">
+        <h1 class="vrx-title">Upload &amp; Manage</h1>
+        <p class="vrx-subtitle">Upload 3D models, panorama images, or import from URL</p>
+      </div>
+
+      <!-- Tabs: Upload / URL / Embed -->
+      <div class="vrx-tabs">
+        <button class="vrx-tab" :class="{ active: activeTab === 'upload' }" @click="activeTab = 'upload'">
+          <i data-feather="folder"></i> Upload File
+        </button>
+        <button class="vrx-tab" :class="{ active: activeTab === 'url' }" @click="activeTab = 'url'">
+          <i data-feather="link"></i> Import URL
+        </button>
+        <button class="vrx-tab" :class="{ active: activeTab === 'embed' }" @click="activeTab = 'embed'">
+          <i data-feather="monitor"></i> Embed iframe
+        </button>
+      </div>
+
+      <!-- Upload Tab -->
+      <div v-show="activeTab === 'upload'">
+        <div class="vrx-dropzone" :class="{ dragover: isDragging }" @dragover.prevent="isDragging = true"
+          @dragleave.prevent="isDragging = false" @drop.prevent="onDrop">
+          <div class="vrx-dropzone-icon"><i data-feather="upload-cloud" style="width:48px;height:48px"></i></div>
+          <h3>Drag &amp; Drop files here</h3>
+          <p>or click to browse — supports GLB, GLTF, OBJ, JPG, PNG, WebP (max 100MB)</p>
+          <input type="file" @change="onFileSelect" multiple
+            accept=".glb,.gltf,.obj,.fbx,.stl,.jpg,.jpeg,.png,.webp,.hdr,.gif,.svg,.bmp">
+        </div>
+      </div>
+
+      <!-- URL Tab -->
+      <div v-show="activeTab === 'url'">
+        <div class="vrx-card">
+          <div class="vrx-input-group">
+            <label>File URL</label>
+            <input class="vrx-input" v-model="importUrl" placeholder="https://example.com/model.glb" type="url">
+          </div>
+          <div class="vrx-input-group">
+            <label>Display Name (optional)</label>
+            <input class="vrx-input" v-model="importName" placeholder="My 3D Model">
+          </div>
+          <div class="vrx-input-group">
+            <label>Description (optional)</label>
+            <textarea class="vrx-input" v-model="importDesc" placeholder="Add description..." rows="2"></textarea>
+          </div>
+          <!-- URL 3D Preview -->
+          <div v-if="urlPreviewSupported" class="preview-section">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <label class="preview-label" style="margin-bottom:0"><i data-feather="box" style="width:14px;height:14px;vertical-align:-2px"></i> 3D Preview</label>
+              <button class="vrx-btn vrx-btn-sm" style="background:var(--vrx-accent);color:#fff" @click="previewUrl" :disabled="!importUrl">
+                <i data-feather="eye" style="width:14px;height:14px;vertical-align:-2px"></i> Preview
+              </button>
+            </div>
+            <div class="preview-canvas-wrap">
+              <div id="urlPreviewContainer" class="preview-canvas"></div>
+              <div v-if="urlPreviewLoading" class="preview-loading">
+                <div class="preview-spinner"></div>
+                <span>Loading model...</span>
+              </div>
+              <div v-if="urlPreviewError" class="preview-error">
+                <span><i data-feather="alert-triangle" style="width:14px;height:14px;vertical-align:-2px"></i> Cannot load model from this URL</span>
+              </div>
+              <div v-if="!urlPreviewActive" class="preview-placeholder">
+                <span><i data-feather="eye" style="width:24px;height:24px"></i></span>
+                <p>Enter a GLB/GLTF URL and click Preview</p>
+              </div>
+            </div>
+            <p v-if="urlPreviewActive" class="preview-hint"><i data-feather="move" style="width:14px;height:14px;vertical-align:-2px"></i> Drag to rotate</p>
+          </div>
+
+          <button class="vrx-btn vrx-btn-primary vrx-btn-block" @click="onImportUrl" :disabled="!importUrl || uploading">
+            <span v-if="uploading"><i data-feather="loader" style="width:14px;height:14px" class="spin"></i> Importing...</span>
+            <span v-else><i data-feather="link"></i> Import from URL</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Embed Tab -->
+      <div v-show="activeTab === 'embed'">
+        <div class="vrx-card">
+          <div class="vrx-input-group">
+            <label><i data-feather="clipboard" style="width:14px;height:14px;vertical-align:-2px"></i> Paste iframe Embed Code</label>
+            <textarea class="vrx-input embed-textarea" v-model="embedCode"
+              placeholder='<iframe title="Project 1" src="https://..." frameborder="0" allowfullscreen></iframe>'
+              rows="5"></textarea>
+          </div>
+          <!-- Live preview of parsed embed -->
+          <div v-if="embedParsed" class="embed-preview-section">
+            <label class="preview-label"><i data-feather="eye" style="width:14px;height:14px;vertical-align:-2px"></i> Preview</label>
+            <div class="embed-preview-frame">
+              <iframe :src="embedParsed.src" :title="embedParsed.title || 'Embed Preview'"
+                frameborder="0"
+                allow="autoplay; fullscreen"
+                style="width:100%;height:100%;border:none;"></iframe>
+            </div>
+            <div class="embed-parsed-info">
+              <div class="vrx-info-row">
+                <span class="vrx-info-label">Title</span>
+                <span class="vrx-info-value">{{ embedParsed.title || 'Untitled' }}</span>
+              </div>
+              <div class="vrx-info-row">
+                <span class="vrx-info-label">Source</span>
+                <span class="vrx-info-value embed-src-text">{{ embedParsed.src }}</span>
+              </div>
+            </div>
+          </div>
+          <!-- Name and description -->
+          <div class="vrx-input-group">
+            <label>Display Name (optional)</label>
+            <input class="vrx-input" v-model="embedName" placeholder="My 3D Embed">
+          </div>
+          <div class="vrx-input-group">
+            <label>Description (optional)</label>
+            <textarea class="vrx-input" v-model="embedDesc" placeholder="Add description..." rows="2"></textarea>
+          </div>
+          <button class="vrx-btn vrx-btn-primary vrx-btn-block" @click="onImportEmbed"
+            :disabled="!embedParsed || uploading">
+            <span v-if="uploading"><i data-feather="loader" style="width:14px;height:14px" class="spin"></i> Importing...</span>
+            <span v-else><i data-feather="monitor"></i> Import Embed</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- File Metadata Modal -->
+      <div class="vrx-modal-backdrop" :class="{ visible: showMetaModal }">
+        <div class="vrx-modal">
+          <h2><i data-feather="edit-3" style="width:20px;height:20px;vertical-align:-3px"></i> File Details</h2>
+          <div class="vrx-input-group">
+            <label>File Name</label>
+            <input class="vrx-input" v-model="pendingMeta.name">
+          </div>
+          <div class="vrx-input-group">
+            <label>Description</label>
+            <textarea class="vrx-input" v-model="pendingMeta.description"
+              placeholder="Add a description..."></textarea>
+          </div>
+          <div class="vrx-input-group">
+            <label>Category</label>
+            <div class="vrx-categories">
+              <button class="vrx-category-tag" :class="{ active: pendingMeta.category === 'model' }"
+                @click="pendingMeta.category = 'model'"><i data-feather="box" style="width:14px;height:14px;vertical-align:-2px"></i> 3D Model</button>
+              <button class="vrx-category-tag" :class="{ active: pendingMeta.category === 'panorama' }"
+                @click="pendingMeta.category = 'panorama'"><i data-feather="globe" style="width:14px;height:14px;vertical-align:-2px"></i> Panorama</button>
+              <button class="vrx-category-tag" :class="{ active: pendingMeta.category === 'image' }"
+                @click="pendingMeta.category = 'image'"><i data-feather="image" style="width:14px;height:14px;vertical-align:-2px"></i> Image</button>
+              <button class="vrx-category-tag" :class="{ active: pendingMeta.category === 'embed' }"
+                @click="pendingMeta.category = 'embed'"><i data-feather="monitor" style="width:14px;height:14px;vertical-align:-2px"></i> Embed</button>
+            </div>
+          </div>
+          <div class="file-meta-preview" v-if="pendingMeta.sizeFormatted">
+            <div class="vrx-info-row">
+              <span class="vrx-info-label">Size</span>
+              <span class="vrx-info-value">{{ pendingMeta.sizeFormatted }}</span>
+            </div>
+            <div class="vrx-info-row">
+              <span class="vrx-info-label">Type</span>
+              <span class="vrx-info-value">{{ pendingMeta.extension }}</span>
+            </div>
+            <div class="vrx-info-row">
+              <span class="vrx-info-label">Date</span>
+              <span class="vrx-info-value">{{ pendingMeta.uploadedAtFormatted }}</span>
+            </div>
+          </div>
+          <!-- 3D Preview -->
+          <div v-if="previewSupported" class="preview-section">
+            <label class="preview-label"><i data-feather="box" style="width:14px;height:14px;vertical-align:-2px"></i> 3D Preview</label>
+            <div class="preview-canvas-wrap">
+              <div id="modalPreviewContainer" class="preview-canvas"></div>
+              <div v-if="previewLoading" class="preview-loading">
+                <div class="preview-spinner"></div>
+                <span>Loading model...</span>
+              </div>
+              <div v-if="previewError" class="preview-error">
+                <span><i data-feather="alert-triangle" style="width:14px;height:14px;vertical-align:-2px"></i> Cannot preview this model</span>
+              </div>
+            </div>
+            <p class="preview-hint"><i data-feather="move" style="width:14px;height:14px;vertical-align:-2px"></i> Drag to rotate</p>
+          </div>
+
+          <div class="vrx-modal-actions">
+            <button class="vrx-btn vrx-btn-secondary" @click="cancelUpload" :disabled="uploading">Cancel</button>
+            <button class="vrx-btn vrx-btn-primary" @click="confirmUpload" :disabled="uploading">
+              <span v-if="uploading"><i data-feather="loader" style="width:14px;height:14px;vertical-align:-2px" class="spin"></i> Uploading...</span>
+              <span v-else><i data-feather="check" style="width:14px;height:14px;vertical-align:-2px"></i> Save &amp; Upload</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Filter -->
+      <div class="mt-3">
+        <div class="section-header">
+          <h2><i data-feather="archive" style="width:20px;height:20px;vertical-align:-3px"></i> File Library</h2>
+          <div class="search-box">
+            <input class="vrx-input" v-model="searchQuery" placeholder="Search files..." @input="onSearch">
+          </div>
+        </div>
+        <div class="vrx-categories mt-2">
+          <button class="vrx-category-tag" :class="{ active: filterCategory === 'all' }"
+            @click="setFilter('all')">All</button>
+          <button class="vrx-category-tag" :class="{ active: filterCategory === 'model' }"
+            @click="setFilter('model')"><i data-feather="box" style="width:14px;height:14px;vertical-align:-2px"></i> 3D Models</button>
+          <button class="vrx-category-tag" :class="{ active: filterCategory === 'panorama' }"
+            @click="setFilter('panorama')"><i data-feather="globe" style="width:14px;height:14px;vertical-align:-2px"></i> Panorama</button>
+          <button class="vrx-category-tag" :class="{ active: filterCategory === 'image' }"
+            @click="setFilter('image')"><i data-feather="image" style="width:14px;height:14px;vertical-align:-2px"></i> Images</button>
+          <button class="vrx-category-tag" :class="{ active: filterCategory === 'embed' }"
+            @click="setFilter('embed')"><i data-feather="monitor" style="width:14px;height:14px;vertical-align:-2px"></i> Embeds</button>
+        </div>
+      </div>
+
+      <!-- File Grid -->
+      <div class="vrx-file-grid" v-if="filteredFiles.length > 0">
+        <div class="vrx-file-item" v-for="file in filteredFiles" :key="file.id">
+          <div class="vrx-file-preview" @click="openViewer(file)">
+            <img v-if="file.thumbnail" :src="file.thumbnail" :alt="file.name">
+            <div v-else class="vrx-file-type-icon">
+              <span v-if="file.category === 'model'" v-html="featherIcon('box', 32)"></span>
+              <span v-else-if="file.category === 'panorama'" v-html="featherIcon('globe', 32)"></span>
+              <span v-else-if="file.category === 'embed'" v-html="featherIcon('monitor', 32)"></span>
+              <span v-else v-html="featherIcon('image', 32)"></span>
+            </div>
+            <span class="vrx-file-badge" :class="file.category">{{ file.category }}</span>
+          </div>
+          <div class="vrx-file-info">
+            <h4 :title="file.name">{{ file.name }}</h4>
+            <p v-if="file.description" class="file-desc">{{ file.description }}</p>
+            <div class="vrx-file-meta">
+              <span>{{ file.sizeFormatted }}</span>
+              <span>{{ file.uploadedAtFormatted }}</span>
+            </div>
+          </div>
+          <div class="vrx-file-actions">
+            <button class="vrx-btn vrx-btn-primary vrx-btn-sm" @click="openViewer(file)"><i data-feather="eye" style="width:14px;height:14px;vertical-align:-2px"></i> View</button>
+            <button v-if="file.category === 'model'" class="vrx-btn vrx-btn-sm"
+              style="background:var(--vrx-accent);color:#fff" @click="openQR(file)" title="QR / AR"><i data-feather="smartphone" style="width:14px;height:14px;vertical-align:-2px"></i> QR</button>
+            <button class="vrx-btn vrx-btn-secondary vrx-btn-sm" @click="editFile(file)"><i data-feather="edit-2" style="width:14px;height:14px"></i></button>
+            <button class="vrx-btn vrx-btn-danger vrx-btn-sm" @click="deleteFile(file)"><i data-feather="trash-2" style="width:14px;height:14px"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="vrx-empty" v-else>
+        <div class="vrx-empty-icon"><i data-feather="folder" style="width:48px;height:48px"></i></div>
+        <h3>No files yet</h3>
+        <p>Upload a file or import from URL to get started</p>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="vrx-toast-container">
+      <div v-for="toast in toasts" :key="toast.id" class="vrx-toast" :class="toast.type">
+        {{ toast.message }}
+      </div>
+    </div>
+  </div>
+
+  <script src="../../third_party/three.js"></script>
+  <script src="../../third_party/GLTFLoader.js"></script>
+  <script src="../../third_party/vue.min.js"></script>
+  <script type="module" src="upload.js"></script>
+</body>
+
+</html>

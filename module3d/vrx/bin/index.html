@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>VRX Studio — 3D &amp; Panorama Viewer</title>
+  <link rel="stylesheet" href="style/modern.css">
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>
+  <style>
+    .hero {
+      text-align: center;
+      padding: 60px 20px 40px;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #A29BFE, #00CEC9, #FD79A8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    .hero p {
+      color: var(--vrx-text-secondary);
+      font-size: 1.05rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+    }
+    .feature-card {
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 3px 3px 0 0;
+    }
+    .feature-card.card-model::before {
+      background: linear-gradient(90deg, #6C5CE7, #A29BFE);
+    }
+    .feature-card.card-panorama::before {
+      background: linear-gradient(90deg, #00CEC9, #74B9FF);
+    }
+    .feature-card.card-upload::before {
+      background: linear-gradient(90deg, #FD79A8, #FDCB6E);
+    }
+    .feature-card.card-ar::before {
+      background: linear-gradient(90deg, #E17055, #6C5CE7);
+    }
+    .feature-card.card-gallery::before {
+      background: linear-gradient(90deg, #A29BFE, #00CEC9);
+    }
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 20px;
+    }
+    .feature-list li {
+      padding: 4px 0;
+      font-size: 0.85rem;
+      color: var(--vrx-text-secondary);
+    }
+    .feature-list li::before {
+      content: '✓ ';
+      color: var(--vrx-success);
+      font-weight: bold;
+    }
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--vrx-text-muted);
+      font-size: 0.8rem;
+    }
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 1.8rem; }
+      .hero { padding: 40px 16px 24px; }
+      .cards-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="vrx-header">
+    <div class="vrx-logo">
+      <svg viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill="url(#g1)" />
+        <path d="M8 22L16 10L24 22H8Z" fill="white" opacity="0.9" />
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="32" y2="32">
+            <stop stop-color="#6C5CE7" />
+            <stop offset="1" stop-color="#00CEC9" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <span>VRX Studio</span>
+    </div>
+    <nav class="vrx-nav">
+      <a href="index.html" class="active">Home</a>
+      <a href="package_upload/upload/upload.html">Upload</a>
+      <a href="package_gallery/gallery/gallery.html">Gallery</a>
+      <a href="package_ar/qr/qr.html">QR / AR</a>
+    </nav>
+  </header>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="vrx-bottom-nav">
+    <a href="index.html" class="active"><i data-feather="home"></i><span>Home</span></a>
+    <a href="package_upload/upload/upload.html"><i data-feather="upload-cloud"></i><span>Upload</span></a>
+    <a href="package_gallery/gallery/gallery.html"><i data-feather="folder"></i><span>Gallery</span></a>
+    <a href="package_ar/qr/qr.html"><i data-feather="smartphone"></i><span>QR / AR</span></a>
+    <a href="package_scanner/scanner/scanner.html"><i data-feather="camera"></i><span>Scanner</span></a>
+  </nav>
+
+  <div class="vrx-container">
+    <!-- Hero Section -->
+    <div class="hero">
+      <h1>VRX Studio</h1>
+      <p>Experience immersive 3D models and 360° panoramas right in your browser. Upload, manage, and view with ease.</p>
+    </div>
+
+    <!-- Feature Cards -->
+    <div class="cards-grid">
+      <!-- 3D Viewer -->
+      <div class="vrx-card feature-card card-model">
+        <div class="vrx-card-icon model"><i data-feather="box"></i></div>
+        <h3>3D Model Viewer</h3>
+        <p>Load and interact with GLB/GLTF 3D models with real-time rendering.</p>
+        <ul class="feature-list">
+          <li>Touch &amp; mouse rotation</li>
+          <li>Device orientation control</li>
+          <li>Camera pass-through (AR)</li>
+          <li>Custom model upload</li>
+        </ul>
+        <a href="package_3d_viewer/camera/camera.html" class="vrx-btn vrx-btn-primary vrx-btn-block">
+          <i data-feather="box"></i> Open 3D Viewer
+        </a>
+      </div>
+
+      <!-- Panorama Viewer -->
+      <div class="vrx-card feature-card card-panorama">
+        <div class="vrx-card-icon panorama"><i data-feather="globe"></i></div>
+        <h3>Panorama Viewer</h3>
+        <p>View 360° panoramic images with full spherical projection.</p>
+        <ul class="feature-list">
+          <li>Pinch-to-zoom support</li>
+          <li>Mouse wheel zoom</li>
+          <li>Device orientation control</li>
+          <li>Custom panorama upload</li>
+        </ul>
+        <a href="package_panorama/photo/photo.html" class="vrx-btn vrx-btn-primary vrx-btn-block">
+          <i data-feather="globe"></i> Open Panorama Viewer
+        </a>
+      </div>
+
+      <!-- Upload & Manage -->
+      <div class="vrx-card feature-card card-upload">
+        <div class="vrx-card-icon upload"><i data-feather="upload-cloud"></i></div>
+        <h3>Upload &amp; Manage</h3>
+        <p>Upload files or import from URL with full metadata management.</p>
+        <ul class="feature-list">
+          <li>Drag &amp; drop upload</li>
+          <li>Import from URL</li>
+          <li>File categorization</li>
+          <li>Metadata &amp; descriptions</li>
+        </ul>
+        <a href="package_upload/upload/upload.html" class="vrx-btn vrx-btn-primary vrx-btn-block">
+          <i data-feather="upload-cloud"></i> Upload Files
+        </a>
+      </div>
+
+      <!-- QR / AR -->
+      <div class="vrx-card feature-card card-ar">
+        <div class="vrx-card-icon ar"><i data-feather="smartphone"></i></div>
+        <h3>QR Code &amp; AR</h3>
+        <p>Generate QR codes for your 3D models and view them in AR by scanning.</p>
+        <ul class="feature-list">
+          <li>QR code generation</li>
+          <li>AR 3D model viewing</li>
+          <li>Share via QR scan</li>
+          <li>Camera pass-through AR</li>
+        </ul>
+        <a href="package_ar/qr/qr.html" class="vrx-btn vrx-btn-primary vrx-btn-block">
+          <i data-feather="smartphone"></i> Open QR / AR
+        </a>
+      </div>
+
+      <!-- File Library / Gallery -->
+      <div class="vrx-card feature-card card-gallery">
+        <div class="vrx-card-icon gallery"><i data-feather="folder"></i></div>
+        <h3>File Library</h3>
+        <p>Browse all your uploaded assets with multiple view modes and inline preview.</p>
+        <ul class="feature-list">
+          <li>Grid, masonry &amp; list views</li>
+          <li>Search, filter &amp; sort</li>
+          <li>Inline 3D &amp; image preview</li>
+          <li>Detail lightbox panel</li>
+        </ul>
+        <a href="package_gallery/gallery/gallery.html" class="vrx-btn vrx-btn-primary vrx-btn-block">
+          <i data-feather="folder"></i> Open Gallery
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      VRX Studio — Built with Three.js &amp; Vue.js
+    </div>
+  </div>
+  <script>document.addEventListener('DOMContentLoaded', function() { feather.replace(); });</script>
+</body>
+
+</html>

@@ -1,0 +1,223 @@
+# ============================================================================
+# .htaccess Configuration for LOCALHOST TESTING ONLY
+# Use this when testing on local XAMPP (http://localhost/v1)
+# 
+# FOR PRODUCTION VPS: Use the main .htaccess without HTTPS redirect
+# ============================================================================
+
+# Enable rewrite engine
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Set base directory for rewrites
+    RewriteBase /v1/
+    
+    # ════════════════════════════════════════════════════════════
+    # LOCALHOST HTTPS HANDLING
+    # Only redirect if NOT already on HTTPS and NOT localhost/127.0.0.1
+    # ════════════════════════════════════════════════════════════
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP_HOST} !^localhost [NC]
+    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1 [NC]
+    RewriteCond %{HTTP_HOST} !^192\.168 [NC]
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    
+    # ════════════════════════════════════════════════════════════
+    # SECURITY - Block sensitive files & directories
+    # ════════════════════════════════════════════════════════════
+    
+    # Prevent direct access to sensitive files
+    RewriteRule ^\.env$ - [F,L]
+    RewriteRule ^\.env\.example$ - [F,L]
+    RewriteRule ^\.htaccess$ - [F,L]
+    RewriteRule ^\.git/ - [F,L]
+    RewriteRule ^composer\.json$ - [F,L]
+    RewriteRule ^composer\.lock$ - [F,L]
+    RewriteRule ^vendor/ - [F,L]
+    RewriteRule ^\.gitignore$ - [F,L]
+    
+    # Protect sensitive directories
+    RewriteRule ^logs/ - [F,L]
+    RewriteRule ^sql/ - [F,L]
+    RewriteRule ^data/ - [F,L]
+    RewriteRule ^ref_data/ - [F,L]
+    RewriteRule ^includes/ - [F,L]
+    
+    # Block access to backup and debug files
+    RewriteRule ^debug_.*\.php$ - [F,L]
+    RewriteRule ^test_.*\.php$ - [F,L]
+    RewriteRule ^.*_backup\.php$ - [F,L]
+    RewriteRule ^.*\.bak$ - [F,L]
+    RewriteRule ^.*\.tmp$ - [F,L]
+    
+    # ════════════════════════════════════════════════════════════
+    # ROUTING - Direct to index.php for SPA-like behavior
+    # ════════════════════════════════════════════════════════════
+    
+    # Skip if it's a real directory
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Skip if it's a real file
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+    
+    # Skip if it's a symbolic link
+    RewriteCond %{REQUEST_FILENAME} -l
+    RewriteRule ^ - [L]
+    
+    # Handle API requests (api/*.php files)
+    RewriteRule ^api/([a-z_]+)/?$ api/$1.php [QSA,L]
+    
+    # Handle page requests (pages/*.php files)
+    RewriteRule ^pages/([a-z_-]+)/?$ pages/$1.php [QSA,L]
+    
+    # Handle module3d requests
+    RewriteRule ^module3d/(.*)$ module3d/$1 [QSA,L]
+    
+    # Handle AR module requests
+    RewriteRule ^ar/([a-z_]+)/?$ ar/$1.php [QSA,L]
+    
+    # Route everything else to index.php (main entry point)
+    RewriteRule ^(.+)$ index.php [QSA,L]
+</IfModule>
+
+# ════════════════════════════════════════════════════════════
+# APACHE MODULE CONFIGURATIONS
+# ════════════════════════════════════════════════════════════
+
+# Enable compression for text-based files
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/x-httpd-php
+    AddOutputFilterByType DEFLATE image/svg+xml
+    
+    # Don't compress images or files already compressed
+    SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|woff|woff2|gz)$ no-gzip
+</IfModule>
+
+# Add cache control headers for better performance
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 2 days"
+    
+    # Cache images
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    
+    # Cache CSS and JavaScript
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType text/javascript "access plus 1 year"
+    ExpiresByType application/x-javascript "access plus 1 year"
+    
+    # Cache fonts
+    ExpiresByType font/truetype "access plus 1 year"
+    ExpiresByType font/opentype "access plus 1 year"
+    ExpiresByType application/x-font-woff "access plus 1 year"
+    ExpiresByType application/x-font-woff2 "access plus 1 year"
+    
+    # Don't cache HTML, XML, JSON (dynamic content)
+    ExpiresByType text/html "access plus 2 hours"
+    ExpiresByType application/json "access plus 0 seconds"
+    ExpiresByType application/xml "access plus 0 seconds"
+</IfModule>
+
+# Add headers for caching and performance
+<IfModule mod_headers.c>
+    # Cache control - public assets
+    Header set Cache-Control "public, max-age=31536000, immutable"
+    <FilesMatch "\.(jpg|jpeg|png|gif|ico|css|js|woff|woff2|eot|ttf|svg|pdf|doc|docx|zip|rar|wav|mp3|mp4)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    
+    # PHP files should not be cached
+    <FilesMatch "\.php$">
+        Header set Cache-Control "private, no-store, no-cache, must-revalidate, max-age=0"
+    </FilesMatch>
+    
+    # Security headers
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Remove server identification
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
+</IfModule>
+
+# ════════════════════════════════════════════════════════════
+# CHARACTER ENCODING
+# ════════════════════════════════════════════════════════════
+AddDefaultCharset utf-8
+AddCharset UTF-8 .html .css .js .json .php .xml
+
+# ════════════════════════════════════════════════════════════
+# DISABLE DIRECTORY LISTING
+# ════════════════════════════════════════════════════════════
+Options -Indexes
+
+# ════════════════════════════════════════════════════════════
+# MIME TYPES
+# ════════════════════════════════════════════════════════════
+<IfModule mod_mime.c>
+    AddType application/x-httpd-php .php
+    AddType application/json .json
+    AddType font/ttf .ttf
+    AddType font/otf .otf
+    AddType application/x-font-woff .woff
+    AddType application/x-font-woff2 .woff2
+    AddType image/webp .webp
+    AddType model/gltf-binary .glb
+    AddType model/usdz+zip .usdz
+</IfModule>
+
+# ════════════════════════════════════════════════════════════
+# PREVENT HOTLINKING
+# ════════════════════════════════════════════════════════════
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_FILENAME} \.(jpg|jpeg|png|gif|css|js|pdf|swf|flv|woff|woff2)$
+    RewriteCond %{HTTP_REFERER} !^$
+    RewriteCond %{HTTP_REFERER} !^https?://ohm044\.xyz [NC]
+    RewriteCond %{HTTP_REFERER} !^https?://www\.ohm044\.xyz [NC]
+    RewriteCond %{HTTP_REFERER} !^https?://localhost [NC]
+    RewriteCond %{HTTP_REFERER} !^https?://127\.0\.0\.1 [NC]
+    RewriteCond %{HTTP_REFERER} !^https?://192\.168 [NC]
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+# ════════════════════════════════════════════════════════════
+# DENY ACCESS TO SPECIFIC EXTENSIONS
+# ════════════════════════════════════════════════════════════
+<FilesMatch "\.(env|env\.example|sql|txt|md|bak|log|tmp|ini|cfg|conf|yml|yaml)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# ════════════════════════════════════════════════════════════
+# UPLOAD PROTECTION
+# ════════════════════════════════════════════════════════════
+<IfModule mod_rewrite.c>
+    # Block PHP execution in uploads directory
+    RewriteCond %{REQUEST_URI} ^/v1/assets/uploads/
+    RewriteCond %{REQUEST_FILENAME} \.(php|php3|php4|php5|php6|php7|php8|phtml|pht|phps|shtml)$
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+# ════════════════════════════════════════════════════════════
+# END OF .htaccess CONFIGURATION FOR LOCALHOST
+# ════════════════════════════════════════════════════════════
