@@ -29,7 +29,21 @@ echo [INFO] Remote :
 "!GIT_EXE!" remote get-url origin 2>nul || echo   (no remote)
 echo.
 
-:: -- Show changed files ---------------------
+:: -- Stage -----------------------------------
+echo [INFO] Staging source files...
+"!GIT_EXE!" add --all
+
+echo [INFO] Staging backups/...
+"!GIT_EXE!" add -f backups/
+
+echo [INFO] Staging assets/...
+"!GIT_EXE!" add -f assets/
+
+echo [INFO] Staging .env...
+if exist ".env" "!GIT_EXE!" add -f .env
+
+:: -- Show what will be committed -------------
+echo.
 echo Changed files:
 "!GIT_EXE!" status --short
 echo.
@@ -51,10 +65,6 @@ if "!MSG!"=="" (
 echo.
 echo [INFO] Message : !MSG!
 echo.
-
-:: -- Stage all -------------------------------
-echo [INFO] Staging all changes...
-"!GIT_EXE!" add --all
 
 :: -- Commit -----------------------------------
 echo [INFO] Committing...
