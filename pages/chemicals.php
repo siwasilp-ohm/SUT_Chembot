@@ -320,6 +320,23 @@ Layout::head('ข้อมูลสารเคมี Master');
 .cm-tag-sds{background:#eff6ff;color:#3b82f6}
 .cm-card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;font-size:12px;color:#aaa}
 .cm-card-footer .cm-badges{display:flex;gap:6px}
+.cm-card-del{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:8px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.18);color:#dc2626;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;opacity:0;transition:opacity .15s,background .12s;z-index:5}
+.cm-card:hover .cm-card-del{opacity:1}
+.cm-card-del:hover{background:rgba(220,38,38,.15)!important}
+.cm-del-confirm{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);backdrop-filter:blur(2px)}
+.cm-del-box{background:#fff;border-radius:16px;padding:28px 28px 22px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2);text-align:center}
+.cm-del-ic{width:56px;height:56px;border-radius:50%;background:#fef2f2;display:flex;align-items:center;justify-content:center;font-size:22px;color:#dc2626;margin:0 auto 14px}
+.cm-del-title{font-size:16px;font-weight:700;color:#111;margin-bottom:6px}
+.cm-del-sub{font-size:13px;color:#666;margin-bottom:20px;line-height:1.5}
+.cm-del-name{font-weight:600;color:#dc2626}
+.cm-del-acts{display:flex;gap:10px;justify-content:center}
+.cm-del-btn-cancel{padding:9px 22px;border:1.5px solid #e5e7eb;border-radius:10px;background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
+.cm-del-btn-cancel:hover{border-color:#9ca3af}
+.cm-del-btn-ok{padding:9px 22px;border:none;border-radius:10px;background:#dc2626;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all .12s}
+.cm-del-btn-ok:hover{background:#b91c1c}
+.cm-del-btn-ok:disabled{background:#f87171;cursor:not-allowed}
+.cm-tbl-del{padding:4px 8px;border:1px solid rgba(220,38,38,.25);border-radius:7px;background:rgba(220,38,38,.06);color:#dc2626;font-size:11px;cursor:pointer;transition:all .12s;white-space:nowrap;font-family:inherit}
+.cm-tbl-del:hover{background:#dc2626;color:#fff;border-color:#dc2626}
 
 /* Card inline 3D preview */
 .cm-card-3d{position:relative;width:100%;height:120px;border-radius:10px;overflow:hidden;margin-top:10px;background:linear-gradient(135deg,#0f0f1a 0%,#1a1a3a 60%,#1e1b3a 100%);cursor:pointer;transition:all .25s}
@@ -952,6 +969,7 @@ function render() {
             <div style="overflow-x:auto"><table class="cm-table" id="chemTable">
             <thead><tr id="chemTableHead">
                 ${visibleCols.map(col => renderTh(col)).join('')}
+                ${IS_ADMIN ? '<th style="width:52px;text-align:center;color:#dc2626;font-size:11px"></th>' : ''}
             </tr></thead>
             <tbody>${chemicals.map((c,i) => renderRow(c, (page-1)*perPage+i+1)).join('')}</tbody>
         </table></div></div>`;
@@ -1041,10 +1059,10 @@ function renderCard(c) {
     const stateTag = {solid:'cm-tag-solid',liquid:'cm-tag-liquid',gas:'cm-tag-gas'}[c.physical_state]||'';
     const pics = parseJson(c.hazard_pictograms);
 
-    return `<div class="ci-card cm-card" onclick="showDetail(${c.id})">
+    return `<div class="ci-card cm-card" onclick="showDetail(${c.id})" style="position:relative">
         <div class="ci-card-body">
             <div class="cm-card-top">
-                ${c.molecular_formula && c.molecular_formula !== 'N/A' ? `<div class="cm-card-struct"><div class="cm-card-formula-inner">${miniFormula(c.molecular_formula)}</div></div>` 
+                ${c.molecular_formula && c.molecular_formula !== 'N/A' ? `<div class="cm-card-struct"><div class="cm-card-formula-inner">${miniFormula(c.molecular_formula)}</div></div>`
                              : `<div class="cm-card-icon" style="background:${stateBg};color:${stateColor}"><i class="fas ${stateIcon}"></i></div>`}
                 <div style="flex:1;min-width:0">
                     <div class="cm-card-name">${esc(c.name)}</div>
@@ -1091,7 +1109,8 @@ function renderRow(c, idx) {
         containers: `<td style="text-align:center">${c.container_count>0?`<span style="font-size:12px;font-weight:600;color:#7c3aed">${c.container_count}</span>`:'<span style="color:#ddd">—</span>'}</td>`,
         date: `<td style="font-size:12px;color:#888">${formatDate(c.created_at)}</td>`,
     };
-    return `<tr onclick="showDetail(${c.id})">${visibleCols.map(col => cellMap[col.key]||'<td>—</td>').join('')}</tr>`;
+    const delCell = IS_ADMIN ? `<td onclick="event.stopPropagation()" style="text-align:center"><button class="cm-tbl-del" onclick="deleteChemical(${c.id},'${esc(c.name).replace(/'/g,"\\'")}',${c.container_count||0})">ลบ</button></td>` : '';
+    return `<tr onclick="showDetail(${c.id})">${visibleCols.map(col => cellMap[col.key]||'<td>—</td>').join('')}${delCell}</tr>`;
 }
 
 // ═══════ Detail View ═══════
@@ -1148,10 +1167,11 @@ function renderDetail(c) {
             ${infoItem('Verified', c.verified ? '<i class="fas fa-check-circle" style="color:#22c55e"></i> Yes' : '<i class="fas fa-times-circle" style="color:#ccc"></i> No')}
         </div>
         ${c.description ? `<div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f0"><div class="cm-info-label">คำอธิบาย</div><p style="font-size:13px;color:#555;margin-top:4px">${esc(c.description)}</p></div>` : ''}
-        ${IS_MANAGER ? `<div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f0;display:flex;gap:8px;flex-wrap:wrap">
+        ${IS_MANAGER ? `<div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f0;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <button onclick="editChemical(${c.id})" class="ci-btn ci-btn-sm ci-btn-primary"><i class="fas fa-edit"></i> แก้ไขข้อมูล</button>
             <button onclick="showGhsEditor(${c.id})" class="ci-btn ci-btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca"><i class="fas fa-exclamation-triangle"></i> GHS Data</button>
             <button onclick="showUpload(${c.id})" class="ci-btn ci-btn-sm" style="background:#eff6ff;color:#3b82f6;border:1px solid #bfdbfe"><i class="fas fa-upload"></i> Upload File</button>
+            ${IS_ADMIN ? `<button onclick="closeDetail();deleteChemical(${c.id},'${esc(c.name).replace(/'/g,"\\'")}',${(c.containers||[]).length})" class="ci-btn ci-btn-sm" style="margin-left:auto;background:#fef2f2;color:#dc2626;border:1px solid #fecaca">ลบสาร</button>` : ''}
         </div>` : `<div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f0">
             <button onclick="showUpload(${c.id})" class="ci-btn ci-btn-sm" style="background:#eff6ff;color:#3b82f6;border:1px solid #bfdbfe"><i class="fas fa-upload"></i> Upload File</button>
         </div>`}
@@ -3267,6 +3287,48 @@ async function submitEditFile(e, fileId, chemId) {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
         showToast(err.message, 'error');
+    }
+}
+
+// ═══════ Delete Chemical (Admin only) ═══════
+function deleteChemical(id, name, containerCount) {
+    if (!IS_ADMIN) return;
+    const hasContainers = (containerCount || 0) > 0;
+    const overlay = document.createElement('div');
+    overlay.className = 'cm-del-confirm';
+    overlay.id = 'delConfirm';
+    overlay.innerHTML = `
+        <div class="cm-del-box">
+            <div class="cm-del-ic">!</div>
+            <div class="cm-del-title">ยืนยันการลบสาร</div>
+            <div class="cm-del-sub">
+                <span class="cm-del-name">${esc(name)}</span><br>
+                ${hasContainers
+                    ? `<span style="color:#dc2626;font-size:12px"><i class="fas fa-exclamation-triangle"></i> มี ${containerCount} ภาชนะในคลัง — ไม่สามารถลบได้</span>`
+                    : 'รายการนี้จะถูกปิดใช้งาน และไม่แสดงในระบบอีกต่อไป'}
+            </div>
+            <div class="cm-del-acts">
+                <button class="cm-del-btn-cancel" onclick="document.getElementById('delConfirm').remove()">ยกเลิก</button>
+                ${hasContainers ? '' : `<button class="cm-del-btn-ok" id="delConfirmOk" onclick="execDeleteChemical(${id})">ลบสาร</button>`}
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
+
+async function execDeleteChemical(id) {
+    const btn = document.getElementById('delConfirmOk');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังลบ...'; }
+    try {
+        const res = await apiFetch(`/v1/api/chemicals.php?action=chemical&id=${id}`, { method: 'DELETE' });
+        if (!res.success) throw new Error(res.error || 'ลบไม่สำเร็จ');
+        document.getElementById('delConfirm')?.remove();
+        showToast('ลบสารเคมีเรียบร้อยแล้ว', 'success');
+        loadChemicals();
+        loadStats();
+    } catch(e) {
+        document.getElementById('delConfirm')?.remove();
+        showToast(e.message, 'error');
     }
 }
 

@@ -45,6 +45,7 @@ try {
             case 'timeline':        echo json_encode(['success'=>true,'data'=>getTimeline($_GET)]); break;
             case 'search_items':    echo json_encode(['success'=>true,'data'=>searchItems($_GET, $user)]); break;
             case 'search_users':    echo json_encode(['success'=>true,'data'=>searchUsers($_GET)]); break;
+            case 'list_users':      echo json_encode(['success'=>true,'data'=>listUsers()]); break;
             case 'scan_barcode':    echo json_encode(['success'=>true,'data'=>scanBarcode($_GET, $user)]); break;
             case 'disposal_bin':    echo json_encode(['success'=>true,'data'=>listDisposalBin($_GET, $user)]); break;
             case 'disposal_report': echo json_encode(['success'=>true,'data'=>disposalReport($_GET, $user)]); break;
@@ -69,6 +70,7 @@ try {
                 break;
             case 'approve':          echo json_encode(['success'=>true,'data'=>approveTxn($data, $user)]); break;
             case 'reject':           echo json_encode(['success'=>true,'data'=>rejectTxn($data, $user)]); break;
+            case 'cancel_borrow':    echo json_encode(['success'=>true,'data'=>cancelBorrow($data, $user)]); break;
             case 'disposal_complete':
                 if (!$isAdmin) throw new Exception('Permission denied', 403);
                 echo json_encode(['success'=>true,'data'=>disposalComplete($data, $user)]);
@@ -735,6 +737,14 @@ function searchItems(array $filters, array $user): array {
     return $results;
 }
 
+function listUsers(): array {
+    return Database::fetchAll("
+        SELECT id, username, first_name, last_name, department, avatar_url,
+               CONCAT(first_name,' ',last_name) as display_name
+        FROM users WHERE is_active = 1
+        ORDER BY first_name, last_name LIMIT 100");
+}
+
 function searchUsers(array $filters): array {
     $q = trim($filters['q'] ?? '');
     if (strlen($q) < 1) return [];
@@ -1307,6 +1317,51 @@ function approveTxn(array $data, array $user): array {
         }
     }
     return ['txn_id'=>$txnId, 'status'=>'completed'];
+}
+
+function cancelBorrow(array $data, array $user): array {
+    $txnId = (int)($data['txn_id'] ?? 0);
+    if (!$txnId) throw new Exception('txn_id required');
+
+    $txn = Database::fetch("SELECT * FROM chemical_transactions WHERE id = :id AND status='pending'", [':id' => $txnId]);
+    if (!$txn) throw new Exception('ไม่พบรายการ หรือรายการนี้ไม่อยู่ในสถานะรอดำเนินการ');
+    if ($txn['txn_type'] !== 'borrow') throw new Exception('สามารถยกเลิกได้เฉพาะรายการยืมเท่านั้น');
+
+    $currentUserId = (int)$user['id'];
+    $borrowerId    = (int)($txn['initiated_by'] ?? $txn['to_user_id'] ?? 0);
+    $roleLevel     = (int)($user['role_level'] ?? $user['level'] ?? 0);
+
+    if ($borrowerId !== $currentUserId && $roleLevel < 5) {
+        throw new Exception('คุณไม่มีสิทธิ์ยกเลิกรายการนี้');
+    }
+
+    Database::update('chemical_transactions', [
+        'status'      => 'cancelled',
+        'approved_by' => $currentUserId,
+        'approved_at' => date('Y-m-d H:i:s'),
+    ], 'id = :id', [':id' => $txnId]);
+
+    // Notify the chemical owner
+    $ownerId  = (int)$txn['from_user_id'];
+    $src      = getSourceInfo($txn['source_type'], (int)$txn['source_id']);
+    $chemName = $src['chemical_name'] ?? 'สารเคมี';
+    $actor    = trim(($user['full_name_th'] ?? '') ?: (($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''))) ?: 'ผู้ใช้';
+    if ($ownerId && $ownerId !== $currentUserId) {
+        try {
+            notifyAlert([
+                'alert_type'        => 'borrow_request',
+                'severity'          => 'info',
+                'title'             => 'ยกเลิกคำขอยืมสาร',
+                'message'           => "{$chemName} {$txn['quantity']} {$txn['unit']} — {$actor} ยกเลิกคำขอยืม",
+                'user_id'           => $ownerId,
+                'chemical_id'       => (int)($txn['chemical_id'] ?? 0),
+                'borrow_request_id' => $txnId,
+                'action_required'   => 0,
+            ]);
+        } catch (\Throwable $e) { /* non-fatal */ }
+    }
+
+    return ['txn_id' => $txnId, 'status' => 'cancelled'];
 }
 
 function rejectTxn(array $data, array $user): array {

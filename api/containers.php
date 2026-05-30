@@ -305,6 +305,7 @@ function listContainers(array $params, array $user): array {
             ch.name as chemical_name, ch.cas_number, ch.hazard_pictograms, ch.molecular_formula,
             ch.signal_word,
             CONCAT(u.first_name,' ',u.last_name) as owner_name, cn.owner_id as owner_uid,
+            u.avatar_url as owner_avatar_url,
             l.name as lab_name, m.name as manufacturer_name,
             b.name as building_name, COALESCE(b.shortname, b.name) as building_short,
             rm.name as room_name, rm.code as room_code,
@@ -333,6 +334,7 @@ function listContainers(array $params, array $user): array {
             ch2.signal_word,
             COALESCE(CONCAT(u2.first_name,' ',u2.last_name), s.owner_name) as owner_name,
             s.owner_user_id as owner_uid,
+            u2.avatar_url as owner_avatar_url,
             NULL as lab_name, NULL as manufacturer_name,
             NULL as building_name, NULL as building_short,
             NULL as room_name, NULL as room_code,
@@ -380,6 +382,22 @@ function listContainers(array $params, array $user): array {
         }
     } catch (\Throwable $e) { /* non-fatal */ }
 
+    // ── Pending borrow-by-me lookup ──
+    $borrowedByMeMap = [];
+    $uid = (int)$user['id'];
+    try {
+        if ($cnIds) {
+            $in = implode(',', array_map('intval', $cnIds));
+            foreach (Database::fetchAll("SELECT source_id FROM chemical_transactions WHERE txn_type='borrow' AND status='pending' AND initiated_by={$uid} AND source_type='container' AND source_id IN ({$in})") as $br)
+                $borrowedByMeMap['container_'.$br['source_id']] = true;
+        }
+        if ($csIds) {
+            $in = implode(',', array_map('intval', $csIds));
+            foreach (Database::fetchAll("SELECT source_id FROM chemical_transactions WHERE txn_type='borrow' AND status='pending' AND initiated_by={$uid} AND source_type='stock' AND source_id IN ({$in})") as $br)
+                $borrowedByMeMap['stock_'.$br['source_id']] = true;
+        }
+    } catch (\Throwable $e) { /* non-fatal */ }
+
     foreach ($data as &$row) {
         $row['hazard_pictograms'] = json_decode($row['hazard_pictograms'] ?? '[]', true);
         $row['is_mine'] = ((int)($row['owner_uid'] ?? 0) === (int)$user['id']);
@@ -389,6 +407,9 @@ function listContainers(array $params, array $user): array {
         $row['pending_transfer_id'] = $pt ? (int)$pt['id']          : null;
         $row['pending_transfer_by'] = $pt ? (int)$pt['initiated_by'] : null;
         $row['pending_transfer_to'] = $pt ? (int)$pt['to_user_id']   : null;
+
+        // Stamp pending borrow by current user
+        $row['pending_borrow_by_me'] = isset($borrowedByMeMap[$row['source'].'_'.abs((int)$row['id'])]);
 
         if ($row['source'] === 'container') {
             $row['has_3d'] = !empty($row['container_3d_model']) || has3DModel($row['container_type'], $row['container_material']);
@@ -539,7 +560,8 @@ function getStockDetail(int $stockId, array $user): array {
         "SELECT s.*, ch.name as linked_name, ch.cas_number as linked_cas,
                 ch.molecular_formula, ch.molecular_weight, ch.hazard_pictograms,
                 ch.signal_word, ch.ghs_classifications, ch.sds_url, ch.physical_state,
-                CONCAT(u.first_name,' ',u.last_name) as resolved_owner_name
+                CONCAT(u.first_name,' ',u.last_name) as resolved_owner_name,
+                u.avatar_url as owner_avatar_url
          FROM chemical_stock s
          LEFT JOIN chemicals ch ON s.chemical_id = ch.id
          LEFT JOIN users u ON s.owner_user_id = u.id
@@ -580,6 +602,7 @@ function getStockDetail(int $stockId, array $user): array {
         'physical_state'       => $s['physical_state'],
         'owner_name'           => $s['resolved_owner_name'] ?: $s['owner_name'],
         'owner_uid'            => $s['owner_user_id'],
+        'owner_avatar_url'     => $s['owner_avatar_url'] ?? null,
         'lab_name'             => null,
         'manufacturer_name'    => null,
         'building_name'        => null,
@@ -618,6 +641,7 @@ function getContainerDetails(int $id, array $user): array {
                 ch.molecular_weight, ch.hazard_pictograms, ch.signal_word, ch.ghs_classifications,
                 ch.sds_url, ch.physical_state,
                 CONCAT(u.first_name,' ',u.last_name) as owner_name,
+                u.avatar_url as owner_avatar_url,
                 l.name as lab_name, m.name as manufacturer_name,
                 b.name as building_name, b.shortname as building_short,
                 rm.name as room_name, rm.code as room_code,

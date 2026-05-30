@@ -29,45 +29,41 @@ Layout::head($TH ? 'คลังสารเคมี — Lab Store' : 'Lab Stor
     --ls-danger: #dc2626;
     --ls-radius: 16px;
     --ls-shadow: 0 4px 24px rgba(0,0,0,.06);
+    --ls-r: 14px;
+    --ls-rs: 10px;
+    --ls-sh: 0 1px 6px rgba(0,0,0,.06);
+    --ls-shm: 0 4px 20px rgba(0,0,0,.08);
 }
 
 /* ============ KPI Cards ============ */
-.ls-kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:24px}
-.ls-kpi{background:#fff;border-radius:var(--ls-radius);padding:20px 18px;box-shadow:var(--ls-shadow);position:relative;overflow:hidden;transition:all .2s}
-.ls-kpi:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.1)}
-.ls-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--ls-radius) var(--ls-radius) 0 0}
-.ls-kpi.c1::before{background:linear-gradient(90deg,#6C5CE7,#a855f7)}
-.ls-kpi.c2::before{background:linear-gradient(90deg,#2563eb,#38bdf8)}
-.ls-kpi.c3::before{background:linear-gradient(90deg,#059669,#34d399)}
-.ls-kpi.c4::before{background:linear-gradient(90deg,#d97706,#fbbf24)}
-.ls-kpi.c5::before{background:linear-gradient(90deg,#dc2626,#f87171)}
-.ls-kpi-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px}
-.ls-kpi.c1 .ls-kpi-icon{background:rgba(108,92,231,.1);color:#6C5CE7}
-.ls-kpi.c2 .ls-kpi-icon{background:rgba(37,99,235,.1);color:#2563eb}
-.ls-kpi.c3 .ls-kpi-icon{background:rgba(5,150,105,.1);color:#059669}
-.ls-kpi.c4 .ls-kpi-icon{background:rgba(217,119,6,.1);color:#d97706}
-.ls-kpi.c5 .ls-kpi-icon{background:rgba(220,38,38,.1);color:#dc2626}
-.ls-kpi-value{font-size:28px;font-weight:800;letter-spacing:-1px;color:#1a1a2e;line-height:1}
-.ls-kpi-label{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.ls-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+.ls-kpi{background:#fff;border-radius:var(--ls-rs);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--ls-sh);border:1px solid var(--border);transition:all .15s;position:relative;overflow:hidden}
+.ls-kpi:hover{transform:translateY(-2px);box-shadow:var(--ls-shm)}
+.ls-kpi:active{transform:translateY(-1px)}
+.ls-kpi::before{content:'';position:absolute;top:0;right:0;width:48px;height:48px;border-radius:0 10px 0 48px;opacity:.04;background:currentColor}
+.ls-kpi-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ls-kpi-text{flex:1;min-width:0}
+.ls-kpi-value{font-size:20px;font-weight:800;color:var(--c1);line-height:1}
+.ls-kpi-label{font-size:10px;color:var(--c3);margin-top:2px;text-transform:uppercase;letter-spacing:.3px}
 
 /* ============ Breadcrumb ============ */
-.ls-breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:18px;padding:10px 16px;background:#fff;border-radius:12px;box-shadow:var(--ls-shadow);flex-wrap:wrap}
+.ls-breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:18px;padding:10px 16px;background:#fff;border-radius:var(--ls-rs);box-shadow:var(--ls-sh);border:1px solid var(--border);flex-wrap:wrap}
 .ls-bc-item{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#888;cursor:pointer;padding:4px 10px;border-radius:8px;transition:all .15s;white-space:nowrap}
 .ls-bc-item:hover{background:var(--ls-primary-light);color:var(--ls-primary)}
 .ls-bc-item.active{background:var(--ls-primary);color:#fff;cursor:default}
 .ls-bc-sep{font-size:8px;color:#ccc}
 
 /* ============ Tab Bar ============ */
-.ls-tabs{display:flex;gap:4px;margin-bottom:20px;padding:4px;background:#f1f5f9;border-radius:14px}
-.ls-tab{flex:1;padding:10px 8px;font-size:12px;font-weight:700;text-align:center;border:none;border-radius:10px;cursor:pointer;background:transparent;color:#888;transition:all .2s;white-space:nowrap}
-.ls-tab:hover{color:#333}
-.ls-tab.active{background:#fff;color:var(--ls-primary);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.ls-tabs{display:inline-flex;background:#f1f5f9;border-radius:var(--ls-rs);padding:3px;margin-bottom:20px}
+.ls-tab{padding:8px 20px;font-size:12px;font-weight:600;color:var(--c3);border-radius:8px;cursor:pointer;border:none;background:none;font-family:inherit;transition:all .15s;flex:none;white-space:nowrap}
+.ls-tab:hover{color:var(--c1)}
+.ls-tab.active{background:#fff;color:var(--ls-primary);box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .ls-tab i{margin-right:4px}
 
 /* ============ Drill-Down Cards ============ */
 .ls-drill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:24px}
-.ls-drill-card{background:#fff;border-radius:var(--ls-radius);box-shadow:var(--ls-shadow);overflow:hidden;transition:all .2s;cursor:pointer;border:2px solid transparent;position:relative}
-.ls-drill-card:hover{border-color:var(--ls-primary);box-shadow:0 8px 32px rgba(108,92,231,.12);transform:translateY(-2px)}
+.ls-drill-card{background:#fff;border-radius:var(--ls-r);box-shadow:var(--ls-sh);border:1px solid var(--border);overflow:hidden;transition:all .2s;cursor:pointer;position:relative}
+.ls-drill-card:hover{border-color:var(--ls-primary);box-shadow:var(--ls-shm);transform:translateY(-2px)}
 .dc-header{padding:16px 18px;display:flex;align-items:center;gap:12px}
 .dc-icon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 .dc-info{flex:1;min-width:0}
@@ -84,8 +80,8 @@ Layout::head($TH ? 'คลังสารเคมี — Lab Store' : 'Lab Stor
 
 /* ============ Holder Cards ============ */
 .ls-holder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin-bottom:24px}
-.ls-holder-card{background:#fff;border-radius:var(--ls-radius);box-shadow:var(--ls-shadow);overflow:hidden;transition:all .2s;cursor:pointer;border:2px solid transparent}
-.ls-holder-card:hover{border-color:#2563eb;box-shadow:0 8px 32px rgba(37,99,235,.12);transform:translateY(-2px)}
+.ls-holder-card{background:#fff;border-radius:var(--ls-r);box-shadow:var(--ls-sh);border:1px solid var(--border);overflow:hidden;transition:all .2s;cursor:pointer}
+.ls-holder-card:hover{border-color:#2563eb;box-shadow:var(--ls-shm);transform:translateY(-2px)}
 .ls-holder-header{padding:16px 18px;display:flex;align-items:center;gap:12px}
 .ls-holder-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;text-transform:uppercase}
 .ls-holder-info{flex:1;min-width:0}
@@ -99,13 +95,13 @@ Layout::head($TH ? 'คลังสารเคมี — Lab Store' : 'Lab Stor
 
 /* ============ Tables ============ */
 table.ls-tbl{width:100%;border-collapse:collapse;font-size:12px}
-table.ls-tbl th{padding:10px 14px;text-align:left;font-weight:700;color:#888;font-size:10px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #f3f4f6;white-space:nowrap;cursor:pointer;user-select:none}
+table.ls-tbl th{padding:10px 14px;text-align:left;font-weight:700;color:#888;font-size:10px;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;z-index:1;background:#fff}
 table.ls-tbl th:hover{color:var(--ls-primary)}
 table.ls-tbl th.sorted{color:var(--ls-primary)}
 table.ls-tbl th .sort-icon{margin-left:4px;font-size:8px}
 table.ls-tbl td{padding:10px 14px;border-bottom:1px solid #f9fafb;color:#333;vertical-align:middle}
 table.ls-tbl tbody tr{transition:background .1s}
-table.ls-tbl tbody tr:hover{background:#faf5ff}
+table.ls-tbl tbody tr:hover{background:#f5f3ff}
 
 /* ============ Badges ============ */
 .ls-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:2px 8px;border-radius:6px}
@@ -129,7 +125,7 @@ table.ls-tbl tbody tr:hover{background:#faf5ff}
 .ls-hbar-fill{height:100%;border-radius:4px;transition:width .6s ease}
 
 /* ============ Treemap ============ */
-.ls-chart-card{background:#fff;border-radius:var(--ls-radius);box-shadow:var(--ls-shadow);padding:20px}
+.ls-chart-card{background:#fff;border-radius:var(--ls-r);box-shadow:var(--ls-sh);border:1px solid var(--border);padding:20px}
 .ls-chart-title{font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .ls-chart-title i{color:var(--ls-primary);font-size:12px}
 .ls-chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
@@ -152,20 +148,27 @@ table.ls-tbl tbody tr:hover{background:#faf5ff}
 .ls-remain-pct{font-size:10px;font-weight:700;min-width:30px;text-align:right}
 
 /* ============ Table Wrap ============ */
-.ls-table-wrap{background:#fff;border-radius:var(--ls-radius);box-shadow:var(--ls-shadow);overflow:hidden}
+.ls-table-wrap{background:#fff;border-radius:var(--ls-r);box-shadow:var(--ls-sh);border:1px solid var(--border);overflow:hidden}
 .ls-table-header{padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f3f4f6;flex-wrap:wrap}
 .ls-table-title{font-size:15px;font-weight:700;color:#1a1a2e;flex:1;display:flex;align-items:center;gap:8px}
-.ls-search{position:relative}
-.ls-search i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#bbb;font-size:12px}
-.ls-search input{padding:8px 12px 8px 30px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:12px;width:220px;background:#f9fafb}
-.ls-search input:focus{outline:none;border-color:var(--ls-primary);box-shadow:0 0 0 3px rgba(108,92,231,.08);background:#fff}
-.ls-filter select{padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:11px;font-weight:600;background:#f9fafb;cursor:pointer}
+.ls-search{position:relative;min-width:220px}
+.ls-search i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--c3);font-size:12px}
+.ls-search input{width:100%;padding:9px 14px 9px 36px;border:1.5px solid var(--border);border-radius:var(--ls-rs);font-size:13px;background:#fff;color:var(--c1);transition:border .15s;box-sizing:border-box}
+.ls-search input:focus{outline:none;border-color:var(--ls-primary);box-shadow:0 0 0 3px rgba(108,92,231,.08)}
+.ls-filter select{padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--ls-rs);font-size:11px;font-weight:600;background:#fff;color:var(--c1);cursor:pointer}
 
 /* ============ Buttons ============ */
-.ls-import-btn{padding:8px 16px;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;background:var(--ls-primary);color:#fff}
+.ls-import-btn{padding:8px 16px;border:none;border-radius:var(--ls-rs);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;background:var(--ls-primary);color:#fff}
 .ls-import-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
-.ls-export-btn{padding:6px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;color:#555;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
+.ls-export-btn{padding:6px 14px;border:1.5px solid var(--border);border-radius:var(--ls-rs);font-size:11px;font-weight:700;cursor:pointer;background:#fff;color:#555;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
 .ls-export-btn:hover{border-color:var(--ls-success);color:var(--ls-success)}
+/* ── Unified Buttons ── */
+.ls-btn{padding:8px 16px;border:none;border-radius:var(--ls-rs);font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:all .12s;white-space:nowrap;text-decoration:none}
+.ls-btn-p{background:var(--ls-primary);color:#fff}.ls-btn-p:hover{filter:brightness(1.08)}
+.ls-btn-o{background:#fff;color:var(--ls-primary);border:1.5px solid var(--ls-primary)}.ls-btn-o:hover{background:var(--ls-primary);color:#fff}
+.ls-btn-d{background:#dc2626;color:#fff}.ls-btn-d:hover{background:#b91c1c}
+.ls-btn-g{background:transparent;color:var(--c3);border:1.5px solid var(--border)}.ls-btn-g:hover{border-color:var(--ls-primary);color:var(--ls-primary)}
+.ls-btn-s{padding:5px 10px;font-size:11px}
 
 /* ============ Borrow Alert ============ */
 .ls-borrow-row{background:#fef2f2;border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;font-size:12px}
@@ -187,22 +190,30 @@ table.ls-tbl tbody tr:hover{background:#faf5ff}
 
 /* ============ Responsive ============ */
 @media(max-width:768px){
-    .ls-kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
-    .ls-kpi{padding:14px 12px}
-    .ls-kpi-value{font-size:22px}
+    /* KPI — horizontal scroll strip */
+    .ls-kpi-grid{display:flex;overflow-x:auto;gap:8px;padding-bottom:6px;margin-bottom:14px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .ls-kpi-grid::-webkit-scrollbar{display:none}
+    .ls-kpi{min-width:120px;flex-shrink:0;padding:10px 12px;gap:8px}
+    .ls-kpi-icon{width:32px;height:32px;font-size:13px;border-radius:8px}
+    .ls-kpi-value{font-size:16px}
+    .ls-kpi-label{font-size:9px}
+    /* other layout */
     .ls-drill-grid,.ls-holder-grid{grid-template-columns:1fr}
     .ls-chart-grid{grid-template-columns:1fr}
     .ls-table-header{flex-direction:column;align-items:stretch}
     .ls-search input{width:100%}
-    .ls-tabs{overflow-x:auto;flex-wrap:nowrap}
-    .ls-tab{min-width:100px}
+    .ls-tabs{overflow-x:auto;flex-wrap:nowrap;display:flex}
+    .ls-tab{min-width:80px;padding:8px 14px}
     .ls-breadcrumb{overflow-x:auto;flex-wrap:nowrap}
+}
+@media(max-width:480px){
+    .ls-kpi-grid{gap:6px}
+    .ls-kpi{min-width:108px}
 }
 
 /* ============ Manage Tab ============ */
-.ls-admin-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.ls-admin-bar .ls-import-btn{font-size:11px;padding:7px 14px}
-.ls-admin-bar .count-badge{font-size:10px;font-weight:700;color:#888;margin-left:auto}
+.ls-admin-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.ls-admin-bar .count-badge{font-size:10px;font-weight:700;color:var(--c3);margin-left:auto}
 .ls-chk{width:16px;height:16px;accent-color:var(--ls-primary);cursor:pointer;margin:0}
 table.ls-tbl td.td-actions{white-space:nowrap;text-align:center}
 .ls-act-btn{padding:4px 8px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:3px}
@@ -212,9 +223,10 @@ table.ls-tbl td.td-actions{white-space:nowrap;text-align:center}
 .ls-act-btn.del:hover{background:#dc2626;color:#fff}
 
 /* ============ Modal ============ */
-.ls-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9998;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}
-.ls-modal-overlay.show{display:flex}
-.ls-modal{background:#fff;border-radius:20px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:lsFadeIn .25s ease}
+.ls-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px);opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+.ls-modal-overlay.show{opacity:1;visibility:visible}
+.ls-modal{background:#fff;border-radius:20px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);transform:scale(.92) translateY(10px);transition:transform .2s}
+.ls-modal-overlay.show .ls-modal{transform:scale(1) translateY(0)}
 .ls-modal.wide{max-width:780px}
 /* Chemical detail modal */
 .csd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:18px}
@@ -378,6 +390,34 @@ table.ls-tbl td.td-actions{white-space:nowrap;text-align:center}
 <div class="ls-modal wide" id="chemDetailContent"></div>
 </div>
 
+<!-- ===== DELETE CONFIRM MODAL ===== -->
+<div class="ls-modal-overlay" id="delConfirmModal" onclick="if(event.target===this)closeDelConfirm()">
+<div class="ls-modal" style="max-width:480px;border-radius:20px;overflow:hidden">
+    <!-- header -->
+    <div style="background:linear-gradient(135deg,#dc2626,#b91c1c);padding:20px 22px;display:flex;align-items:center;gap:14px">
+        <div style="width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0">
+            <i class="fas fa-trash-alt"></i>
+        </div>
+        <div style="flex:1;min-width:0">
+            <div style="font-size:16px;font-weight:800;color:#fff"><?= $TH?'ยืนยันการลบคลัง':'Delete Store' ?></div>
+            <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px"><?= $TH?'การดำเนินการนี้ไม่สามารถย้อนกลับได้':'This action cannot be undone' ?></div>
+        </div>
+        <button onclick="closeDelConfirm()" style="background:rgba(255,255,255,.15);border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">&times;</button>
+    </div>
+    <!-- body -->
+    <div id="delConfirmBody" style="padding:20px 22px">
+        <div style="text-align:center;padding:24px;color:#94a3b8"><i class="fas fa-spinner fa-spin fa-lg"></i></div>
+    </div>
+    <!-- footer -->
+    <div style="padding:14px 22px 20px;display:flex;gap:10px;border-top:1px solid #f1f5f9">
+        <button onclick="closeDelConfirm()" style="flex:1;padding:11px;border:1.5px solid #e2e8f0;border-radius:10px;background:#fff;color:#475569;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='#94a3b8'" onmouseout="this.style.borderColor='#e2e8f0'"><?= $TH?'ยกเลิก':'Cancel' ?></button>
+        <button id="delConfirmBtn" onclick="execDeleteSingle()" style="flex:2;padding:11px;border:none;border-radius:10px;background:#dc2626;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+            <i class="fas fa-trash-alt"></i> <?= $TH?'ลบคลังนี้':'Delete Store' ?>
+        </button>
+    </div>
+</div>
+</div>
+
 <?php Layout::endContent(); ?>
 <script>
 const TH = <?= json_encode($TH) ?>;
@@ -396,6 +436,7 @@ let searchTimer = null, drillState = {};
 function num(v){return Number(v||0).toLocaleString(undefined,{maximumFractionDigits:2})}
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function animN(id,target){target=parseInt(target)||0;const el=document.getElementById(id);if(!el)return;const dur=600,s=performance.now();const step=n=>{const p=Math.min((n-s)/dur,1);el.textContent=Math.round(target*(1-Math.pow(1-p,3))).toLocaleString();if(p<1)requestAnimationFrame(step)};requestAnimationFrame(step)}
+function mkKpi(icon,bg,fg,id,label,delay=0){return `<div class="ls-kpi ls-fade" style="animation-delay:${delay}s"><div class="ls-kpi-icon" style="background:${bg};color:${fg}"><i class="fas ${icon}"></i></div><div class="ls-kpi-text"><div class="ls-kpi-value" id="${id}">-</div><div class="ls-kpi-label">${label}</div></div></div>`}
 
 /* ── init ── */
 document.addEventListener('DOMContentLoaded',()=>goHome());
@@ -430,12 +471,12 @@ async function goHome(){
 
 function renderHomeKPIs(t){
     if(!t)return;
-    document.getElementById('kpiGrid').innerHTML=`
-        <div class="ls-kpi c1 ls-fade"><div class="ls-kpi-icon"><i class="fas fa-store"></i></div><div class="ls-kpi-value" id="k1">-</div><div class="ls-kpi-label">${TH?'คลังทั้งหมด':'Total Stores'}</div></div>
-        <div class="ls-kpi c2 ls-fade" style="animation-delay:.05s"><div class="ls-kpi-icon"><i class="fas fa-building"></i></div><div class="ls-kpi-value" id="k2">-</div><div class="ls-kpi-label">${TH?'ฝ่าย':'Divisions'}</div></div>
-        <div class="ls-kpi c3 ls-fade" style="animation-delay:.1s"><div class="ls-kpi-icon"><i class="fas fa-wine-bottle"></i></div><div class="ls-kpi-value" id="k3">-</div><div class="ls-kpi-label">${TH?'ขวดสารเคมี':'Bottles'}</div></div>
-        <div class="ls-kpi c4 ls-fade" style="animation-delay:.15s"><div class="ls-kpi-icon"><i class="fas fa-weight-hanging"></i></div><div class="ls-kpi-value" id="k4">-</div><div class="ls-kpi-label">${TH?'ปริมาณรวม (kg)':'Weight (kg)'}</div></div>
-        <div class="ls-kpi c5 ls-fade" style="animation-delay:.2s"><div class="ls-kpi-icon"><i class="fas fa-user-tag"></i></div><div class="ls-kpi-value" id="k5">-</div><div class="ls-kpi-label">${TH?'ผู้ถือครอง':'Holders'}</div></div>`;
+    document.getElementById('kpiGrid').innerHTML=
+        mkKpi('fa-store',    '#ede9fe','#6C5CE7','k1',TH?'คลังทั้งหมด':'Total Stores',0)+
+        mkKpi('fa-building', '#dbeafe','#2563eb','k2',TH?'ฝ่าย':'Divisions',.05)+
+        mkKpi('fa-wine-bottle','#dcfce7','#15803d','k3',TH?'ขวดสารเคมี':'Bottles',.1)+
+        mkKpi('fa-weight-hanging','#fef3c7','#d97706','k4',TH?'ปริมาณรวม (kg)':'Weight (kg)',.15)+
+        mkKpi('fa-user-tag', '#fee2e2','#dc2626','k5',TH?'ผู้ถือครอง':'Holders',.2);
     animN('k1',t.total_stores); animN('k2',t.total_divisions); animN('k3',t.total_bottles);
     document.getElementById('k4').textContent=num(t.total_weight_kg);
     animN('k5',t.total_holders||0);
@@ -516,7 +557,7 @@ async function loadStoreTable(){
             <div class="ls-table-title"><i class="fas fa-store" style="color:var(--ls-primary)"></i> ${TH?'รายการคลังทั้งหมด':'All Lab Stores'}</div>
             <div class="ls-search"><i class="fas fa-search"></i><input id="tblSearch" placeholder="${TH?'ค้นหา...':'Search...'}" oninput="onTblSrch()"></div>
             <div class="ls-filter"><select id="tblDivF" onchange="tblPage=1;loadTblData()"><option value="">${TH?'ทุกฝ่าย':'All'}</option>${opts}</select></div>
-            ${IS_MANAGER?`<button class="ls-import-btn" onclick="importCSV()"><i class="fas fa-file-csv"></i> ${TH?'นำเข้า CSV':'Import'}</button>`:''}
+            ${IS_MANAGER?`<button class="ls-btn ls-btn-p" onclick="importCSV()"><i class="fas fa-file-csv"></i> ${TH?'นำเข้า CSV':'Import'}</button>`:''}
         </div><div style="overflow-x:auto"><table class="ls-tbl" id="storeTable"><thead><tr>
             <th onclick="sortTbl('store_name')">${TH?'ชื่อคลัง':'Store'} <span class="sort-icon"></span></th>
             <th onclick="sortTbl('division_name')">${TH?'ฝ่าย':'Division'} <span class="sort-icon"></span></th>
@@ -607,12 +648,12 @@ async function drillDiv(name){
         const{division_name,totals,sections,holders}=d.data;
 
         // KPIs
-        document.getElementById('kpiGrid').innerHTML=`
-            <div class="ls-kpi c1 ls-fade"><div class="ls-kpi-icon"><i class="fas fa-layer-group"></i></div><div class="ls-kpi-value" id="kD1">-</div><div class="ls-kpi-label">${TH?'งาน':'Sections'}</div></div>
-            <div class="ls-kpi c2 ls-fade" style="animation-delay:.05s"><div class="ls-kpi-icon"><i class="fas fa-store"></i></div><div class="ls-kpi-value" id="kD2">-</div><div class="ls-kpi-label">${TH?'คลัง':'Stores'}</div></div>
-            <div class="ls-kpi c3 ls-fade" style="animation-delay:.1s"><div class="ls-kpi-icon"><i class="fas fa-wine-bottle"></i></div><div class="ls-kpi-value" id="kD3">-</div><div class="ls-kpi-label">${TH?'ขวด':'Bottles'}</div></div>
-            <div class="ls-kpi c4 ls-fade" style="animation-delay:.15s"><div class="ls-kpi-icon"><i class="fas fa-weight-hanging"></i></div><div class="ls-kpi-value" id="kD4">-</div><div class="ls-kpi-label">kg</div></div>
-            <div class="ls-kpi c5 ls-fade" style="animation-delay:.2s"><div class="ls-kpi-icon"><i class="fas fa-user-tag"></i></div><div class="ls-kpi-value" id="kD5">-</div><div class="ls-kpi-label">${TH?'ผู้ถือครอง':'Holders'}</div></div>`;
+        document.getElementById('kpiGrid').innerHTML=
+            mkKpi('fa-layer-group','#ede9fe','#6C5CE7','kD1',TH?'งาน':'Sections',0)+
+            mkKpi('fa-store',    '#dbeafe','#2563eb','kD2',TH?'คลัง':'Stores',.05)+
+            mkKpi('fa-wine-bottle','#dcfce7','#15803d','kD3',TH?'ขวด':'Bottles',.1)+
+            mkKpi('fa-weight-hanging','#fef3c7','#d97706','kD4','kg',.15)+
+            mkKpi('fa-user-tag', '#fee2e2','#dc2626','kD5',TH?'ผู้ถือครอง':'Holders',.2);
         animN('kD1',totals?.section_count); animN('kD2',totals?.store_count); animN('kD3',totals?.total_bottles);
         document.getElementById('kD4').textContent=num(totals?.total_weight_kg);
         animN('kD5',holders?.length||0);
@@ -654,12 +695,12 @@ async function drillSec(divN,secN){
         drillState=d.data;
         const{division_name,section_name,totals,stores,holders}=d.data;
 
-        document.getElementById('kpiGrid').innerHTML=`
-            <div class="ls-kpi c1 ls-fade"><div class="ls-kpi-icon"><i class="fas fa-store"></i></div><div class="ls-kpi-value" id="kS1">-</div><div class="ls-kpi-label">${TH?'คลัง':'Stores'}</div></div>
-            <div class="ls-kpi c2 ls-fade" style="animation-delay:.05s"><div class="ls-kpi-icon"><i class="fas fa-wine-bottle"></i></div><div class="ls-kpi-value" id="kS2">-</div><div class="ls-kpi-label">${TH?'ขวด':'Bottles'}</div></div>
-            <div class="ls-kpi c3 ls-fade" style="animation-delay:.1s"><div class="ls-kpi-icon"><i class="fas fa-flask"></i></div><div class="ls-kpi-value" id="kS3">-</div><div class="ls-kpi-label">${TH?'สารเคมี':'Chems'}</div></div>
-            <div class="ls-kpi c4 ls-fade" style="animation-delay:.15s"><div class="ls-kpi-icon"><i class="fas fa-weight-hanging"></i></div><div class="ls-kpi-value" id="kS4">-</div><div class="ls-kpi-label">kg</div></div>
-            <div class="ls-kpi c5 ls-fade" style="animation-delay:.2s"><div class="ls-kpi-icon"><i class="fas fa-user-tag"></i></div><div class="ls-kpi-value" id="kS5">-</div><div class="ls-kpi-label">${TH?'ผู้ถือครอง':'Holders'}</div></div>`;
+        document.getElementById('kpiGrid').innerHTML=
+            mkKpi('fa-store',    '#ede9fe','#6C5CE7','kS1',TH?'คลัง':'Stores',0)+
+            mkKpi('fa-wine-bottle','#dbeafe','#2563eb','kS2',TH?'ขวด':'Bottles',.05)+
+            mkKpi('fa-flask',    '#dcfce7','#15803d','kS3',TH?'สารเคมี':'Chems',.1)+
+            mkKpi('fa-weight-hanging','#fef3c7','#d97706','kS4','kg',.15)+
+            mkKpi('fa-user-tag', '#fee2e2','#dc2626','kS5',TH?'ผู้ถือครอง':'Holders',.2);
         animN('kS1',totals?.store_count); animN('kS2',totals?.total_bottles); animN('kS3',totals?.total_chemicals);
         document.getElementById('kS4').textContent=num(totals?.total_weight_kg);
         animN('kS5',holders?.length||0);
@@ -701,11 +742,11 @@ async function drillStore(id){
         ];
         updateBC();
 
-        document.getElementById('kpiGrid').innerHTML=`
-            <div class="ls-kpi c1 ls-fade"><div class="ls-kpi-icon"><i class="fas fa-wine-bottle"></i></div><div class="ls-kpi-value" id="kT1">-</div><div class="ls-kpi-label">${TH?'ขวด':'Bottles'}</div></div>
-            <div class="ls-kpi c2 ls-fade" style="animation-delay:.05s"><div class="ls-kpi-icon"><i class="fas fa-flask"></i></div><div class="ls-kpi-value" id="kT2">-</div><div class="ls-kpi-label">${TH?'สารเคมี':'Chems'}</div></div>
-            <div class="ls-kpi c3 ls-fade" style="animation-delay:.1s"><div class="ls-kpi-icon"><i class="fas fa-weight-hanging"></i></div><div class="ls-kpi-value" id="kT3">-</div><div class="ls-kpi-label">kg</div></div>
-            <div class="ls-kpi c5 ls-fade" style="animation-delay:.15s"><div class="ls-kpi-icon"><i class="fas fa-user-tag"></i></div><div class="ls-kpi-value" id="kT4">-</div><div class="ls-kpi-label">${TH?'ผู้ถือครอง':'Holders'}</div></div>`;
+        document.getElementById('kpiGrid').innerHTML=
+            mkKpi('fa-wine-bottle','#ede9fe','#6C5CE7','kT1',TH?'ขวด':'Bottles',0)+
+            mkKpi('fa-flask',    '#dbeafe','#2563eb','kT2',TH?'สารเคมี':'Chems',.05)+
+            mkKpi('fa-weight-hanging','#dcfce7','#15803d','kT3','kg',.1)+
+            mkKpi('fa-user-tag', '#fef3c7','#d97706','kT4',TH?'ผู้ถือครอง':'Holders',.15);
         animN('kT1',store.bottle_count); animN('kT2',store.chemical_count);
         document.getElementById('kT3').textContent=num(store.total_weight_kg);
         animN('kT4',holders?.length||0);
@@ -759,11 +800,11 @@ function renderHolderView(data){
     const{user,stats,chemicals,active_borrows,pagination}=data;
     const fn=(user.first_name||'')+' '+(user.last_name||'');
     const kpi=document.getElementById('kpiGrid');
-    kpi.innerHTML=`
-        <div class="ls-kpi c1 ls-fade"><div class="ls-kpi-icon"><i class="fas fa-wine-bottle"></i></div><div class="ls-kpi-value" id="kU1">-</div><div class="ls-kpi-label">${TH?'ขวดทั้งหมด':'Bottles'}</div></div>
-        <div class="ls-kpi c2 ls-fade" style="animation-delay:.05s"><div class="ls-kpi-icon"><i class="fas fa-flask"></i></div><div class="ls-kpi-value" id="kU2">-</div><div class="ls-kpi-label">${TH?'ชนิดสารเคมี':'Unique Chems'}</div></div>
-        <div class="ls-kpi c3 ls-fade" style="animation-delay:.1s"><div class="ls-kpi-icon"><i class="fas fa-battery-half"></i></div><div class="ls-kpi-value" id="kU3">-</div><div class="ls-kpi-label">${TH?'% คงเหลือเฉลี่ย':'Avg % Left'}</div></div>
-        <div class="ls-kpi c4 ls-fade" style="animation-delay:.15s"><div class="ls-kpi-icon"><i class="fas fa-hand-holding"></i></div><div class="ls-kpi-value" id="kU4">-</div><div class="ls-kpi-label">${TH?'กำลังยืม':'Borrows'}</div></div>`;
+    kpi.innerHTML=
+        mkKpi('fa-wine-bottle','#ede9fe','#6C5CE7','kU1',TH?'ขวดทั้งหมด':'Bottles',0)+
+        mkKpi('fa-flask',    '#dbeafe','#2563eb','kU2',TH?'ชนิดสารเคมี':'Unique Chems',.05)+
+        mkKpi('fa-battery-half','#dcfce7','#15803d','kU3',TH?'% คงเหลือเฉลี่ย':'Avg % Left',.1)+
+        mkKpi('fa-hand-holding','#fee2e2','#dc2626','kU4',TH?'กำลังยืม':'Borrows',.15);
     animN('kU1',stats?.total_bottles); animN('kU2',stats?.unique_chemicals);
     document.getElementById('kU3').textContent=(stats?.avg_remaining_pct||0)+'%';
     animN('kU4',active_borrows?.length||0);
@@ -1084,10 +1125,10 @@ async function loadManageTab(){
         const opts=(dashData?.divisionSummary||[]).map(d=>`<option value="${esc(d.division_name)}">${esc(d.division_name)}</option>`).join('');
         el.innerHTML=`
             <div class="ls-admin-bar">
-                <button class="ls-import-btn" onclick="openAddStore()"><i class="fas fa-plus"></i> ${TH?'เพิ่มคลัง':'Add Store'}</button>
-                <button class="ls-import-btn" style="background:#059669" onclick="openImportModal()"><i class="fas fa-file-csv"></i> ${TH?'นำเข้า CSV':'Import CSV'}</button>
-                <button class="ls-export-btn" onclick="exportAllCSV()"><i class="fas fa-download"></i> ${TH?'ส่งออก CSV':'Export CSV'}</button>
-                <button class="ls-act-btn del" id="btnBulkDel" style="display:none" onclick="bulkDeleteSelected()"><i class="fas fa-trash"></i> ${TH?'ลบที่เลือก':'Delete Selected'} (<span id="selCount">0</span>)</button>
+                <button class="ls-btn ls-btn-p" onclick="openAddStore()"><i class="fas fa-plus"></i> ${TH?'เพิ่มคลัง':'Add Store'}</button>
+                <button class="ls-btn ls-btn-p" style="background:#059669" onclick="openImportModal()"><i class="fas fa-file-csv"></i> ${TH?'นำเข้า CSV':'Import CSV'}</button>
+                <button class="ls-btn ls-btn-g" onclick="exportAllCSV()"><i class="fas fa-download"></i> ${TH?'ส่งออก CSV':'Export CSV'}</button>
+                <button class="ls-btn ls-btn-d" id="btnBulkDel" style="display:none" onclick="bulkDeleteSelected()"><i class="fas fa-trash"></i> ${TH?'ลบที่เลือก':'Delete Selected'} (<span id="selCount">0</span>)</button>
                 <span class="count-badge" id="mngTotal"></span>
             </div>
             <div class="ls-table-wrap"><div class="ls-table-header">
@@ -1232,16 +1273,110 @@ async function saveStoreForm(){
     }catch(e){showToast(e.message,'error')}
 }
 
-async function deleteSingle(id){
-    if(!confirm(TH?'ลบคลังนี้?':'Delete this store?'))return;
-    try{
-        const d=await apiFetch(API+'?action=delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
-        if(!d.success)throw new Error(d.error);
-        showToast(TH?'ลบเรียบร้อย':'Deleted','success');
-        selectedIds.delete(id);
+/* ── Delete confirm modal ── */
+let _delId = null;
+
+async function deleteSingle(id) {
+    _delId = id;
+    const body = document.getElementById('delConfirmBody');
+    const btn  = document.getElementById('delConfirmBtn');
+    body.innerHTML = '<div style="text-align:center;padding:24px;color:#94a3b8"><i class="fas fa-spinner fa-spin fa-lg"></i></div>';
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fas fa-trash-alt"></i> ${TH?'ลบคลังนี้':'Delete Store'}`;
+    openModal('delConfirmModal');
+
+    try {
+        const d = await apiFetch(API + '?action=detail&id=' + id);
+        if (!d.success) throw new Error(d.error);
+        const s = d.data;
+        const hasData = (parseInt(s.bottle_count)||0) > 0;
+        const bottles = parseInt(s.bottle_count||0);
+        const chems   = parseInt(s.chemical_count||0);
+        const weight  = parseFloat(s.total_weight_kg||0);
+        const holders = parseInt(s.holder_count||0);
+
+        body.innerHTML = `
+        <!-- breadcrumb path -->
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;color:#94a3b8;margin-bottom:14px">
+            ${s.center_name  ? `<span style="background:#f1f5f9;padding:3px 9px;border-radius:20px;font-weight:600;color:#475569">${esc(s.center_name)}</span><i class="fas fa-chevron-right" style="font-size:8px"></i>` : ''}
+            ${s.division_name? `<span style="background:#ede9fe;padding:3px 9px;border-radius:20px;font-weight:600;color:#6C5CE7">${esc(s.division_name)}</span><i class="fas fa-chevron-right" style="font-size:8px"></i>` : ''}
+            ${s.section_name ? `<span style="background:#fef3c7;padding:3px 9px;border-radius:20px;font-weight:600;color:#92400e">${esc(s.section_name)}</span><i class="fas fa-chevron-right" style="font-size:8px"></i>` : ''}
+        </div>
+
+        <!-- store identity card -->
+        <div style="background:linear-gradient(135deg,#fef2f2,#fff5f5);border:1.5px solid #fecaca;border-radius:14px;padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px">
+            <div style="width:52px;height:52px;border-radius:14px;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">
+                <i class="fas fa-store"></i>
+            </div>
+            <div style="flex:1;min-width:0">
+                <div style="font-size:17px;font-weight:800;color:#1e293b;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.store_name)}</div>
+                <div style="font-size:11px;color:#94a3b8">${TH?'คลังสารเคมี ID':'Store ID'} #${s.id}</div>
+            </div>
+            ${s.notes ? `<div style="font-size:10px;color:#94a3b8;max-width:120px;text-align:right;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(s.notes)}">${esc(s.notes)}</div>` : ''}
+        </div>
+
+        <!-- stats grid -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+            <div style="background:#f8fafc;border-radius:10px;padding:10px;text-align:center;border:1px solid ${bottles>0?'#fecaca':'#f1f5f9'}">
+                <div style="font-size:20px;font-weight:800;color:${bottles>0?'#dc2626':'#1e293b'}">${bottles.toLocaleString()}</div>
+                <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-top:2px">${TH?'ขวด':'Bottles'}</div>
+            </div>
+            <div style="background:#f8fafc;border-radius:10px;padding:10px;text-align:center">
+                <div style="font-size:20px;font-weight:800;color:#6C5CE7">${chems.toLocaleString()}</div>
+                <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-top:2px">${TH?'สารเคมี':'Chems'}</div>
+            </div>
+            <div style="background:#f8fafc;border-radius:10px;padding:10px;text-align:center">
+                <div style="font-size:20px;font-weight:800;color:#059669">${weight>0?weight.toFixed(2):0}</div>
+                <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-top:2px">kg</div>
+            </div>
+            <div style="background:#f8fafc;border-radius:10px;padding:10px;text-align:center">
+                <div style="font-size:20px;font-weight:800;color:#2563eb">${holders}</div>
+                <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-top:2px">${TH?'ผู้ถือ':'Holders'}</div>
+            </div>
+        </div>
+
+        <!-- warning banner -->
+        ${hasData ? `
+        <div style="background:#fef9ec;border:1.5px solid #fde68a;border-radius:11px;padding:11px 14px;display:flex;gap:10px;align-items:flex-start;margin-bottom:4px">
+            <i class="fas fa-exclamation-triangle" style="color:#d97706;margin-top:2px;font-size:14px;flex-shrink:0"></i>
+            <div style="font-size:12px;line-height:1.6;color:#92400e">
+                <strong>${TH?'คลังนี้ยังมีสารเคมีอยู่':'This store still contains chemicals'}</strong><br>
+                ${TH?`พบ <strong>${bottles} ขวด</strong> น้ำหนักรวม <strong>${weight.toFixed(2)} kg</strong> — ข้อมูลสารเคมีในระบบจะ<strong>ไม่ถูกลบ</strong> แต่จะไม่มีการเชื่อมโยงกับคลังนี้อีกต่อไป`
+                    :`Found <strong>${bottles} bottles</strong> (${weight.toFixed(2)} kg) — chemical records will <strong>not be deleted</strong>, but will lose association with this store.`}
+            </div>
+        </div>` : `
+        <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:11px;padding:11px 14px;display:flex;gap:10px;align-items:center;margin-bottom:4px">
+            <i class="fas fa-check-circle" style="color:#059669;font-size:14px;flex-shrink:0"></i>
+            <div style="font-size:12px;color:#065f46">${TH?'คลังนี้ไม่มีสารเคมีอยู่ สามารถลบได้อย่างปลอดภัย':'This store is empty and can be safely deleted.'}</div>
+        </div>`}`;
+    } catch(e) {
+        body.innerHTML = `<div style="padding:16px;color:#dc2626;font-size:13px"><i class="fas fa-exclamation-circle"></i> ${esc(e.message)}</div>`;
+    }
+}
+
+function closeDelConfirm() {
+    closeModal('delConfirmModal');
+    _delId = null;
+}
+
+async function execDeleteSingle() {
+    if (!_delId) return;
+    const btn = document.getElementById('delConfirmBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        const d = await apiFetch(API+'?action=delete', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:_delId})});
+        if (!d.success) throw new Error(d.error);
+        closeDelConfirm();
+        showToast(TH?'ลบคลังเรียบร้อยแล้ว':'Store deleted successfully', 'success');
+        selectedIds.delete(_delId);
         updateSelUI();
         loadMngData();
-    }catch(e){showToast(e.message,'error')}
+    } catch(e) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fas fa-trash-alt"></i> ${TH?'ลบคลังนี้':'Delete Store'}`;
+        showToast(e.message, 'error');
+    }
 }
 
 async function bulkDeleteSelected(){

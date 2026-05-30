@@ -45,15 +45,39 @@ Layout::head($TH ? 'ห้องของฉัน' : 'My Rooms');
 .mr-room-tab.active .mr-rt-cnt{background:rgba(255,255,255,.25)}
 
 /* ── Stats Bar ── */
+@keyframes mr-stat-in{0%{opacity:0;transform:translateY(14px) scale(.95)}62%{transform:translateY(-3px) scale(1.015)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes mr-stat-ic-pop{0%{opacity:0;transform:scale(.5) rotate(-10deg)}65%{transform:scale(1.2) rotate(3deg)}100%{opacity:1;transform:scale(1) rotate(0deg)}}
+@keyframes mr-sk-shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
 .mr-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
-.mr-stat{position:relative;overflow:hidden;background:#fff;border-radius:var(--stk-rs);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--stk-sh);border:1px solid var(--border,#e0e0e0);transition:all .15s;cursor:pointer;user-select:none}
-.mr-stat::before{content:'';position:absolute;top:0;right:0;width:48px;height:48px;border-radius:0 10px 0 48px;opacity:.04;background:currentColor}
+.mr-stat{position:relative;overflow:hidden;background:#fff;border-radius:var(--stk-rs);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--stk-sh);border:1px solid var(--border,#e0e0e0);transition:border-color .15s,box-shadow .15s,transform .15s,background .15s;cursor:pointer;user-select:none}
+.mr-stat::before{content:'';position:absolute;top:0;right:0;width:52px;height:52px;border-radius:0 var(--stk-rs) 0 52px;opacity:.06;background:currentColor;transition:opacity .15s}
 .mr-stat:hover{transform:translateY(-2px);box-shadow:var(--stk-shm)}
+.mr-stat:hover::before{opacity:.1}
 .mr-stat:active{transform:translateY(-1px)}
 .mr-stat.active{border-color:var(--mr-stat-col,var(--mr));box-shadow:0 0 0 3px var(--mr-stat-glow,rgba(99,102,241,.18)),var(--stk-shm);transform:translateY(-2px)}
 .mr-stat-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.mr-stat-v{font-size:20px;font-weight:800;color:var(--c1,#333);line-height:1}
-.mr-stat-l{font-size:10px;color:var(--c3,#999);margin-top:2px;text-transform:uppercase;letter-spacing:.3px}
+.mr-stat-v{font-size:20px;font-weight:800;color:var(--c1,#333);line-height:1;font-variant-numeric:tabular-nums}
+.mr-stat-l{font-size:10px;color:var(--c3,#999);margin-top:3px;text-transform:uppercase;letter-spacing:.4px}
+/* entrance animation */
+.mr-stat.entering{animation:mr-stat-in .44s cubic-bezier(.34,1.25,.64,1) both}
+.mr-stat.entering .mr-stat-ic{animation:mr-stat-ic-pop .4s cubic-bezier(.34,1.4,.64,1) both}
+/* mrList pop on filter change */
+@keyframes mr-list-pop{0%{opacity:0;transform:translateY(14px) scale(.95)}62%{transform:translateY(-3px) scale(1.015)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.mr-list-anim{animation:mr-list-pop .44s cubic-bezier(.34,1.25,.64,1) both}
+/* skeleton */
+.mr-stat-sk{pointer-events:none;cursor:default}
+.mr-sk{border-radius:6px;background:linear-gradient(90deg,#f1f5f9 25%,#e4eaf4 50%,#f1f5f9 75%);background-size:800px 100%;animation:mr-sk-shimmer 1.5s ease-in-out infinite}
+.mr-sk-ic{width:38px;height:38px;border-radius:10px;flex-shrink:0}
+.mr-sk-num{height:20px;width:38px;margin-bottom:7px}
+.mr-sk-lbl{height:9px;width:62px}
+/* ── Skeleton List ── */
+.mr-sk-card{background:#fff;border:1.5px solid #f1f5f9;border-radius:var(--stk-r);overflow:hidden;pointer-events:none}
+.mr-sk-card-hd{padding:14px 14px 6px;display:flex;align-items:flex-start;gap:10px}
+.mr-sk-card-bd{padding:4px 14px 14px;display:flex;flex-direction:column;gap:7px}
+.mr-sk-card-nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;padding-top:2px}
+.mr-sk-trow td{padding:9px 14px;border-bottom:1px solid #f0f4f8;vertical-align:middle}
+.mr-sk-trow td>div{display:flex;flex-direction:column;gap:5px}
+.mr-sk-grp-row .mr-grp-hdr{cursor:default;pointer-events:none}
 
 /* ── Toolbar ── */
 .mr-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
@@ -61,12 +85,6 @@ Layout::head($TH ? 'ห้องของฉัน' : 'My Rooms');
 .stk-search input{width:100%;padding:9px 14px 9px 38px;border:1.5px solid var(--border,#e0e0e0);border-radius:var(--stk-rs);font-size:13px;background:#fff;color:var(--c1,#333);font-family:inherit;transition:border .15s}
 .stk-search input:focus{outline:none;border-color:var(--mr);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
 .stk-search i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--c3,#999);font-size:13px}
-.mr-ftabs{display:flex;gap:5px;flex-wrap:wrap}
-.mr-ftab{padding:7px 13px;border-radius:50px;border:1.5px solid var(--border,#e0e0e0);background:#fff;color:var(--c2,#666);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
-.mr-ftab:hover{border-color:var(--mr);color:var(--mr)}
-.mr-ftab.active{background:var(--mr);color:#fff;border-color:var(--mr)}
-.mr-ftab span{font-size:10px;background:rgba(0,0,0,.1);padding:0 5px;border-radius:8px}
-.mr-ftab.active span{background:rgba(255,255,255,.25)}
 
 /* ── View Switcher ── */
 .stk-vw{display:flex;border:1.5px solid var(--border,#e0e0e0);border-radius:var(--stk-rs);overflow:hidden;flex-shrink:0}
@@ -147,6 +165,12 @@ Layout::head($TH ? 'ห้องของฉัน' : 'My Rooms');
 .mr-cb:hover:not(:checked):not(.is-checked){border-color:var(--mr)}
 
 /* ─────────────── CARD VIEW ─────────────── */
+@keyframes mr-card-in{0%{opacity:0;transform:translateY(16px) scale(.95)}62%{transform:translateY(-3px) scale(1.012)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes mr-row-in{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+@keyframes mr-grp-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.mr-card-anim{animation:mr-card-in .38s cubic-bezier(.34,1.18,.64,1) both}
+.mr-row-anim{animation:mr-row-in .2s ease both}
+.mr-grp-anim{animation:mr-grp-in .26s ease both}
 .mr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .mr-card{background:#fff;border:1.5px solid var(--border,#e0e0e0);border-radius:var(--stk-r);overflow:hidden;transition:all .18s;position:relative}
 .mr-card:hover{border-color:var(--mr);box-shadow:var(--stk-shm);transform:translateY(-2px)}
@@ -655,6 +679,110 @@ body.mr-dragging .mr-content{opacity:.85}
 .rpt-field-lbl input[type="checkbox"]{accent-color:var(--mr);width:14px;height:14px;cursor:pointer;flex-shrink:0}
 .rpt-field-lbl:has(input:checked){border-color:var(--mr);background:var(--mrbg);color:var(--mrd)}
 @media(max-width:540px){.rpt-scope-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* Modal */
+.sr-overlay{position:fixed;inset:0;z-index:3000;background:rgba(2,10,30,.6);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto;opacity:0;visibility:hidden;transition:opacity .28s,visibility .28s}
+.sr-overlay.show{opacity:1;visibility:visible}
+.sr-modal{background:#fff;border-radius:22px;width:100%;max-width:1020px;box-shadow:0 40px 120px rgba(0,0,0,.28),0 0 0 1px rgba(0,0,0,.04);margin:auto;overflow:hidden;transform:translateY(28px) scale(.97);transition:transform .35s cubic-bezier(.34,1.15,.64,1)}
+.sr-overlay.show .sr-modal{transform:translateY(0) scale(1)}
+.sr-hdr{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 55%,#1e40af 100%);color:#fff;padding:22px 26px;display:flex;align-items:flex-start;gap:16px;position:relative}
+.sr-hdr-ic{width:50px;height:50px;border-radius:15px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:inset 0 1px 1px rgba(255,255,255,.2)}
+.sr-hdr-info{flex:1;min-width:0}
+.sr-hdr-title{font-size:17px;font-weight:800;line-height:1.2;margin-bottom:3px}
+.sr-hdr-sub{font-size:11px;opacity:.75;display:flex;gap:10px;flex-wrap:wrap}
+.sr-hdr-sub span{display:flex;align-items:center;gap:4px}
+.sr-hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+.sr-hdr-actions{display:flex;gap:8px;align-items:center}
+.sr-hdr-btn{padding:7px 14px;border-radius:9px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all .15s}
+.sr-hdr-btn:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.45);transform:translateY(-1px)}
+.sr-close{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.1);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;flex-shrink:0}
+.sr-close:hover{background:rgba(255,255,255,.25);transform:scale(1.1)}
+.sr-tabs{display:flex;border-bottom:2px solid #f1f5f9;background:#fafbfc;padding:0 26px}
+.sr-tab{padding:13px 18px;border:none;background:none;font-size:13px;font-weight:600;color:#94a3b8;cursor:pointer;font-family:inherit;border-bottom:2.5px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:7px;transition:all .15s;white-space:nowrap}
+.sr-tab:hover{color:#475569}
+.sr-tab.active{color:#1e40af;border-bottom-color:#1e40af}
+.sr-tab-badge{font-size:10px;padding:1px 7px;border-radius:8px;background:#e0e7ff;color:#3730a3;font-weight:700;transition:all .15s}
+.sr-tab.active .sr-tab-badge{background:#1e40af;color:#fff}
+.sr-body{padding:20px 26px 30px}
+.sr-loading{text-align:center;padding:56px;color:#94a3b8}
+.sr-loading i{animation:fa-spin 1s linear infinite}
+.sr-panel{display:none}.sr-panel.active{display:block}
+/* Table */
+.sr-tbl-wrap{overflow-x:auto;border-radius:14px;border:1.5px solid #e8ecf5;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.sr-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.sr-tbl thead{position:sticky;top:0;z-index:1}
+.sr-tbl th{padding:10px 14px;background:linear-gradient(0deg,#f1f5fb,#f8fafc);text-align:center;font-size:10.5px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;border-bottom:2px solid #e2e8f0}
+.sr-tbl th:first-child{text-align:left}
+.sr-tbl td{padding:9px 14px;border-bottom:1px solid #f0f4f8;color:#334155;vertical-align:middle}
+.sr-tbl td:not(:first-child){text-align:right;font-variant-numeric:tabular-nums;font-family:'Courier New',monospace;font-size:12px;color:#475569}
+.sr-tbl tbody tr{transition:background .1s}
+.sr-tbl tbody tr:hover{background:#f4f8ff}
+.sr-tbl tbody tr.has-data{background:#fafbff}
+.sr-tbl tbody tr.has-data:hover{background:#eef3ff}
+.sr-tbl td:not(:first-child).nonzero{color:#1e40af;font-weight:700}
+.sr-tbl tfoot tr{background:linear-gradient(0deg,#dde6ff,#eef2ff)}
+.sr-tbl tfoot td{padding:11px 14px;font-weight:800;font-size:12px;color:#1e40af;border-top:2px solid #c7d2fe}
+.sr-tbl tfoot td:not(:first-child){text-align:right;font-family:'Courier New',monospace}
+.sr-tbl-section{font-size:13px;font-weight:800;color:#1e3a5f;padding:14px 0 10px;display:flex;align-items:center;gap:8px}
+.sr-tbl-section i{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px}
+/* Chart layout */
+.sr-chart-row{display:flex;gap:18px;align-items:flex-start;margin-top:4px}
+.sr-chart-box{flex:0 0 auto;width:100%;max-width:520px;min-width:0}
+.sr-chart-legend{flex:1;min-width:160px;padding-top:6px}
+.sr-chart-title{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+.sr-legend-list{display:flex;flex-direction:column;gap:1px}
+.sr-legend-row{display:flex;align-items:center;gap:7px;padding:6px 4px;border-radius:7px;font-size:11.5px;color:#475569;transition:background .12s;cursor:default}
+.sr-legend-row:hover{background:#f4f8ff}
+.sr-legend-dot{width:11px;height:11px;border-radius:4px;flex-shrink:0}
+.sr-legend-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#334155}
+.sr-legend-bar{height:4px;background:#f1f5f9;border-radius:4px;width:60px;flex-shrink:0;overflow:hidden}
+.sr-legend-bar-fill{height:100%;border-radius:4px;min-width:2px}
+.sr-legend-pct{font-size:11px;font-weight:700;color:#1e40af;white-space:nowrap;min-width:34px;text-align:right}
+.sr-legend-kg{font-size:10px;color:#94a3b8;white-space:nowrap;min-width:54px;text-align:right}
+.sr-empty{text-align:center;padding:36px;color:#94a3b8;font-size:13px}
+.sr-empty i{font-size:40px;opacity:.2;display:block;margin-bottom:12px}
+.sr-note{font-size:10.5px;color:#94a3b8;margin-top:8px;line-height:1.6;padding:8px 12px;background:#fafbfc;border-radius:8px;border:1px solid #f1f5f9}
+/* Animations */
+@keyframes sr-modal-in{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes sr-slice-pop{0%{opacity:0;transform:scale(.5)}65%{transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+@keyframes sr-row-slide{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+@keyframes sr-bar-grow{from{width:0!important}}
+@keyframes sr-tbl-row-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sr-fade-in{from{opacity:0}to{opacity:1}}
+.sr-anim-slice{animation:sr-slice-pop .55s cubic-bezier(.34,1.4,.64,1) both}
+.sr-anim-row{animation:sr-row-slide .32s ease both}
+.sr-anim-bar{animation:sr-bar-grow .75s cubic-bezier(.4,0,.2,1) both}
+.sr-anim-trow{animation:sr-tbl-row-in .28s ease both}
+.sr-slice-path{transition:filter .15s,opacity .15s}
+.sr-slice-path:hover{filter:brightness(1.1) drop-shadow(0 2px 6px rgba(0,0,0,.2));cursor:pointer}
+/* Chem Popup (slice click) */
+@keyframes sr-popup-in{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.sr-chem-popup{position:fixed;bottom:28px;right:28px;z-index:4000;width:320px;background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.22),0 0 0 1px rgba(0,0,0,.06);overflow:hidden;display:none}
+.sr-chem-popup.show{display:block;animation:sr-popup-in .3s cubic-bezier(.34,1.1,.64,1) both}
+.sr-cp-hdr{padding:13px 16px;display:flex;align-items:center;gap:9px}
+.sr-cp-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.sr-cp-title{flex:1;font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff}
+.sr-cp-close{width:24px;height:24px;border-radius:7px;background:rgba(255,255,255,.18);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:background .12s}
+.sr-cp-close:hover{background:rgba(255,255,255,.35)}
+.sr-cp-stats{padding:7px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9;display:flex;gap:18px;font-size:10.5px;color:#64748b}
+.sr-cp-stat{display:flex;align-items:center;gap:5px;font-weight:600}
+.sr-cp-list{max-height:268px;overflow-y:auto}
+.sr-cp-item{padding:8px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f8fafc;animation:sr-tbl-row-in .22s ease both}
+.sr-cp-item:last-child{border-bottom:none}
+.sr-cp-item:hover{background:#f4f8ff}
+.sr-cp-ic{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.sr-cp-name{flex:1;min-width:0}
+.sr-cp-chem-name{font-size:12px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr-cp-cas{font-size:10px;color:#94a3b8;margin-top:1px}
+.sr-cp-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.sr-cp-qty{font-size:11px;font-weight:700;color:#1e40af;white-space:nowrap}
+.sr-cp-hcodes{display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end;max-width:90px}
+.sr-cp-hpill{font-size:9px;padding:1px 5px;border-radius:4px;background:#e0e7ff;color:#3730a3;font-weight:700;white-space:nowrap}
+.sr-cp-footer{padding:10px 16px;border-top:1px solid #f1f5f9}
+.sr-cp-more-btn{width:100%;padding:7px 14px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.sr-cp-more-btn:hover{border-color:#1e40af;color:#1e40af;background:#eff6ff}
+.sr-cp-loading{padding:24px;text-align:center;color:#94a3b8;font-size:12px}
+@media(max-width:700px){.sr-chart-row{flex-direction:column}.sr-chart-box{max-width:100%;width:100%}.sr-legend-bar{display:none}.sr-chem-popup{bottom:16px;right:16px;left:16px;width:auto}}
 </style>
 <?php Layout::sidebar('myroom'); Layout::beginContent(); ?>
 
@@ -681,13 +809,6 @@ body.mr-dragging .mr-content{opacity:.85}
       <i class="fas fa-search"></i>
       <input id="mrSearch" type="text" placeholder="<?= $TH ? 'ค้นหาสาร, รหัสขวด, CAS, สูตร...' : 'Search chemical, code, CAS, formula...' ?>">
     </div>
-    <div class="mr-ftabs">
-      <button class="mr-ftab active" data-f="all"><?= $TH ? 'ทั้งหมด' : 'All' ?> <span id="cntAll">0</span></button>
-      <button class="mr-ftab" data-f="organized"><?= $TH ? 'จัดเก็บแล้ว' : 'Organized' ?> <span id="cntOrg">0</span></button>
-      <button class="mr-ftab" data-f="unplaced"><?= $TH ? 'ยังไม่จัดเก็บ' : 'Unplaced' ?> <span id="cntUnp">0</span></button>
-      <button class="mr-ftab" data-f="expiring"><?= $TH ? 'ใกล้หมดอายุ' : 'Expiring' ?> <span id="cntExp">0</span></button>
-      <button class="mr-ftab" data-f="expired"><?= $TH ? 'หมดอายุ' : 'Expired' ?> <span id="cntExpired">0</span></button>
-    </div>
     <div style="display:flex;gap:6px;margin-left:auto;align-items:center;flex-shrink:0">
       <div class="stk-vw" id="viewSwitcher">
         <button onclick="setView('table')" title="<?= $TH ? 'ตาราง' : 'Table' ?>"><i class="fas fa-list"></i></button>
@@ -700,6 +821,9 @@ body.mr-dragging .mr-content{opacity:.85}
       <button class="stk-btn stk-btn-g" onclick="openMrRpt()" title="<?= $TH ? 'รายงานตำแหน่งสารเคมี' : 'Location Report' ?>">
         <i class="fas fa-clipboard-list"></i> <?= $TH ? 'รายงาน' : 'Report' ?>
       </button>
+      <button class="stk-btn stk-btn-g" id="btnSafetyRpt" onclick="openSafetyReport()" title="<?= $TH ? 'รายงานความปลอดภัยสารเคมี' : 'Chemical Safety Report' ?>">
+        <i class="fas fa-shield-alt"></i> <?= $TH ? 'ความปลอดภัย' : 'Safety' ?>
+      </button>
       <button class="stk-btn stk-btn-g" onclick="openManageAdmins()" title="<?= $TH ? 'จัดการผู้ดูแลห้อง' : 'Manage Room Admins' ?>">
         <i class="fas fa-users-cog"></i>
       </button>
@@ -711,6 +835,51 @@ body.mr-dragging .mr-content{opacity:.85}
     <div class="mr-tree" id="storageTree"></div>
     <div class="mr-content">
       <div id="mrList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ Safety Report Modal ══════════════════ -->
+<div class="sr-overlay" id="srOverlay" onclick="if(event.target===this)closeSafetyReport()">
+  <div class="sr-modal">
+    <div class="sr-hdr">
+      <div class="sr-hdr-ic"><i class="fas fa-shield-alt"></i></div>
+      <div class="sr-hdr-info">
+        <div class="sr-hdr-title" id="srTitle"><?= $TH?'รายงานความปลอดภัยสารเคมี':'Chemical Safety Report' ?></div>
+        <div class="sr-hdr-sub" id="srSub"></div>
+      </div>
+      <div class="sr-hdr-right">
+        <button class="sr-close" onclick="closeSafetyReport()"><i class="fas fa-times"></i></button>
+        <div class="sr-hdr-actions">
+          <button class="sr-hdr-btn" onclick="srPrint()"><i class="fas fa-print"></i> <?= $TH?'พิมพ์':'Print' ?></button>
+        </div>
+      </div>
+    </div>
+    <div class="sr-tabs">
+      <button class="sr-tab active" id="srTab-health" onclick="srSwitchTab('health')">
+        <i class="fas fa-heartbeat" style="color:#dc2626"></i> <?= $TH?'ความอันตรายต่อสุขภาพ':'Health Hazard' ?>
+        <span class="sr-tab-badge" id="srBadge-health">0</span>
+      </button>
+      <button class="sr-tab" id="srTab-physical" onclick="srSwitchTab('physical')">
+        <i class="fas fa-bolt" style="color:#d97706"></i> <?= $TH?'ความอันตรายทางกายภาพ':'Physical Hazard' ?>
+        <span class="sr-tab-badge" id="srBadge-physical">0</span>
+      </button>
+    </div>
+    <div class="sr-body" id="srBody">
+      <div class="sr-loading"><i class="fas fa-spinner fa-spin" style="font-size:24px;margin-bottom:10px;display:block"></i><?= $TH?'กำลังโหลด...':'Loading...' ?></div>
+    </div>
+  </div>
+  <!-- Chem Popup (slice click) -->
+  <div class="sr-chem-popup" id="srChemPopup" onclick="event.stopPropagation()">
+    <div class="sr-cp-hdr" id="srCpHdr">
+      <div class="sr-cp-dot" id="srCpDot"></div>
+      <div class="sr-cp-title" id="srCpTitle"></div>
+      <button class="sr-cp-close" onclick="srCloseChemPopup()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="sr-cp-stats" id="srCpStats"></div>
+    <div class="sr-cp-list" id="srCpList"></div>
+    <div class="sr-cp-footer" id="srCpFooter" style="display:none">
+      <button class="sr-cp-more-btn" id="srCpMoreBtn"><i class="fas fa-list"></i> <span id="srCpMoreLbl"></span></button>
     </div>
   </div>
 </div>
@@ -1103,20 +1272,126 @@ async function selectRoom(roomId) {
   S.activeRoomId = parseInt(roomId); S.treeFilter = null; S.filter = 'all'; S.search = '';
   S.selected.clear(); S.lastIdx = -1; updateBatchBar();
   document.getElementById('mrSearch').value = '';
-  syncFilterTabs(); renderRoomTabs();
+  renderRoomTabs();
   document.getElementById('roomPanel').style.display = '';
   document.getElementById('noRooms').style.display   = 'none';
+  showStatSkeleton();
   document.getElementById('storageTree').innerHTML = '<div class="mr-ld"><i class="fas fa-circle-notch fa-spin"></i></div>';
-  document.getElementById('mrList').innerHTML      = '<div class="mr-ld"><i class="fas fa-circle-notch fa-spin"></i></div>';
+  showListSkeleton();
   const res = await apiFetch(API + '?action=room_data&room_id=' + roomId);
   if (!res.success) { showToast(res.error||'Error','err'); return; }
   S.cabinets   = res.data.cabinets   || [];
   S.containers = res.data.containers || [];
-  renderRoomStats(); renderStorageTree(); renderContainers();
+  renderRoomStats(true); renderStorageTree(); renderContainers(true);
 }
 
 /* ── Stats ── */
-function renderRoomStats() {
+function showStatSkeleton() {
+  document.getElementById('roomStats').innerHTML = Array(5).fill(0).map(()=>`
+    <div class="mr-stat mr-stat-sk" style="background:#fafbfc;border-color:#f1f5f9;cursor:default">
+      <div class="mr-sk mr-sk-ic"></div>
+      <div style="flex:1">
+        <div class="mr-sk mr-sk-num"></div>
+        <div class="mr-sk mr-sk-lbl"></div>
+      </div>
+    </div>`).join('');
+}
+
+function showListSkeleton() {
+  const el = document.getElementById('mrList');
+  // Helper: one shimmer block
+  const s = (w, h, r=4, d=0) =>
+    `<div class="mr-sk" style="width:${w};height:${h}px;border-radius:${r}px;animation-delay:${d}ms"></div>`;
+
+  if (S.view === 'table') {
+    const rows = Array(10).fill(0).map((_, i) => {
+      const d = i * 22;
+      return `<tr class="mr-sk-trow">
+        <td>${s('14px',14,3,d)}</td>
+        <td>${s('28px',28,8,d+15)}</td>
+        <td>${s('72px',13,4,d+25)}</td>
+        <td><div>${s('58%',13,4,d+35)}${s('36%',10,4,d+55)}</div></td>
+        <td>${s('52px',12,4,d+20)}</td>
+        <td>${s('46px',12,4,d+38)}</td>
+        <td>${s('60px',12,4,d+45)}</td>
+        <td>${s('80px',20,10,d+52)}</td>
+        <td>${s('54px',12,4,d+60)}</td>
+        <td>${s('50px',20,6,d+65)}</td>
+        <td>${s('60px',26,8,d+12)}</td>
+      </tr>`;
+    }).join('');
+    el.innerHTML = `<div class="mr-tw"><table class="mr-t"><thead><tr>
+      <th class="col-cb"></th><th></th><th>${TH?'รหัสขวด':'Code'}</th><th>${TH?'สารเคมี':'Chemical'}</th>
+      <th>${TH?'เจ้าของ':'Owner'}</th><th>${TH?'คงเหลือ':'Qty'}</th>
+      <th>${TH?'รับเข้า':'Received'}</th><th>${TH?'ตำแหน่ง':'Location'}</th>
+      <th>${TH?'หมดอายุ':'Expiry'}</th><th>${TH?'สถานะ':'Status'}</th><th>${TH?'จัดการ':'Actions'}</th>
+    </tr></thead><tbody>${rows}</tbody></table></div>`;
+
+  } else if (S.view === 'grouped') {
+    const groups = Array(6).fill(0).map((_, i) => {
+      const d = i * 55;
+      return `<div class="mr-grp mr-sk-grp-row">
+        <div class="mr-grp-hdr">
+          <div class="mr-grp-toggle"><i class="fas fa-chevron-right" style="opacity:.18"></i></div>
+          ${s('38px',38,10,d)}
+          <div class="mr-grp-info">
+            ${s('52%',13,4,d+40)}
+            <div style="display:flex;gap:6px;margin-top:5px">${s('76px',10,4,d+65)}${s('54px',10,4,d+80)}</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+            ${s('54px',20,8,d+50)}${s('40px',20,8,d+62)}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    el.innerHTML = `<div class="mr-groups">${groups}</div>`;
+
+  } else {
+    // Card view (default)
+    const card = (i) => {
+      const d = i * 52;
+      return `<div class="mr-sk-card">
+        <div class="mr-sk-card-hd">
+          ${s('38px',38,10,d)}
+          <div class="mr-sk-card-nm">
+            ${s('78px',17,4,d+40)}
+            ${s('62%',13,4,d+65)}
+            ${s('44%',10,4,d+85)}
+          </div>
+          ${s('54px',21,10,d+30)}
+        </div>
+        <div class="mr-sk-card-bd">
+          ${s('68%',11,4,d+72)}
+          ${s('55%',11,4,d+90)}
+          ${s('76%',11,4,d+108)}
+          ${s('100%',28,8,d+50)}
+        </div>
+      </div>`;
+    };
+    el.innerHTML = '<div class="mr-grid">' + Array(8).fill(0).map((_, i) => card(i)).join('') + '</div>';
+  }
+}
+
+function animateStatCounters() {
+  document.querySelectorAll('#roomStats .mr-stat-v[data-val]').forEach((el, i) => {
+    const target = parseInt(el.dataset.val) || 0;
+    const cardDelay = i * 65;
+    if (!target) { setTimeout(() => { el.textContent = '0'; }, cardDelay); return; }
+    setTimeout(() => {
+      const dur = 580, start = performance.now();
+      function tick(now) {
+        const t = Math.min((now - start) / dur, 1);
+        const ease = 1 - Math.pow(1 - t, 3);
+        el.textContent = Math.round(target * ease);
+        if (t < 1) requestAnimationFrame(tick);
+        else el.textContent = target;
+      }
+      requestAnimationFrame(tick);
+    }, cardDelay + 100);
+  });
+}
+
+function renderRoomStats(animate = false) {
   const r = S.rooms.find(r=>parseInt(r.room_id)===S.activeRoomId)||{};
   const [total,org,unp,exp,expired] = ['total','organized','unplaced','expiring_soon','expired'].map(k=>parseInt(r[k]||0));
   const defs = [
@@ -1126,21 +1401,43 @@ function renderRoomStats() {
     ['expiring', 'fa-clock',       '#dc2626','#fee2e2','rgba(220,38,38,.2)',   exp,    TH?'ใกล้หมดอายุ':'Expiring'],
     ['expired',  'fa-ban',         '#94a3b8','#f1f5f9','rgba(148,163,184,.2)', expired,TH?'หมดอายุ':'Expired'],
   ];
-  document.getElementById('roomStats').innerHTML = defs.map(([f,ic,col,bg,glow,v,l])=>{
+  document.getElementById('roomStats').innerHTML = defs.map(([f,ic,col,bg,glow,v,l], idx)=>{
     const isActive = S.filter === f;
-    return `<div class="mr-stat${isActive?' active':''}" data-stat-filter="${f}"
-         style="${isActive?`--mr-stat-col:${col};--mr-stat-glow:${glow};background:${bg}`:''}"
+    const delay = animate ? idx * 65 : 0;
+    const enterCls = animate ? ' entering' : '';
+    const numHtml = animate
+      ? `<div class="mr-stat-v" data-val="${v}">0</div>`
+      : `<div class="mr-stat-v">${v}</div>`;
+    return `<div class="mr-stat${enterCls}${isActive?' active':''}" data-stat-filter="${f}"
+         data-col="${col}" data-bg="${bg}" data-glow="${glow}"
+         style="animation-delay:${delay}ms;${isActive?`--mr-stat-col:${col};--mr-stat-glow:${glow};background:${bg}`:''}"
          onclick="setStatFilter('${f}')">
-      <div class="mr-stat-ic" style="background:${bg};color:${col}"><i class="fas ${ic}"></i></div>
-      <div><div class="mr-stat-v">${v}</div><div class="mr-stat-l">${l}</div></div>
+      <div class="mr-stat-ic" style="background:${bg};color:${col};animation-delay:${delay+80}ms"><i class="fas ${ic}"></i></div>
+      <div>${numHtml}<div class="mr-stat-l">${l}</div></div>
     </div>`;
   }).join('');
+  if (animate) requestAnimationFrame(() => animateStatCounters());
 }
 
 function setStatFilter(f) {
   S.filter = f; S.treeFilter = null;
-  syncFilterTabs(); renderRoomStats(); renderStorageTree(); renderContainers();
-  document.getElementById('mrList').scrollIntoView({behavior:'smooth', block:'nearest'});
+  document.querySelectorAll('#roomStats .mr-stat').forEach(el => {
+    const isActive = el.dataset.statFilter === f;
+    const col  = el.dataset.col  || 'var(--mr)';
+    const bg   = el.dataset.bg   || '';
+    const glow = el.dataset.glow || 'rgba(99,102,241,.18)';
+    el.classList.toggle('active', isActive);
+    if (isActive) {
+      el.style.setProperty('--mr-stat-col', col);
+      el.style.setProperty('--mr-stat-glow', glow);
+      el.style.background = bg;
+    } else {
+      el.style.removeProperty('--mr-stat-col');
+      el.style.removeProperty('--mr-stat-glow');
+      el.style.background = '';
+    }
+  });
+  renderStorageTree(); renderContainers(true);
 }
 
 /* ── Storage Tree (Directory Tree Edition) ── */
@@ -1343,14 +1640,11 @@ function chipStatus(c) {
 function treeNodeClick(type, id) {
   if (S.renaming) return;
   if (S.treeFilter?.type===type && S.treeFilter.id===parseInt(id)) S.treeFilter=null;
-  else { S.treeFilter={type,id:parseInt(id)}; S.filter=(type==='unplaced')?'unplaced':'all'; syncFilterTabs(); }
-  renderStorageTree(); renderContainers();
+  else { S.treeFilter={type,id:parseInt(id)}; S.filter=(type==='unplaced')?'unplaced':'all'; }
+  renderStorageTree(); renderContainers(true);
 }
 function setTreeFilter(type, id) { treeNodeClick(type, id); }
 
-function syncFilterTabs() {
-  document.querySelectorAll('.mr-ftab').forEach(b=>b.classList.toggle('active',b.dataset.f===S.filter));
-}
 function toggleTree() {
   if(window.innerWidth<=640){ openMobileTree(); return; }
   S.treeVisible=!S.treeVisible;
@@ -1624,7 +1918,7 @@ function findSlot(slotId) {
 function setView(v) {
   S.view=v; S.selected.clear(); S.lastIdx=-1; updateBatchBar();
   document.querySelectorAll('#viewSwitcher button').forEach((b,i)=>b.classList.toggle('active',['table','card','grouped'][i]===v));
-  renderContainers();
+  renderContainers(true);
 }
 
 /* ── Filtering ── */
@@ -1645,14 +1939,6 @@ function getFiltered() {
   if (q) list=list.filter(c=>(c.bottle_code||'').toLowerCase().includes(q)||(c.chem_name||'').toLowerCase().includes(q)||
     (c.nickname||'').toLowerCase().includes(q)||(c.cas_number||'').toLowerCase().includes(q)||(c.molecular_formula||'').toLowerCase().includes(q));
   return list;
-}
-function updateCounts() {
-  const now=new Date(), in60=new Date(now.getTime()+60*24*60*60*1000), all=S.containers;
-  document.getElementById('cntAll').textContent=all.length;
-  document.getElementById('cntOrg').textContent=all.filter(c=>c.cabinet_id).length;
-  document.getElementById('cntUnp').textContent=all.filter(c=>!c.cabinet_id).length;
-  document.getElementById('cntExp').textContent=all.filter(c=>{ if(!c.expiry_date)return false; const e=new Date(c.expiry_date); return e>=now&&e<=in60; }).length;
-  document.getElementById('cntExpired').textContent=all.filter(c=>{ if(!c.expiry_date)return false; return new Date(c.expiry_date)<now; }).length;
 }
 
 /* ── Render helpers ── */
@@ -1686,24 +1972,26 @@ function rowActs(c) {
 }
 
 /* ── Render dispatcher ── */
-function renderContainers() {
-  updateCounts();
+function renderContainers(anim=false) {
   const list=getFiltered(), el=document.getElementById('mrList');
+  if (anim) { el.classList.remove('mr-list-anim'); void el.offsetWidth; el.classList.add('mr-list-anim'); }
   if (!list.length) {
     el.innerHTML=`<div class="mr-empty"><i class="fas fa-search"></i><p>${TH?'ไม่พบสารเคมี':'No chemicals found'}</p></div>`; return;
   }
-  if      (S.view==='table')   renderTable(list,el);
-  else if (S.view==='grouped') renderGrouped(list,el);
-  else                         renderCards(list,el);
+  if      (S.view==='table')   renderTable(list,el,anim);
+  else if (S.view==='grouped') renderGrouped(list,el,anim);
+  else                         renderCards(list,el,anim);
 }
 
 /* ─────────── TABLE ─────────── */
-function renderTable(list,el) {
+function renderTable(list,el,anim=false) {
   const allSel = list.length>0 && list.every(c=>S.selected.has(c.id));
   const rows = list.map((c,idx)=>{
     const sel=S.selected.has(c.id), qty=parseFloat(c.current_quantity||0);
     const {n,init,avHtml}=ownerDisp(c);
-    return `<tr class="${sel?'sel':''}" data-drag-row data-cid="${c.id}" draggable="true"
+    const rowAnimCls=anim?' mr-row-anim':'';
+    const rowAnimStyle=anim?` style="animation-delay:${Math.min(idx,24)*16}ms"`:``;    
+    return `<tr class="${sel?'sel':''}${rowAnimCls}"${rowAnimStyle} data-drag-row data-cid="${c.id}" draggable="true"
       ondragstart="containerDragStart(event,${c.id})" ondragend="containerDragEnd(event)">
       <td class="col-cb"><input type="checkbox" class="mr-cb${sel?' is-checked':''}" ${sel?'checked':''} onclick="toggleSel(${c.id},event,${idx})"></td>
       <td class="col-ic">${typeIc(c.container_type)}</td>
@@ -1731,12 +2019,14 @@ function renderTable(list,el) {
 }
 
 /* ─────────── CARDS ─────────── */
-function renderCards(list,el) {
+function renderCards(list,el,anim=false) {
   el.innerHTML='<div class="mr-grid">'+list.map((c,idx)=>{
     const sel=S.selected.has(c.id), qty=parseFloat(c.current_quantity||0);
     const ic=TYPE_IC[c.container_type]||'fa-box', col=TYPE_COL[c.container_type]||'#64748b';
     const {n,init,avHtml}=ownerDisp(c);
-    return `<div class="mr-card${sel?' sel':''}" data-cid="${c.id}" draggable="true"
+    const animCls = anim ? ' mr-card-anim' : '';
+    const animDelay = anim ? ` style="animation-delay:${Math.min(idx,16)*38}ms"` : '';
+    return `<div class="mr-card${sel?' sel':''}${animCls}"${animDelay} data-cid="${c.id}" draggable="true"
       ondragstart="containerDragStart(event,${c.id})" ondragend="containerDragEnd(event)">
       <div class="mr-card-cb"><input type="checkbox" class="mr-cb${sel?' is-checked':''}" ${sel?'checked':''} onclick="toggleSel(${c.id},event,${idx})"></div>
       <div class="mr-card-hd" style="padding-left:34px">
@@ -1766,7 +2056,7 @@ function renderCards(list,el) {
 }
 
 /* ─────────── GROUPED ─────────── */
-function renderGrouped(list,el) {
+function renderGrouped(list,el,anim=false) {
   // save which groups are currently open before wiping DOM
   const openIds=new Set([...el.querySelectorAll('.mr-grp.open')].map(n=>n.id));
 
@@ -1800,7 +2090,9 @@ function renderGrouped(list,el) {
         <div class="mr-grp-actions">${rowActs(c)}</div>
       </div>`;
     }).join('');
-    html+=`<div class="mr-grp${openIds.has(gid)?' open':''}" id="${gid}">
+    const grpDelay=anim?Math.min(gi,11)*48:0;
+    const grpAnimCls=anim?' mr-grp-anim':'';
+    html+=`<div class="mr-grp${openIds.has(gid)?' open':''}${grpAnimCls}" style="animation-delay:${grpDelay}ms" id="${gid}">
       <div class="mr-grp-hdr" onclick="toggleGrp('${gid}')">
         <div class="mr-grp-toggle"><i class="fas fa-chevron-right"></i></div>
         <div class="mr-grp-ic" style="background:${col}18;color:${col}"><i class="fas ${ic}"></i></div>
@@ -1921,9 +2213,6 @@ async function submitBatchPlace(){
 }
 
 /* ── Filter/Search events ── */
-document.querySelectorAll('.mr-ftab').forEach(b=>b.addEventListener('click',()=>{
-  S.filter=b.dataset.f; S.treeFilter=null; syncFilterTabs(); renderRoomStats(); renderStorageTree(); renderContainers();
-}));
 document.getElementById('mrSearch').addEventListener('input',e=>{ S.search=e.target.value; renderContainers(); });
 
 /* ── Cabinet CRUD ── */
@@ -3456,6 +3745,518 @@ function _rptFullHtml(cs, cabs, fields) {
 }
 
 init();
+
+/* ════════════════════════════════════════════════════════════
+   SAFETY REPORT
+════════════════════════════════════════════════════════════ */
+const SR_HEALTH_LABELS = {
+  acute_toxicity:  'Acute toxicity (ความเป็นพิษเฉียบพลัน)',
+  aspiration:      'Aspiration hazardous (อันตรายต่อระบบทางเดินหายใจส่วนล่าง)',
+  carcinogenicity: 'Carcinogenicity (ความสามารถในการก่อมะเร็ง)',
+  germ_cell:       'Germ cell mutagenicity (การกลายพันธุ์ของเซลล์สืบพันธุ์)',
+  reproductive:    'Reproductive toxicity (ความเป็นพิษต่อระบบสืบพันธุ์)',
+  sensitization:   'Respiratory or skin sensitization (การทำให้ไวต่อการกระตุ้นอากาศแพ้ทางเดินหายใจหรือผิวหนัง)',
+  eye_damage:      'Serious eye damage/eye irritation (การทำลายดวงตาอย่างรุนแรง/การระคายเคืองต่อดวงตา)',
+  skin_corrosion:  'Skin corrosion/irritation (การกัดกร่อน/ระคายเคืองผิวหนัง)',
+  stot_repeated:   'Specific target organ toxicity – Repeated exposure (ความเป็นพิษต่อระบบอวัยวะเป้าหมาย การได้รับสัมผัสซ้ำ)',
+  stot_single:     'Specific target organ toxicity – Single exposure (ความเป็นพิษต่อระบบอวัยวะเป้าหมาย การได้รับสัมผัสครั้งเดียว)',
+};
+const SR_PHYS_LABELS = {
+  corrosive_metals:   'Corrosive to metals (สารที่กัดกร่อนโลหะ)',
+  explosives:         'Explosives (วัตถุระเบิด)',
+  flammable_gas:      'Flammable (แก็สไวไฟ)',
+  flammable_aerosols: 'Flammable aerosols (สารละอองลอยไวไฟ)',
+  flammable_liquids:  'Flammable liquids (ของเหลวไวไฟ)',
+  flammable_solids:   'Flammable solids (ของแข็งไวไฟ)',
+  gas_pressure:       'Gas under pressure (แก็สภายใต้ความดัน)',
+  organic_peroxides:  'Organic peroxides (สารเปอร์ออกไซด์อินทรีย์)',
+  oxidizing_gases:    'Oxidizing gases (แก็สออกซิไดซ์)',
+  oxidizing_liquids:  'Oxidizing liquids (ของเหลวออกซิไดซ์)',
+  oxidizing_solids:   'Oxidizing solids (ของแข็งออกซิไดซ์)',
+  pyrophoric_liquids: 'Pyrophoric liquids (ของเหลวที่ลุกติดไฟได้เองในอากาศ)',
+  pyrophoric_solids:  'Pyrophoric solids (ของแข็งที่ลุกติดไฟได้เองในอากาศ)',
+  self_heating:       'Self-heating substances and mixtures (สารเคมีที่เกิดความร้อนได้เอง)',
+  self_reactive:      'Self-reactive substances and mixtures (สารเคมีที่ทำปฏิกิริยาได้เอง)',
+  water_reactive:     'Substances and mixtures, which in contact with water, emit flammable gases (สารเคมีที่สัมผัสน้ำแล้วให้แก็สไวไฟ)',
+};
+const SR_COLORS = [
+  '#2563eb','#ea580c','#16a34a','#d97706','#7c3aed','#dc2626',
+  '#0891b2','#65a30d','#9333ea','#e11d48','#6366f1','#f59e0b',
+  '#10b981','#ef4444','#8b5cf6','#f97316','#0d9488','#db2777',
+];
+const SR_HEALTH_SHORT = {
+  acute_toxicity:'Acute Tox.', aspiration:'Aspiration', carcinogenicity:'Carc.',
+  germ_cell:'Muta.', reproductive:'Repr.', sensitization:'Sensitiz.',
+  eye_damage:'Eye Dam.', skin_corrosion:'Skin Corr.',
+  stot_repeated:'STOT-RE', stot_single:'STOT-SE',
+};
+const SR_PHYS_SHORT = {
+  corrosive_metals:'Metal Corr.', explosives:'Explos.', flammable_gas:'Flam. Gas',
+  flammable_aerosols:'Flam. Aerosol', flammable_liquids:'Flam. Liq.',
+  flammable_solids:'Flam. Sol.', gas_pressure:'Gas Pres.',
+  organic_peroxides:'Org. Perox.', oxidizing_gases:'Ox. Gas',
+  oxidizing_liquids:'Ox. Liq.', oxidizing_solids:'Ox. Sol.',
+  pyrophoric_liquids:'Pyrop. Liq.', pyrophoric_solids:'Pyrop. Sol.',
+  self_heating:'Self-Heat.', self_reactive:'Self-React.',
+  water_reactive:'Water React.',
+};
+
+let srData = null, srActiveTab = 'health';
+
+async function openSafetyReport() {
+  const roomId = S.activeRoomId;
+  if (!roomId) { showToast(TH?'กรุณาเลือกห้องก่อน':'Please select a room first','warn'); return; }
+  const room = S.rooms.find(r => parseInt(r.room_id) === roomId) || {};
+  const overlay = document.getElementById('srOverlay');
+  document.getElementById('srTitle').textContent = TH ? 'รายงานความปลอดภัยสารเคมี' : 'Chemical Safety Report';
+  document.getElementById('srSub').innerHTML = `<span><i class="fas fa-door-open"></i> ${escH(room.code||'')} ${escH(room.name||'')}</span><span><i class="fas fa-building"></i> ${escH(room.bld_name||'')}</span><span><i class="fas fa-calendar-alt"></i> ${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})}</span>`;
+  document.getElementById('srBody').innerHTML = `<div class="sr-loading"><i class="fas fa-spinner fa-spin" style="font-size:24px;margin-bottom:10px;display:block"></i>${TH?'กำลังโหลด...':'Loading...'}</div>`;
+  srActiveTab = 'health';
+  document.getElementById('srTab-health').classList.add('active');
+  document.getElementById('srTab-physical').classList.remove('active');
+  overlay.classList.add('show');
+
+  try {
+    const res = await apiFetch(`/v1/api/myroom.php?action=safety_report&room_id=${roomId}`);
+    if (!res.success) throw new Error(res.error || 'Failed');
+    srData = res.data;
+    srRender();
+  } catch(e) {
+    document.getElementById('srBody').innerHTML = `<div class="sr-empty"><i class="fas fa-exclamation-triangle"></i>${e.message}</div>`;
+  }
+}
+
+function closeSafetyReport() {
+  document.getElementById('srOverlay').classList.remove('show');
+  srCloseChemPopup();
+}
+
+function srSwitchTab(tab) {
+  srActiveTab = tab;
+  document.querySelectorAll('.sr-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('srTab-' + tab).classList.add('active');
+  document.querySelectorAll('.sr-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('srPanel-' + tab);
+  if (panel) panel.classList.add('active');
+}
+
+function srFmt(v) { return v <= 0 ? '0.00' : v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+
+function srBuildRows(dataObj, labels, shortLabels) {
+  const keys = Object.keys(labels);
+  let rows = [], totSolid = 0, totLiq = 0, totGas = 0;
+  for (const key of keys) {
+    const d = dataObj[key] || {solid:0,liquid:0,gas:0};
+    const s = d.solid||0, l = d.liquid||0, g = d.gas||0, t = s+l+g;
+    totSolid += s; totLiq += l; totGas += g;
+    const shortLabel = shortLabels?.[key] || labels[key].split(' (')[0].slice(0, 16);
+    rows.push({key, label: labels[key], shortLabel, solid:s, liquid:l, gas:g, total:t});
+  }
+  return {rows, totSolid, totLiq, totGas, totTotal: totSolid+totLiq+totGas};
+}
+
+function srBuildTable(rows, totSolid, totLiq, totGas, totTotal) {
+  const colSolid = TH ? 'ของแข็ง (kg)' : 'Solid (kg)';
+  const colLiq   = TH ? 'ของเหลว (kg)' : 'Liquid (kg)';
+  const colGas   = TH ? 'ก๊าซ (kg)' : 'Gas (kg)';
+  const colTotal = TH ? 'รวม (kg)' : 'Total (kg)';
+  const rowsHtml = rows.map((r, i) => {
+    const hasData = r.total > 0;
+    const c = (v) => v > 0 ? `<td class="nonzero">${srFmt(v)}</td>` : `<td>${srFmt(v)}</td>`;
+    return `<tr class="sr-anim-trow${hasData?' has-data':''}" style="animation-delay:${i*22}ms"><td style="font-size:12px">- ${escH(r.label)}</td>${c(r.solid)}${c(r.liquid)}${c(r.gas)}${c(r.total)}</tr>`;
+  }).join('');
+  return `
+    <div class="sr-tbl-wrap">
+    <table class="sr-tbl">
+      <thead><tr>
+        <th style="width:42%">${TH?'ประเภทความอันตราย':'Hazard Type'}</th>
+        <th style="width:14.5%">${colSolid}</th><th style="width:14.5%">${colLiq}</th>
+        <th style="width:14.5%">${colGas}</th><th style="width:14.5%">${colTotal}</th>
+      </tr></thead>
+      <tbody>${rowsHtml}</tbody>
+      <tfoot><tr>
+        <td>${TH?'ปริมาณรวมทั้งหมด (kg)*:':'Total quantity (kg)*:'}</td>
+        <td>${srFmt(totSolid)}</td><td>${srFmt(totLiq)}</td><td>${srFmt(totGas)}</td><td>${srFmt(totTotal)}</td>
+      </tr></tfoot>
+    </table>
+    </div>
+    <p class="sr-note">* ${TH?'ปริมาณแสดงในหน่วย kg โดยประมาณ โดยสมมติความหนาแน่น 1 kg/L สำหรับของเหลว และ 1 g/mL สำหรับหน่วยปริมาตร':'Quantities are approximate kg values assuming density of 1 kg/L for liquids and 1 g/mL for volume units.'}</p>`;
+}
+
+function srBuildChart(rows, tab) {
+  const nonZero = rows.filter(r => r.total > 0);
+  const total = nonZero.reduce((s,r) => s + r.total, 0);
+  if (!total || !nonZero.length) return `<div class="sr-empty"><i class="fas fa-chart-pie"></i>${TH?'ไม่มีข้อมูล GHS สำหรับห้องนี้':'No GHS data available'}</div>`;
+
+  const THRESHOLD = 0.015;
+  let main = nonZero.filter(r => r.total/total >= THRESHOLD).map((r,i) => ({...r, color: SR_COLORS[i % SR_COLORS.length]}));
+  const othTotal = nonZero.filter(r => r.total/total < THRESHOLD).reduce((s,r) => s+r.total, 0);
+  if (othTotal > 0) main.push({key:'others', label:TH?'อื่นๆ':'Others', shortLabel:TH?'อื่นๆ':'Others', total:othTotal, color:'#94a3b8'});
+
+  // ── SVG dimensions ─────────────────────────────────────
+  // cx biased left to give right-side labels more room
+  const W=560, H=320, cx=200, cy=160, OR=110, IR=66;
+  const ARC_DOT_R = OR + 6;   // dot attachment radius
+  const LABEL_R   = OR + 22;  // initial connector radius
+
+  // ── Slices ─────────────────────────────────────────────
+  let angle = -Math.PI / 2;
+  const slices = main.map((r, i) => {
+    const sa = angle, sw = (r.total/total) * Math.PI * 2;
+    angle += sw;
+    return {...r, sa, ea: angle, sw, mid: sa + sw/2, idx: i};
+  });
+
+  // ── Draw paths with staggered pop animation ────────────
+  let paths = '';
+  for (const s of slices) {
+    const delay = s.idx * 55;
+    // Full-circle arc degenerates (start=end point) → use two circles instead
+    const clickable = s.key !== 'others';
+    const oc = clickable ? ` onclick="srSliceClick('${s.key}','${tab}','${s.color}')"` : '';
+    if (s.sw >= Math.PI * 2 - 0.001) {
+      paths += `<circle class="sr-slice-path sr-anim-slice" cx="${cx}" cy="${cy}" r="${OR}"
+        fill="${s.color}" stroke="#fff" stroke-width="2.5"${oc}
+        style="transform-origin:${cx}px ${cy}px;animation-delay:${delay}ms${clickable?';cursor:pointer':''}">
+        <title>${escH(s.label)}: 100%</title></circle>`;
+    } else {
+      const x1=cx+OR*Math.cos(s.sa), y1=cy+OR*Math.sin(s.sa);
+      const x2=cx+OR*Math.cos(s.ea), y2=cy+OR*Math.sin(s.ea);
+      const xi1=cx+IR*Math.cos(s.sa),yi1=cy+IR*Math.sin(s.sa);
+      const xi2=cx+IR*Math.cos(s.ea),yi2=cy+IR*Math.sin(s.ea);
+      const lg = s.sw > Math.PI ? 1 : 0;
+      paths += `<path class="sr-slice-path sr-anim-slice" data-key="${s.key}"
+        d="M${xi1.toFixed(1)} ${yi1.toFixed(1)} L${x1.toFixed(1)} ${y1.toFixed(1)} A${OR} ${OR} 0 ${lg} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L${xi2.toFixed(1)} ${yi2.toFixed(1)} A${IR} ${IR} 0 ${lg} 0 ${xi1.toFixed(1)} ${yi1.toFixed(1)}Z"
+        fill="${s.color}" stroke="#fff" stroke-width="2.5"${oc}
+        style="transform-origin:${cx}px ${cy}px;animation-delay:${delay}ms">
+        <title>${escH(s.label)}: ${((s.total/total)*100).toFixed(1)}%</title>
+      </path>`;
+    }
+  }
+
+  // ── Label placement with collision avoidance ───────────
+  const RIGHT = slices.filter(s => Math.cos(s.mid) >= 0).sort((a,b) => Math.sin(a.mid)-Math.sin(b.mid));
+  const LEFT  = slices.filter(s => Math.cos(s.mid) < 0) .sort((a,b) => Math.sin(a.mid)-Math.sin(b.mid));
+
+  function stackY(group) {
+    const MIN_GAP = 14;
+    const pts = group.map(s => ({ ...s, y: cy + LABEL_R * Math.sin(s.mid) }));
+    for (let pass = 0; pass < 10; pass++) {
+      for (let i = 1; i < pts.length; i++) {
+        const diff = pts[i].y - pts[i-1].y;
+        if (diff < MIN_GAP) {
+          const push = (MIN_GAP - diff) / 2;
+          pts[i-1].y -= push;
+          pts[i].y   += push;
+        }
+      }
+    }
+    pts.forEach(p => { p.y = Math.max(10, Math.min(H-10, p.y)); });
+    return pts;
+  }
+
+  const rightPts = stackY(RIGHT);
+  const leftPts  = stackY(LEFT);
+
+  // Anchor x for label text
+  const R_ANCHOR = W - 6;
+  const L_ANCHOR = 6;
+
+  let labels = '';
+
+  // ── Special case: single 100% slice — label inside hole ─
+  if (main.length === 1) {
+    const s = main[0];
+    const lbl = s.shortLabel || s.label.split(' (')[0].slice(0, 18);
+    labels = `<g style="opacity:0;animation:sr-fade-in .4s ease 500ms forwards">
+      <text x="${cx}" y="${cy + 46}" text-anchor="middle" font-size="10" font-weight="700" fill="${s.color}" font-family="Sarabun,sans-serif">${escH(lbl)}</text>
+      <text x="${cx}" y="${cy + 60}" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="Sarabun,sans-serif">100%</text>
+    </g>`;
+  } else {
+
+  const ELBOW_EXTRA = 28;
+
+  for (const p of rightPts) {
+    const pct = ((p.total/total)*100).toFixed(1);
+    const lbl = p.shortLabel || p.label.split(' (')[0].slice(0,14);
+    const dotX = (cx + ARC_DOT_R * Math.cos(p.mid)).toFixed(1);
+    const dotY = (cy + ARC_DOT_R * Math.sin(p.mid)).toFixed(1);
+    const elbX = Math.min(cx + LABEL_R * Math.cos(p.mid) + ELBOW_EXTRA, W - 130).toFixed(1);
+    const lineX = (R_ANCHOR - 5).toFixed(1);
+    const delay = (p.idx * 55 + 300);
+    labels += `<g style="opacity:0;animation:sr-fade-in .3s ease ${delay}ms forwards">
+      <circle cx="${dotX}" cy="${dotY}" r="3" fill="${p.color}"/>
+      <polyline points="${dotX},${dotY} ${elbX},${p.y.toFixed(1)} ${lineX},${p.y.toFixed(1)}" fill="none" stroke="${p.color}" stroke-width="1.1" opacity=".6"/>
+      <text x="${R_ANCHOR}" y="${(p.y+3.5).toFixed(1)}" text-anchor="end" font-size="8.5" font-weight="600" fill="#334155" font-family="Sarabun,sans-serif">${escH(lbl)} ${pct}%</text>
+    </g>`;
+  }
+  for (const p of leftPts) {
+    const pct = ((p.total/total)*100).toFixed(1);
+    const lbl = p.shortLabel || p.label.split(' (')[0].slice(0,14);
+    const dotX = (cx + ARC_DOT_R * Math.cos(p.mid)).toFixed(1);
+    const dotY = (cy + ARC_DOT_R * Math.sin(p.mid)).toFixed(1);
+    const elbX = Math.max(cx + LABEL_R * Math.cos(p.mid) - ELBOW_EXTRA, 130).toFixed(1);
+    const lineX = (L_ANCHOR + 5).toFixed(1);
+    const delay = (p.idx * 55 + 300);
+    labels += `<g style="opacity:0;animation:sr-fade-in .3s ease ${delay}ms forwards">
+      <circle cx="${dotX}" cy="${dotY}" r="3" fill="${p.color}"/>
+      <polyline points="${dotX},${dotY} ${elbX},${p.y.toFixed(1)} ${lineX},${p.y.toFixed(1)}" fill="none" stroke="${p.color}" stroke-width="1.1" opacity=".6"/>
+      <text x="${L_ANCHOR}" y="${(p.y+3.5).toFixed(1)}" text-anchor="start" font-size="8.5" font-weight="600" fill="#334155" font-family="Sarabun,sans-serif">${escH(lbl)} ${pct}%</text>
+    </g>`;
+  }
+
+  } // end else (multi-slice)
+
+  // ── Center label ───────────────────────────────────────
+  const ctVal  = total >= 1000 ? (total/1000).toFixed(1) : total.toFixed(1);
+  const ctUnit = total >= 1000 ? 'tonnes' : 'kg';
+
+  const svgStr = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible">
+    <defs>
+      <filter id="sr-inner-shadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity=".12"/>
+      </filter>
+    </defs>
+    <g>${paths}</g>
+    <circle cx="${cx}" cy="${cy}" r="${IR-1}" fill="white" filter="url(#sr-inner-shadow)"/>
+    <text x="${cx}" y="${cy-14}" text-anchor="middle" font-size="8.5" fill="#94a3b8" letter-spacing="1" font-family="Sarabun,sans-serif" font-weight="700">TOTAL</text>
+    <text x="${cx}" y="${cy+9}" text-anchor="middle" font-size="22" font-weight="800" fill="#0f172a" font-family="Sarabun,sans-serif" class="sr-center-val">${escH(ctVal)}</text>
+    <text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="9.5" fill="#64748b" font-family="Sarabun,sans-serif">${ctUnit}</text>
+    ${labels}
+  </svg>`;
+
+  // ── Animated legend ────────────────────────────────────
+  const legendHtml = main.map((r, i) => {
+    const pct = ((r.total/total)*100).toFixed(1);
+    const delay = i * 45 + 200;
+    return `<div class="sr-legend-row sr-anim-row" style="animation-delay:${delay}ms" title="${escH(r.label)}">
+      <div class="sr-legend-dot" style="background:${r.color}"></div>
+      <div class="sr-legend-name">${escH(r.shortLabel||r.label.split(' (')[0])}</div>
+      <div class="sr-legend-bar"><div class="sr-legend-bar-fill sr-anim-bar" style="background:${r.color};width:${pct}%;animation-delay:${delay+300}ms"></div></div>
+      <div class="sr-legend-pct">${pct}%</div>
+      <div class="sr-legend-kg sr-counter" data-val="${r.total.toFixed(3)}">${srFmt(r.total)}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="sr-chart-row">
+    <div class="sr-chart-box">${svgStr}</div>
+    <div class="sr-chart-legend">
+      <div class="sr-chart-title"><i class="fas fa-circle-notch" style="margin-right:5px;opacity:.5"></i>${TH?'สัดส่วนตามประเภท':'By hazard type'}</div>
+      <div class="sr-legend-list">${legendHtml}</div>
+    </div>
+  </div>`;
+}
+
+function srRender() {
+  if (!srData) return;
+  const {health_hazard, physical_hazard} = srData;
+
+  const h = srBuildRows(health_hazard, SR_HEALTH_LABELS, SR_HEALTH_SHORT);
+  const p = srBuildRows(physical_hazard, SR_PHYS_LABELS, SR_PHYS_SHORT);
+
+  const hNonZero = h.rows.filter(r=>r.total>0).length;
+  const pNonZero = p.rows.filter(r=>r.total>0).length;
+  document.getElementById('srBadge-health').textContent   = hNonZero;
+  document.getElementById('srBadge-physical').textContent = pNonZero;
+
+  const healthHtml = `
+    <div class="sr-tbl-section"><i class="fas fa-heartbeat" style="background:#fef2f2;color:#dc2626"></i>${TH?'Health Hazard — ความเป็นอันตรายทางสุขภาพ':'Health Hazard'}</div>
+    ${srBuildTable(h.rows, h.totSolid, h.totLiq, h.totGas, h.totTotal)}
+    ${srBuildChart(h.rows, 'health')}`;
+
+  const physHtml = `
+    <div class="sr-tbl-section"><i class="fas fa-bolt" style="background:#fffbeb;color:#d97706"></i>${TH?'Physical Hazard — ความเป็นอันตรายทางกายภาพ':'Physical Hazard'}</div>
+    ${srBuildTable(p.rows, p.totSolid, p.totLiq, p.totGas, p.totTotal)}
+    ${srBuildChart(p.rows, 'physical')}`;
+
+  document.getElementById('srBody').innerHTML = `
+    <div class="sr-panel active" id="srPanel-health">${healthHtml}</div>
+    <div class="sr-panel" id="srPanel-physical">${physHtml}</div>`;
+
+  // Animate counter numbers (kg values in legend)
+  requestAnimationFrame(() => srAnimateCounters());
+}
+
+function srAnimateCounters() {
+  const els = document.querySelectorAll('#srBody .sr-counter[data-val]');
+  els.forEach(el => {
+    const target = parseFloat(el.dataset.val);
+    if (!target) return;
+    const dur = 900, start = performance.now();
+    function tick(now) {
+      const t = Math.min((now - start) / dur, 1);
+      const ease = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      el.textContent = srFmt(target * ease);
+      if (t < 1) requestAnimationFrame(tick);
+      else el.textContent = srFmt(target);
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
+// ── Chem Popup (slice click) ──────────────────────────────────────
+let srCpCurKey = null, srCpCurTab = null, srCpCurColor = null, srCpTotalCount = 0;
+
+const SR_STATE_IC = {
+  solid:   {icon:'fa-cube',   bg:'#e0e7ff', fg:'#3730a3'},
+  liquid:  {icon:'fa-tint',   bg:'#dbeafe', fg:'#1d4ed8'},
+  gas:     {icon:'fa-wind',   bg:'#dcfce7', fg:'#15803d'},
+};
+
+function srCloseChemPopup() {
+  const el = document.getElementById('srChemPopup');
+  if (el) el.classList.remove('show');
+  srCpCurKey = srCpCurTab = srCpCurColor = null;
+}
+
+async function srSliceClick(key, tab, color) {
+  if (key === 'others') return;
+  const roomId = S.activeRoomId;
+  if (!roomId) return;
+  srCpCurKey = key; srCpCurTab = tab; srCpCurColor = color;
+
+  const popup  = document.getElementById('srChemPopup');
+  const hdr    = document.getElementById('srCpHdr');
+  const dot    = document.getElementById('srCpDot');
+  const title  = document.getElementById('srCpTitle');
+  const stats  = document.getElementById('srCpStats');
+  const list   = document.getElementById('srCpList');
+  const footer = document.getElementById('srCpFooter');
+
+  // Derive label from known label maps
+  const labelMap = tab === 'health' ? SR_HEALTH_LABELS : SR_PHYS_LABELS;
+  const shortMap = tab === 'health' ? SR_HEALTH_SHORT  : SR_PHYS_SHORT;
+  const label = (shortMap[key] || (labelMap[key]||key).split('(')[0]).trim();
+
+  hdr.style.background = color;
+  dot.style.background = 'rgba(255,255,255,0.35)';
+  title.textContent = label;
+  stats.innerHTML = '';
+  list.innerHTML = `<div class="sr-cp-loading"><i class="fas fa-spinner fa-spin"></i></div>`;
+  footer.style.display = 'none';
+  popup.classList.remove('show');
+  void popup.offsetWidth; // force reflow to restart animation
+  popup.classList.add('show');
+
+  try {
+    const res = await apiFetch(`/v1/api/myroom.php?action=safety_chemicals&room_id=${roomId}&category=${encodeURIComponent(key)}&tab=${tab}&limit=5`);
+    if (!res.success) throw new Error(res.error || 'fail');
+    srShowChemPopup(res.data, label, color);
+  } catch(e) {
+    list.innerHTML = `<div class="sr-cp-loading" style="color:#ef4444"><i class="fas fa-exclamation-triangle"></i> ${TH?'โหลดไม่สำเร็จ':'Load failed'}</div>`;
+  }
+}
+
+function srShowChemPopup(data, label, color) {
+  const {chemicals, total_count, total_kg} = data;
+  srCpTotalCount = total_count;
+
+  document.getElementById('srCpStats').innerHTML =
+    `<div class="sr-cp-stat"><i class="fas fa-flask" style="color:${color}"></i>${total_count} ${TH?'สาร':'chemicals'}</div>` +
+    `<div class="sr-cp-stat"><i class="fas fa-weight" style="color:${color}"></i>${srFmt(total_kg)} kg ${TH?'รวม':'total'}</div>`;
+
+  const listEl = document.getElementById('srCpList');
+  if (!chemicals.length) {
+    listEl.innerHTML = `<div class="sr-cp-loading" style="opacity:.6">${TH?'ไม่พบข้อมูลสาร':'No chemicals found'}</div>`;
+    document.getElementById('srCpFooter').style.display = 'none';
+    return;
+  }
+
+  listEl.innerHTML = chemicals.map((c, i) => {
+    const ic = SR_STATE_IC[c.state] || SR_STATE_IC.solid;
+    const hpills = (c.h_codes||[]).slice(0,3).map(h => `<span class="sr-cp-hpill">${escH(h)}</span>`).join('');
+    const delay = i * 45;
+    return `<div class="sr-cp-item" style="animation-delay:${delay}ms">
+      <div class="sr-cp-ic" style="background:${ic.bg};color:${ic.fg}"><i class="fas ${ic.icon}"></i></div>
+      <div class="sr-cp-name">
+        <div class="sr-cp-chem-name" title="${escH(c.name)}">${escH(c.name)}</div>
+        ${c.cas ? `<div class="sr-cp-cas">CAS ${escH(c.cas)}</div>` : '<div class="sr-cp-cas">—</div>'}
+      </div>
+      <div class="sr-cp-right">
+        <div class="sr-cp-qty">${srFmt(c.qty_kg)} kg</div>
+        <div class="sr-cp-hcodes">${hpills}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const footer  = document.getElementById('srCpFooter');
+  const moreBtn = document.getElementById('srCpMoreBtn');
+  const moreLbl = document.getElementById('srCpMoreLbl');
+  if (total_count > chemicals.length) {
+    moreLbl.textContent = TH ? `ดูทั้งหมด ${total_count} รายการ` : `View all ${total_count} items`;
+    footer.style.display = 'block';
+    moreBtn.onclick = srLoadMoreChems;
+  } else {
+    footer.style.display = 'none';
+  }
+}
+
+async function srLoadMoreChems() {
+  if (!srCpCurKey || !srCpCurTab) return;
+  const roomId = S.activeRoomId;
+  if (!roomId) return;
+  const btn = document.getElementById('srCpMoreBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
+  try {
+    const res = await apiFetch(`/v1/api/myroom.php?action=safety_chemicals&room_id=${roomId}&category=${encodeURIComponent(srCpCurKey)}&tab=${srCpCurTab}&limit=50`);
+    if (!res.success) throw new Error(res.error || 'fail');
+    srShowChemPopup(res.data, srCpCurKey, srCpCurColor);
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fas fa-list"></i> <span id="srCpMoreLbl">${TH?'โหลดเพิ่ม...':'Load more...'}</span>`;
+  }
+}
+
+function srPrint() {
+  if (!srData) return;
+  const room = S.rooms.find(r => parseInt(r.room_id) === S.activeRoomId) || {};
+  const title = [room.code, room.name].filter(Boolean).join(' — ');
+  const date  = new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+
+  const h = srBuildRows(srData.health_hazard, SR_HEALTH_LABELS);
+  const p = srBuildRows(srData.physical_hazard, SR_PHYS_LABELS);
+
+  const content = `<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">
+    <title>Safety Report — ${escH(title)}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}body{font-family:'Sarabun',sans-serif;font-size:12px;color:#1e293b;padding:32px 40px}
+      h1{font-size:18px;font-weight:800;color:#1e3a5f;margin-bottom:4px}
+      .sub{font-size:11px;color:#64748b;margin-bottom:24px}
+      .sec{font-size:13px;font-weight:800;color:#1e3a5f;margin:20px 0 8px;padding-bottom:4px;border-bottom:2px solid #e2e8f0}
+      table{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:6px}
+      th{background:#f1f5fb;padding:7px 10px;text-align:center;font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.4px;border:1px solid #e2e8f0}
+      th:first-child{text-align:left}
+      td{padding:7px 10px;border:1px solid #e2e8f0;color:#334155}
+      td:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
+      tr.has-data{background:#fafbff}
+      td.nz{color:#1e40af;font-weight:700}
+      tfoot td{background:#eef2ff;font-weight:800;color:#1e40af}
+      .note{font-size:9.5px;color:#94a3b8;margin-top:4px}
+      @media print{body{padding:20px}@page{margin:15mm}}
+    </style></head><body>
+    <h1>รายงานความปลอดภัยสารเคมี — ${escH(title)}</h1>
+    <div class="sub">อาคาร: ${escH(room.bld_name||'')} &nbsp;·&nbsp; วันที่: ${date}</div>
+    <div class="sec">Health Hazard (ความเป็นอันตรายทางสุขภาพ)</div>
+    ${srPrintTable(h.rows, h.totSolid, h.totLiq, h.totGas, h.totTotal)}
+    <div class="sec">Physical Hazard (ความเป็นอันตรายทางกายภาพ)</div>
+    ${srPrintTable(p.rows, p.totSolid, p.totLiq, p.totGas, p.totTotal)}
+    <p class="note">* ปริมาณแสดงในหน่วย kg โดยประมาณ สมมติความหนาแน่น 1 kg/L สำหรับของเหลว | สร้างโดยระบบจัดการสารเคมี</p>
+    <script>window.onload=()=>window.print()<\/script>
+    </body></html>`;
+  const win = window.open('','_blank');
+  if (!win) { showToast(TH?'กรุณาอนุญาต Popup':'Allow popups','warn'); return; }
+  win.document.write(content); win.document.close();
+}
+
+function srPrintTable(rows, totSolid, totLiq, totGas, totTotal) {
+  const c = v => v>0 ? `<td class="nz">${srFmt(v)}</td>` : `<td>${srFmt(v)}</td>`;
+  const r = rows.map(row => `<tr class="${row.total>0?'has-data':''}"><td>- ${escH(row.label)}</td>${c(row.solid)}${c(row.liquid)}${c(row.gas)}${c(row.total)}</tr>`).join('');
+  return `<table><thead><tr><th style="width:44%">ประเภทความอันตราย</th><th>ของแข็ง (kg)</th><th>ของเหลว (kg)</th><th>ก๊าซ (kg)</th><th>รวม (kg)</th></tr></thead>
+    <tbody>${r}</tbody>
+    <tfoot><tr><td>ปริมาณรวมทั้งหมด (kg)*:</td><td>${srFmt(totSolid)}</td><td>${srFmt(totLiq)}</td><td>${srFmt(totGas)}</td><td>${srFmt(totTotal)}</td></tr></tfoot></table>`;
+}
 </script>
 
 <?php Layout::endContent(); ?>

@@ -149,6 +149,23 @@ Layout::head($TH ? 'จัดการผู้ใช้' : 'User Management');
 .usr-det-lbl{color:var(--c3);display:flex;align-items:center;gap:6px;font-weight:500}
 .usr-det-val{font-weight:600;color:var(--c1);text-align:right;max-width:60%;word-break:break-word}
 .usr-det-acts{display:flex;gap:8px;justify-content:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap}
+/* ── Room list inside detail modal ── */
+.ud-rooms{border-top:1.5px solid #f1f5f9;margin-top:14px;padding-top:12px}
+.ud-rooms-hdr{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--c3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.ud-rooms-hdr i{font-size:12px}
+.ud-rooms-cnt{margin-left:auto;font-size:10px;font-weight:600;color:#6366f1;background:#e0e7ff;padding:1px 8px;border-radius:8px;text-transform:none;letter-spacing:0}
+.ud-room-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;background:#f8fafc;border:1.5px solid #e8edf5;margin-bottom:6px;transition:border-color .12s}
+.ud-room-item:last-child{margin-bottom:0}
+.ud-room-item.primary{background:#f0f4ff;border-color:#c7d2fe}
+.ud-room-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ud-room-body{flex:1;min-width:0}
+.ud-room-top{display:flex;align-items:center;gap:5px;margin-bottom:2px;flex-wrap:wrap}
+.ud-room-code{font-size:13px;font-weight:800;line-height:1}
+.ud-room-floor{font-size:9px;font-weight:600;color:#64748b;background:#e2e8f0;padding:1px 5px;border-radius:5px}
+.ud-room-pri{font-size:9px;font-weight:700;color:#6366f1;background:#e0e7ff;padding:1px 7px;border-radius:8px;display:flex;align-items:center;gap:3px}
+.ud-room-name{font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ud-room-meta{display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap}
+.ud-room-tag{font-size:10px;color:#94a3b8;display:flex;align-items:center;gap:3px}
 
 /* ── Import/Export dropdown ── */
 .usr-ie-wrap{position:relative;display:inline-block}
@@ -171,7 +188,7 @@ Layout::head($TH ? 'จัดการผู้ใช้' : 'User Management');
 
 /* ── Room Access Manager ── */
 .rm-user-hdr{display:flex;align-items:center;gap:12px;padding:12px 14px;background:linear-gradient(135deg,#f5f3ff,#eef2ff);border:1.5px solid #e0e7ff;border-radius:12px;margin-bottom:14px}
-.rm-user-av{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0}
+.rm-user-av{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden}
 .rm-user-name{font-size:13px;font-weight:700;color:var(--c1)}
 .rm-user-at{font-size:11px;color:var(--c3);margin-top:1px}
 .rm-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;background:#ede9fe;color:#5b21b6;font-size:11px;font-weight:700;white-space:nowrap;margin-left:auto}
@@ -206,14 +223,17 @@ Layout::head($TH ? 'จัดการผู้ใช้' : 'User Management');
 .rm-sum-v{font-size:20px;font-weight:900;color:var(--c1);line-height:1}
 .rm-sum-l{font-size:9px;color:var(--c3);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
 /* User pill in table/card */
-.rm-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;background:#eef2ff;color:#4338ca;font-size:11px;font-weight:700;border:1px solid #c7d2fe;cursor:pointer;transition:all .15s}
+.rm-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;background:#eef2ff;color:#4338ca;font-size:11px;font-weight:700;border:1px solid #c7d2fe;cursor:pointer;transition:all .15s;white-space:nowrap}
 .rm-pill:hover{background:#e0e7ff;border-color:#a5b4fc;transform:translateY(-1px);box-shadow:0 2px 8px rgba(99,102,241,.18)}
-.rm-primary-tag{display:block;margin-top:3px;font-size:10px;color:#64748b;font-family:'Courier New',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.rm-pill-zero{background:#f1f5f9!important;color:#94a3b8!important;border-color:#e2e8f0!important;cursor:default!important;pointer-events:none}
+.rm-pill-zero:hover{transform:none!important;box-shadow:none!important}
+.rm-primary-tag{display:inline-flex;align-items:center;gap:3px;margin-top:3px;font-size:10px;color:#64748b;font-family:'Courier New',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.rm-primary-tag .rm-bld{color:#94a3b8;font-size:9px}
 /* Room popover */
 .rmp-box{background:#fff;border:1.5px solid #e0e7ff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.14),0 2px 8px rgba(99,102,241,.10);min-width:270px;max-width:340px;overflow:hidden;animation:rmpIn .15s ease}
 @keyframes rmpIn{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
 .rmp-hdr{display:flex;align-items:center;gap:8px;padding:12px 14px 10px;border-bottom:1px solid #f0f0f0;background:linear-gradient(135deg,#f5f3ff,#eef2ff)}
-.rmp-hdr-ic{width:28px;height:28px;border-radius:8px;background:#6366f1;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0}
+.rmp-hdr-ic{width:28px;height:28px;border-radius:8px;background:#6366f1;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0;overflow:hidden}
 .rmp-hdr-name{font-size:12px;font-weight:700;color:#1e293b;line-height:1.2}
 .rmp-hdr-sub{font-size:10px;color:#94a3b8;margin-top:1px}
 .rmp-close{margin-left:auto;width:22px;height:22px;border:none;background:none;cursor:pointer;color:#94a3b8;font-size:13px;border-radius:6px;display:flex;align-items:center;justify-content:center;padding:0}
@@ -243,6 +263,74 @@ Layout::head($TH ? 'จัดการผู้ใช้' : 'User Management');
 .org-cascade:disabled{background:#f1f5f9;color:#94a3b8;cursor:not-allowed}
 .org-breadcrumb{display:flex;align-items:center;gap:6px;margin-top:10px;padding:8px 12px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;font-size:11px;color:var(--c2)}
 .org-breadcrumb i{color:#6366f1;font-size:12px;flex-shrink:0}
+
+/* ── Add/Edit Modal Sections ── */
+.um-sec{margin-bottom:12px;background:#f8fafc;border:1.5px solid #e8edf5;border-radius:12px;padding:14px 16px}
+.um-sec:last-of-type{margin-bottom:0}
+.um-sec-hd{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--c1);margin-bottom:12px}
+.um-sec-hd i{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:10px;flex-shrink:0}
+.um-sec-opt{font-size:10px;font-weight:400;color:#94a3b8;margin-left:auto}
+/* Room picker trigger */
+.um-room-trigger{width:100%;min-height:44px;border:1.5px dashed #c7d2fe;border-radius:10px;background:#fff;display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;font-family:inherit;text-align:left;transition:all .15s}
+.um-room-trigger:hover{border-color:#6366f1;background:#f5f3ff}
+.um-room-trigger.has-room{border-style:solid;border-color:#6366f1;background:#f5f3ff}
+.um-rt-ic{width:28px;height:28px;border-radius:8px;background:#e0e7ff;color:#6366f1;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .15s}
+.um-room-trigger.has-room .um-rt-ic{background:#6366f1;color:#fff}
+.um-rt-ph{font-size:12.5px;color:#94a3b8}
+.um-rt-name{font-size:12.5px;font-weight:700;color:#4338ca}
+.um-rt-bld{font-size:10px;color:#6366f1;margin-top:1px}
+/* Room picker overlay */
+.um-sl-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:10010;display:none;align-items:center;justify-content:center;padding:16px}
+.um-sl-ov.open{display:flex}
+.um-sl-modal{background:#fff;border-radius:16px;width:100%;max-width:540px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.25);animation:usrMdIn .18s ease}
+.um-sl-hdr{display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1.5px solid #f0f0f0;flex-shrink:0;background:linear-gradient(135deg,#f5f3ff,#eef2ff)}
+.um-sl-hdr-ic{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;flex-shrink:0}
+.um-sl-hdr-txt{flex:1}
+.um-sl-hdr-title{font-size:14px;font-weight:700;color:#1e293b}
+.um-sl-hdr-sub{font-size:10px;color:#94a3b8;margin-top:1px}
+.um-sl-close{width:30px;height:30px;border:none;background:#e0e7ff;border-radius:8px;cursor:pointer;color:#6366f1;font-size:13px;display:flex;align-items:center;justify-content:center;transition:background .1s;flex-shrink:0}
+.um-sl-close:hover{background:#c7d2fe}
+.um-sl-nav{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid #f0f0f0;background:#f8f9ff;flex-shrink:0}
+.um-sl-back{background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#6366f1;padding:4px 8px;border-radius:6px;font-family:inherit;transition:background .1s}
+.um-sl-back:hover{background:#ede9fe}
+.um-sl-nav-cur{font-size:12px;font-weight:600;color:#374151;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.um-sl-srch-wrap{padding:10px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0}
+.um-sl-srch{width:100%;padding:8px 12px 8px 34px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12.5px;font-family:inherit;color:#1e293b;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") no-repeat 10px center}
+.um-sl-srch:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,.12)}
+.um-sl-body{flex:1;overflow-y:auto;min-height:0}
+.um-sl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
+.um-sl-bld{display:flex;flex-direction:column;padding:13px 13px 32px;border:1.5px solid #e8ecf0;border-radius:12px;cursor:pointer;background:#fff;border-left-width:4px;transition:box-shadow .15s,transform .1s,background .1s;position:relative;min-height:100px}
+.um-sl-bld:hover{box-shadow:0 4px 16px rgba(0,0,0,.10);background:#fafbff;transform:translateY(-1px)}
+.um-sl-bld-num{font-size:24px;font-weight:900;line-height:1;letter-spacing:-1px;margin-bottom:6px}
+.um-sl-bld-name{font-size:11px;font-weight:700;color:#1e293b;line-height:1.4;flex:1;margin-bottom:4px}
+.um-sl-bld-badge{position:absolute;bottom:10px;left:13px;font-size:9px;font-weight:700;color:#64748b;background:#f1f5f9;padding:2px 7px;border-radius:8px;display:flex;align-items:center;gap:4px}
+.um-sl-bld-arrow{position:absolute;bottom:12px;right:11px;font-size:10px;color:#d1d5db;transition:right .12s,color .12s}
+.um-sl-bld:hover .um-sl-bld-arrow{right:9px;color:#94a3b8}
+.um-sl-floor-hdr{font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;padding:8px 18px 5px;background:#fff;border-bottom:1px solid #f0f0f0;position:sticky;top:0;z-index:1}
+.um-sl-room{display:flex;align-items:center;gap:11px;padding:11px 18px;cursor:pointer;transition:background .12s;border-bottom:1px solid #f1f5f9}
+.um-sl-room:hover{background:#f8f9ff}
+.um-sl-room.sel{background:#f0f0ff}
+.um-sl-room-chk{width:20px;height:20px;border-radius:50%;border:2px solid #d1d5db;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.um-sl-room.sel .um-sl-room-chk{border-color:#6366f1;background:#6366f1}
+.um-sl-room-chk i{font-size:9px;color:#fff;opacity:0;transition:opacity .1s}
+.um-sl-room.sel .um-sl-room-chk i{opacity:1}
+.um-sl-room-ic{width:40px;height:40px;border-radius:10px;background:#ede9fe;color:#6366f1;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:all .12s}
+.um-sl-room.sel .um-sl-room-ic{background:#c7d2fe;color:#4338ca}
+.um-sl-room-body{flex:1;min-width:0}
+.um-sl-room-top{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.um-sl-room-code{font-size:13px;font-weight:800;color:#4338ca;letter-spacing:.3px}
+.um-sl-room.sel .um-sl-room-code{color:#3730a3}
+.um-sl-room-floor{font-size:9px;color:#64748b;font-weight:600;padding:1px 6px;background:#f1f5f9;border-radius:8px}
+.um-sl-room-name{font-size:11px;color:#94a3b8}
+.um-sl-room.sel .um-sl-room-name{color:#374151}
+.um-sl-footer{border-top:2px solid #e0e7ff;background:#f5f3ff;flex-shrink:0;display:none;padding:10px 16px 12px;align-items:center;gap:10px}
+.um-sl-footer.visible{display:flex}
+.um-sl-footer-room{font-size:12px;font-weight:700;color:#4338ca}
+.um-sl-footer-bld{font-size:10px;color:#94a3b8;margin-top:1px}
+.um-sl-confirm{padding:9px 20px;background:#6366f1;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;flex-shrink:0;transition:background .12s}
+.um-sl-confirm:hover{background:#4f46e5}
+.um-sl-empty{text-align:center;padding:36px 16px;font-size:12px;color:#94a3b8}
+.um-sl-empty i{display:block;font-size:28px;margin-bottom:8px;opacity:.3}
 
 /* ── Import Modal ── */
 .imp-info-box{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;margin-bottom:16px;font-size:12px;color:#1e40af;line-height:1.5}
@@ -385,7 +473,7 @@ Layout::head($TH ? 'จัดการผู้ใช้' : 'User Management');
 
 <!-- Add/Edit User -->
 <div class="usr-ov" id="userModal">
-    <div class="usr-md" style="max-width:580px">
+    <div class="usr-md" style="max-width:660px">
         <div class="usr-mh">
             <h3 id="modalTitle"><i class="fas fa-user-plus" style="color:#6366f1"></i> <?php echo $TH ? 'เพิ่มผู้ใช้' : 'Add User'; ?></h3>
             <button class="usr-mx" onclick="closeModal()"><i class="fas fa-times"></i></button>
@@ -393,41 +481,106 @@ Layout::head($TH ? 'จัดการผู้ใช้' : 'User Management');
         <div class="usr-mb">
             <form id="userForm" onsubmit="saveUser(event)">
                 <input type="hidden" id="fUserId" value="">
-                <div class="ci-g2" style="margin-bottom:0">
-                    <div class="ci-fg"><label class="ci-label"><?php echo $TH ? 'ชื่อ *' : 'First Name *'; ?></label><input type="text" id="fFirstName" class="ci-input" required></div>
-                    <div class="ci-fg"><label class="ci-label"><?php echo $TH ? 'นามสกุล *' : 'Last Name *'; ?></label><input type="text" id="fLastName" class="ci-input" required></div>
-                </div>
-                <div class="ci-g2" style="margin-bottom:0">
-                    <div class="ci-fg"><label class="ci-label">Username *</label><input type="text" id="fUsername" class="ci-input" required></div>
-                    <div class="ci-fg"><label class="ci-label">Email *</label><input type="email" id="fEmail" class="ci-input" required></div>
-                </div>
-                <div class="ci-g2" style="margin-bottom:0">
-                    <div class="ci-fg"><label class="ci-label"><?php echo $TH ? 'เบอร์โทร' : 'Phone'; ?></label><input type="text" id="fPhone" class="ci-input"></div>
-                    <div class="ci-fg"><label class="ci-label"><?php echo $TH ? 'รหัสผ่าน' : 'Password'; ?> <span id="pwHint" style="font-weight:400;color:var(--c3);font-size:10px"></span></label><input type="password" id="fPassword" class="ci-input" minlength="6"></div>
-                </div>
-                <div class="ci-fg" style="margin-bottom:0">
-                    <label class="ci-label"><?php echo $TH ? 'บทบาท *' : 'Role *'; ?></label>
-                    <select id="fRole" class="ci-select" required>
-                        <option value="">-- <?php echo $TH ? 'เลือกบทบาท' : 'Select Role'; ?> --</option>
-                    </select>
-                </div>
-                <div class="org-section">
-                    <div class="org-section-hdr"><i class="fas fa-sitemap"></i> <?php echo $TH ? 'สังกัดองค์กร' : 'Organization'; ?></div>
-                    <div class="ci-g2" style="margin-bottom:0">
-                        <div class="ci-fg"><label class="ci-label"><i class="fas fa-building" style="margin-right:4px;font-size:11px;color:#6366f1"></i> <?php echo $TH ? 'ศูนย์' : 'Center'; ?></label><select id="fCenter" class="ci-select org-cascade" data-level="center" onchange="onOrgChange('center')"><option value="">-- <?php echo $TH ? 'เลือกศูนย์' : 'Select Center'; ?> --</option></select></div>
-                        <div class="ci-fg"><label class="ci-label"><i class="fas fa-sitemap" style="margin-right:4px;font-size:11px;color:#e65100"></i> <?php echo $TH ? 'ฝ่าย' : 'Division'; ?></label><select id="fDivision" class="ci-select org-cascade" data-level="division" onchange="onOrgChange('division')" disabled><option value="">-- <?php echo $TH ? 'เลือกฝ่าย' : 'Select Division'; ?> --</option></select></div>
+
+                <!-- ข้อมูลส่วนตัว -->
+                <div class="um-sec">
+                    <div class="um-sec-hd">
+                        <i class="fas fa-user" style="background:#ede9fe;color:#6366f1"></i>
+                        <?php echo $TH ? 'ข้อมูลส่วนตัว' : 'Personal Info'; ?>
+                    </div>
+                    <div class="ci-g2">
+                        <div class="ci-fg"><label class="ci-label"><?php echo $TH?'ชื่อ':'First Name'?> <span style="color:#dc2626">*</span></label><input type="text" id="fFirstName" class="ci-input" required placeholder="<?php echo $TH?'ชื่อจริง':'First name'?>"></div>
+                        <div class="ci-fg"><label class="ci-label"><?php echo $TH?'นามสกุล':'Last Name'?> <span style="color:#dc2626">*</span></label><input type="text" id="fLastName" class="ci-input" required placeholder="<?php echo $TH?'นามสกุล':'Last name'?>"></div>
+                    </div>
+                    <div class="ci-g2">
+                        <div class="ci-fg"><label class="ci-label">Username <span style="color:#dc2626">*</span></label><input type="text" id="fUsername" class="ci-input" required autocomplete="off"></div>
+                        <div class="ci-fg"><label class="ci-label">Email <span style="color:#dc2626">*</span></label><input type="email" id="fEmail" class="ci-input" required placeholder="email@example.com"></div>
                     </div>
                     <div class="ci-g2" style="margin-bottom:0">
-                        <div class="ci-fg"><label class="ci-label"><i class="fas fa-layer-group" style="margin-right:4px;font-size:11px;color:#1a8a5c"></i> <?php echo $TH ? 'งาน' : 'Section'; ?></label><select id="fSection" class="ci-select org-cascade" data-level="section" onchange="onOrgChange('section')" disabled><option value="">-- <?php echo $TH ? 'เลือกงาน' : 'Select Section'; ?> --</option></select></div>
-                        <div class="ci-fg"><label class="ci-label"><i class="fas fa-warehouse" style="margin-right:4px;font-size:11px;color:#2563eb"></i> <?php echo $TH ? 'คลัง' : 'Store'; ?></label><select id="fStore" class="ci-select org-cascade" data-level="store" onchange="onOrgChange('store')" disabled><option value="">-- <?php echo $TH ? 'เลือกคลัง' : 'Select Store'; ?> --</option></select></div>
+                        <div class="ci-fg" style="margin-bottom:0"><label class="ci-label"><?php echo $TH?'เบอร์โทร':'Phone'?></label><input type="text" id="fPhone" class="ci-input" placeholder="0X-XXXX-XXXX"></div>
+                        <div class="ci-fg" style="margin-bottom:0"><label class="ci-label"><?php echo $TH?'รหัสผ่าน':'Password'?> <span id="pwHint" style="font-weight:400;color:var(--c3);font-size:10px"></span></label><input type="password" id="fPassword" class="ci-input" minlength="6" placeholder="<?php echo $TH?'อย่างน้อย 6 ตัวอักษร':'Min 6 characters'?>" autocomplete="new-password"></div>
+                    </div>
+                </div>
+
+                <!-- บทบาทและสิทธิ์ -->
+                <div class="um-sec">
+                    <div class="um-sec-hd">
+                        <i class="fas fa-shield-alt" style="background:#e0e7ff;color:#6366f1"></i>
+                        <?php echo $TH?'บทบาทและสิทธิ์':'Role & Permissions'?>
+                    </div>
+                    <div class="ci-fg" style="margin-bottom:0">
+                        <label class="ci-label"><?php echo $TH?'บทบาท':'Role'?> <span style="color:#dc2626">*</span></label>
+                        <select id="fRole" class="ci-select" required>
+                            <option value="">-- <?php echo $TH?'เลือกบทบาท':'Select Role'?> --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- สังกัดองค์กร -->
+                <div class="org-section">
+                    <div class="org-section-hdr"><i class="fas fa-sitemap"></i> <?php echo $TH?'สังกัดองค์กร':'Organization'?></div>
+                    <div class="ci-g2" style="margin-bottom:0">
+                        <div class="ci-fg"><label class="ci-label"><i class="fas fa-building" style="margin-right:4px;font-size:10px;color:#6366f1"></i><?php echo $TH?'ศูนย์':'Center'?></label><select id="fCenter" class="ci-select org-cascade" data-level="center" onchange="onOrgChange('center')"><option value="">-- <?php echo $TH?'เลือกศูนย์':'Select Center'?> --</option></select></div>
+                        <div class="ci-fg"><label class="ci-label"><i class="fas fa-sitemap" style="margin-right:4px;font-size:10px;color:#e65100"></i><?php echo $TH?'ฝ่าย':'Division'?></label><select id="fDivision" class="ci-select org-cascade" data-level="division" onchange="onOrgChange('division')" disabled><option value="">-- <?php echo $TH?'เลือกฝ่าย':'Select Division'?> --</option></select></div>
+                    </div>
+                    <div class="ci-g2" style="margin-bottom:0">
+                        <div class="ci-fg" style="margin-bottom:0"><label class="ci-label"><i class="fas fa-layer-group" style="margin-right:4px;font-size:10px;color:#1a8a5c"></i><?php echo $TH?'งาน':'Section'?></label><select id="fSection" class="ci-select org-cascade" data-level="section" onchange="onOrgChange('section')" disabled><option value="">-- <?php echo $TH?'เลือกงาน':'Select Section'?> --</option></select></div>
+                        <div class="ci-fg" style="margin-bottom:0"><label class="ci-label"><i class="fas fa-warehouse" style="margin-right:4px;font-size:10px;color:#2563eb"></i><?php echo $TH?'คลัง':'Store'?></label><select id="fStore" class="ci-select org-cascade" data-level="store" onchange="onOrgChange('store')" disabled><option value="">-- <?php echo $TH?'เลือกคลัง':'Select Store'?> --</option></select></div>
                     </div>
                     <div class="org-breadcrumb" id="orgBreadcrumb" style="display:none"><i class="fas fa-map-marker-alt"></i><span id="orgBreadcrumbText"></span></div>
                 </div>
-                <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
-                    <button type="button" class="ci-btn ci-btn-secondary" onclick="closeModal()"><?php echo $TH ? 'ยกเลิก' : 'Cancel'; ?></button>
-                    <button type="submit" class="usr-btn usr-btn-p" id="saveBtn"><i class="fas fa-save"></i> <?php echo $TH ? 'บันทึก' : 'Save'; ?></button>
+
+                <!-- ห้องปฏิบัติการหลัก (Add only) -->
+                <div class="um-sec" id="umRoomSec">
+                    <div class="um-sec-hd">
+                        <i class="fas fa-door-open" style="background:#dbeafe;color:#2563eb"></i>
+                        <?php echo $TH?'ห้องปฏิบัติการหลัก':'Primary Lab Room'?>
+                        <span class="um-sec-opt"><?php echo $TH?'ไม่บังคับ — จัดการเพิ่มได้ภายหลัง':'optional — manageable later'?></span>
+                    </div>
+                    <button type="button" class="um-room-trigger" id="umRoomTrigger" onclick="umSlOpen()">
+                        <div class="um-rt-ic"><i class="fas fa-flask"></i></div>
+                        <div class="um-rt-txt" id="umRoomTrigTxt"><span class="um-rt-ph"><?php echo $TH?'เลือกห้องปฏิบัติการ...':'Select laboratory...'?></span></div>
+                        <i class="fas fa-chevron-right" style="font-size:11px;color:#94a3b8;flex-shrink:0"></i>
+                    </button>
+                    <input type="hidden" id="fRoomId" value="">
+                </div>
+
+                <!-- Actions -->
+                <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+                    <button type="button" class="usr-btn usr-btn-o" style="border-color:#e2e8f0;color:#64748b" onclick="closeModal()"><i class="fas fa-times"></i> <?php echo $TH?'ยกเลิก':'Cancel'?></button>
+                    <button type="submit" class="usr-btn usr-btn-p" id="saveBtn"><i class="fas fa-save"></i> <?php echo $TH?'บันทึก':'Save'?></button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Room Picker Modal (for Add User) -->
+<div class="um-sl-ov" id="umSlOv">
+    <div class="um-sl-modal">
+        <div class="um-sl-hdr">
+            <div class="um-sl-hdr-ic"><i class="fas fa-flask-vial"></i></div>
+            <div class="um-sl-hdr-txt">
+                <div class="um-sl-hdr-title"><?php echo $TH?'เลือกห้องปฏิบัติการ':'Select Laboratory'?></div>
+                <div class="um-sl-hdr-sub" id="umSlHdrSub"><?php echo $TH?'เลือกอาคารเพื่อดูรายการห้อง':'Select a building to browse rooms'?></div>
+            </div>
+            <button type="button" class="um-sl-close" onclick="umSlClose()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="um-sl-nav" id="umSlNav" style="display:none">
+            <button type="button" class="um-sl-back" onclick="umSlGoGrid()"><i class="fas fa-arrow-left"></i> <?php echo $TH?'อาคารทั้งหมด':'All Buildings'?></button>
+            <span style="color:#94a3b8;font-size:12px;flex-shrink:0">/</span>
+            <span class="um-sl-nav-cur" id="umSlNavCur"></span>
+        </div>
+        <div class="um-sl-srch-wrap">
+            <input type="text" class="um-sl-srch" id="umSlSearch" placeholder="<?php echo $TH?'ค้นหาชื่ออาคาร หรือรหัสห้อง...':'Search building or room code...'?>" autocomplete="off">
+        </div>
+        <div class="um-sl-body" id="umSlBody"><div class="um-sl-empty"><i class="fas fa-spinner fa-spin"></i></div></div>
+        <div class="um-sl-footer" id="umSlFooter">
+            <div style="flex:1;min-width:0">
+                <div class="um-sl-footer-room" id="umSlFooterRoom">–</div>
+                <div class="um-sl-footer-bld" id="umSlFooterBld"></div>
+            </div>
+            <button type="button" class="um-sl-confirm" onclick="umSlConfirm()"><i class="fas fa-check-circle"></i> <?php echo $TH?'ยืนยัน':'Confirm'?></button>
         </div>
     </div>
 </div>
@@ -658,8 +811,10 @@ function renderUsersTable(users) {
                 <td style="font-size:12px;color:var(--c2)">${escHtml(u.department)||'<span style="color:#cbd5e1">—</span>'}</td>
                 <td style="font-size:12px;color:var(--c2)">${escHtml(u.position)||'<span style="color:#cbd5e1">—</span>'}</td>
                 <td>
-                    <span class="rm-pill" onclick="event.stopPropagation();showRoomPopover(event,${u.id})" title="${TH?'ดูรายการห้อง':'View rooms'}"><i class="fas fa-door-open"></i> ${roomCount}</span>
-                    ${u.primary_room_code ? `<span class="rm-primary-tag" title="${escHtml(u.primary_bld_code||'')} · ${escHtml(u.primary_room_name||'')}">${escHtml(u.primary_room_code)}</span>` : ''}
+                    ${roomCount > 0
+                        ? `<span class="rm-pill" onclick="event.stopPropagation();showRoomPopover(event,${u.id})" title="${TH?'คลิกเพื่อดูรายการห้อง':'Click to view rooms'}"><i class="fas fa-door-open"></i> ${roomCount} ${TH?'ห้อง':'rooms'}</span>`
+                        : `<span class="rm-pill rm-pill-zero"><i class="fas fa-door-open"></i> ${TH?'ไม่มีห้อง':'No rooms'}</span>`}
+                    ${u.primary_room_code ? `<span class="rm-primary-tag" title="${escHtml(u.primary_bld_code||'')} · ${escHtml(u.primary_room_name||'')}"><span class="rm-bld">${escHtml(u.primary_bld_code||'')}</span>${escHtml(u.primary_room_code)}</span>` : ''}
                 </td>
                 <td>${active
                     ? '<span class="usr-status-on"><i class="fas fa-circle" style="font-size:7px"></i> Active</span>'
@@ -711,7 +866,9 @@ function renderUsersGrid(users) {
                 </div>
                 <div class="usr-card-ft">
                     <div style="display:flex;align-items:center;gap:6px">
-                        <span class="rm-pill" style="font-size:10px" onclick="event.stopPropagation();showRoomPopover(event,${u.id})" title="${TH?'ดูรายการห้อง':'View rooms'}"><i class="fas fa-door-open"></i> ${roomCount} ${TH?'ห้อง':'rooms'}</span>
+                        ${roomCount > 0
+                            ? `<span class="rm-pill" style="font-size:10px" onclick="event.stopPropagation();showRoomPopover(event,${u.id})" title="${TH?'คลิกเพื่อดูรายการห้อง':'Click to view rooms'}"><i class="fas fa-door-open"></i> ${roomCount} ${TH?'ห้อง':'rooms'}</span>`
+                            : `<span class="rm-pill rm-pill-zero" style="font-size:10px"><i class="fas fa-door-open"></i> ${TH?'ไม่มีห้อง':'No rooms'}</span>`}
                         ${active
                             ? '<span class="usr-status-on" style="font-size:9px;padding:2px 7px"><i class="fas fa-circle" style="font-size:6px"></i> Active</span>'
                             : '<span class="usr-status-off" style="font-size:9px;padding:2px 7px"><i class="fas fa-ban" style="font-size:8px"></i> Off</span>'}
@@ -728,13 +885,17 @@ function renderUsersGrid(users) {
 }
 
 /* ─── Detail modal ─── */
-function showDetail(userId) {
+async function showDetail(userId) {
     const u = allUsers.find(x => parseInt(x.id) === userId);
     if (!u) return;
-    const active   = parseInt(u.is_active);
+    const active    = parseInt(u.is_active);
     const roomCount = parseInt(u.room_count || 0);
     const isSelf    = parseInt(u.id) === currentUserId;
     const primaryRoom = u.primary_room_code ? `${u.primary_room_code}${u.primary_bld_code ? ' · '+u.primary_bld_code : ''}` : '—';
+
+    const roomsPlaceholder = roomCount > 0
+        ? `<div style="text-align:center;padding:14px;color:#94a3b8;font-size:12px"><i class="fas fa-spinner fa-spin"></i> ${TH?'กำลังโหลด...':'Loading...'}</div>`
+        : `<div style="text-align:center;padding:12px;color:#cbd5e1;font-size:12px"><i class="fas fa-door-open" style="display:block;font-size:24px;margin-bottom:6px;opacity:.25"></i>${TH?'ไม่มีห้องที่ดูแล':'No managed rooms'}</div>`;
 
     document.getElementById('detailContent').innerHTML = `
         <div style="display:flex;justify-content:center;margin-bottom:10px">${usrAvatar(u, 72, '20px')}</div>
@@ -743,17 +904,15 @@ function showDetail(userId) {
         <div class="usr-det-badges">
             <span class="usr-role ${roleColors[u.role_name]||'usr-role-visitor'}"><i class="fas ${roleIcons[u.role_name]||'fa-user'}"></i> ${escHtml(u.role_display||u.role_name)}</span>
             ${active ? '<span class="usr-status-on"><i class="fas fa-circle" style="font-size:7px"></i> Active</span>' : '<span class="usr-status-off"><i class="fas fa-ban"></i> Inactive</span>'}
-            <span class="rm-pill" onclick="event.stopPropagation();showRoomPopover(event,${u.id})" title="${TH?'ดูรายการห้อง':'View rooms'}"><i class="fas fa-door-open"></i> ${roomCount} ${TH?'ห้อง':'rooms'}</span>
         </div>
         <div class="usr-det-rows">
             ${[
                 ['fa-at','color:#6366f1', TH?'Username':'Username', '@'+u.username],
                 ['fa-envelope','color:#6366f1', TH?'อีเมล':'Email', u.email||'—'],
                 ['fa-phone','color:#16a34a', TH?'เบอร์โทร':'Phone', u.phone||'—'],
-                ['fa-map-marker-alt','color:#6366f1', TH?'ห้องหลัก':'Primary Room', primaryRoom],
-                ['fa-building','color:#6366f1', TH?'ศูนย์':'Center', u.center_name||'—'],
-                ['fa-sitemap','color:#e65100', TH?'ฝ่าย':'Division', u.department||'—'],
-                ['fa-layer-group','color:#1a8a5c', TH?'งาน':'Section', u.position||'—'],
+                ['fa-building','color:#6366f1', TH?'ศูนย์':'Center', u.center_name||(allStores.find(s=>s.division_name===(u.department||u.division_name))||{}).center_name||'—'],
+                ['fa-sitemap','color:#e65100', TH?'ฝ่าย':'Division', u.department||u.division_name||'—'],
+                ['fa-layer-group','color:#1a8a5c', TH?'งาน':'Section', u.position||u.section_name||'—'],
                 ['fa-warehouse','color:#2563eb', TH?'คลัง':'Store', u.store_name||'—'],
                 ['fa-clock','color:var(--c3)', TH?'เข้าสู่ระบบล่าสุด':'Last Login', u.last_login ? formatDate(u.last_login) : '—'],
                 ['fa-calendar','color:var(--c3)', TH?'สร้างเมื่อ':'Created', formatDate(u.created_at)],
@@ -762,6 +921,13 @@ function showDetail(userId) {
                 <span class="usr-det-val">${escHtml(String(val))}</span>
             </div>`).join('')}
         </div>
+        <div class="ud-rooms">
+            <div class="ud-rooms-hdr">
+                <i class="fas fa-door-open"></i>${TH?'ห้องที่ดูแล':'Managed Rooms'}
+                <span class="ud-rooms-cnt">${roomCount} ${TH?'ห้อง':'rooms'}</span>
+            </div>
+            <div id="detailRoomList">${roomsPlaceholder}</div>
+        </div>
         <div class="usr-det-acts">
             ${isAdmin ? `<button class="usr-btn usr-btn-g" style="font-size:11px;padding:6px 12px" onclick="closeDetailModal();openRoomModal(${u.id})"><i class="fas fa-map-marker-alt"></i> ${TH?'จัดการห้อง':'Manage Rooms'}</button>` : ''}
             ${isAdmin || !isSelf ? `<button class="usr-btn usr-btn-o" style="font-size:11px;padding:6px 12px;border-color:#6366f1;color:#6366f1" onclick="closeDetailModal();openEditModal(${u.id})"><i class="fas fa-pen"></i> ${TH?'แก้ไข':'Edit'}</button>` : ''}
@@ -769,6 +935,48 @@ function showDetail(userId) {
             ${isAdmin && !isSelf && !active ? `<button class="usr-btn usr-btn-d" style="font-size:11px;padding:6px 12px" onclick="closeDetailModal();deleteUser(${u.id})"><i class="fas fa-trash"></i> ${TH?'ลบถาวร':'Delete'}</button>` : ''}
         </div>`;
     document.getElementById('detailModal').classList.add('show');
+
+    if (roomCount > 0) {
+        try {
+            if (!_rmpCache[userId]) {
+                const res = await apiFetch('/v1/api/auth.php?action=user_room_access&user_id=' + userId);
+                if (!res.success) throw new Error(res.error || 'Load failed');
+                _rmpCache[userId] = res.data.assigned_rooms || [];
+            }
+            const rooms = _rmpCache[userId];
+            const el = document.getElementById('detailRoomList');
+            if (!el) return;
+            if (!rooms.length) {
+                el.innerHTML = `<div style="text-align:center;padding:12px;color:#cbd5e1;font-size:12px">${TH?'ไม่มีห้องที่ดูแล':'No managed rooms'}</div>`;
+                return;
+            }
+            el.innerHTML = rooms.map(r => {
+                const isPri = parseInt(r.is_primary) === 1;
+                const col   = umBldColor(r.building_code);
+                return `<div class="ud-room-item${isPri?' primary':''}">
+                    <div class="ud-room-ic" style="background:${col}18;color:${col}">
+                        <i class="fas fa-door-${isPri?'open':'closed'}"></i>
+                    </div>
+                    <div class="ud-room-body">
+                        <div class="ud-room-top">
+                            <span class="ud-room-code" style="color:${col}">${escHtml(r.room_code||'–')}</span>
+                            ${r.floor!=null?`<span class="ud-room-floor">${TH?'ชั้น':'F'}${escHtml(String(r.floor))}</span>`:''}
+                            ${isPri?`<span class="ud-room-pri"><i class="fas fa-star" style="font-size:7px"></i>${TH?'ห้องหลัก':'Primary'}</span>`:''}
+                        </div>
+                        ${r.room_name?`<div class="ud-room-name">${escHtml(r.room_name)}</div>`:''}
+                        <div class="ud-room-meta">
+                            <span class="ud-room-tag"><i class="fas fa-building"></i>${escHtml(r.building_short||r.building_code||'')}</span>
+                            <span class="ud-room-tag"><i class="fas fa-flask"></i>${r.container_count||0} ${TH?'สาร':'items'}</span>
+                            ${r.room_type?`<span class="ud-room-tag"><i class="fas fa-tag"></i>${escHtml(r.room_type)}</span>`:''}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch(e) {
+            const el = document.getElementById('detailRoomList');
+            if (el) el.innerHTML = `<div style="text-align:center;padding:10px;color:#ef4444;font-size:11px"><i class="fas fa-exclamation-circle"></i> ${TH?'โหลดไม่สำเร็จ':'Load failed'}</div>`;
+        }
+    }
 }
 function closeDetailModal() { document.getElementById('detailModal').classList.remove('show'); }
 
@@ -862,16 +1070,37 @@ function updateOrgBreadcrumb() {
     else bc.style.display = 'none';
 }
 
+function _ensureOpt(sel, val) {
+    if (val && !Array.from(sel.options).some(o => o.value === val)) {
+        sel.disabled = false;
+        sel.add(new Option(val, val));
+    }
+}
 function setOrgFromUser(u) {
     let center = u.center_name || '';
     const division = u.department || u.division_name || '';
     const section  = u.position  || u.section_name  || '';
     const storeId  = u.store_id  || '';
     if (!center && division) { const m = allStores.find(s => s.division_name === division); if (m) center = m.center_name; }
-    if (center) { document.getElementById('fCenter').value = center; onOrgChange('center'); }
-    if (division) { document.getElementById('fDivision').value = division; onOrgChange('division'); }
-    if (section)  { document.getElementById('fSection').value = section;  onOrgChange('section'); }
-    if (storeId)  { document.getElementById('fStore').value = storeId; }
+    if (center) {
+        const cSel = document.getElementById('fCenter');
+        _ensureOpt(cSel, center);
+        cSel.value = center;
+        onOrgChange('center');
+    }
+    if (division) {
+        const dSel = document.getElementById('fDivision');
+        _ensureOpt(dSel, division);
+        dSel.value = division;
+        onOrgChange('division');
+    }
+    if (section) {
+        const sSel = document.getElementById('fSection');
+        _ensureOpt(sSel, section);
+        sSel.value = section;
+        onOrgChange('section');
+    }
+    if (storeId) { document.getElementById('fStore').value = storeId; }
     updateOrgBreadcrumb();
 }
 
@@ -885,6 +1114,161 @@ function resetOrgFields() {
     document.getElementById('orgBreadcrumb').style.display = 'none';
 }
 
+/* ─── Room Picker (Add User) ─── */
+let umSlBuildings = [], umSlRoomsCache = {}, umSlSelected = null, umSlActiveBld = null, umSlView = 'grid';
+const UM_BLD_COLORS = {'F0':'#6b7280','F1':'#3b82f6','F2':'#16a34a','F3':'#2563eb','F4':'#9333ea','F5':'#ea580c','F6':'#0284c7','F7':'#10b981','F9':'#0d9488','F10':'#ec4899','F11':'#f97316','F12':'#dc2626','F14':'#65a30d','F16':'#d97706','Farm':'#92400e'};
+function umBldColor(code){ return UM_BLD_COLORS[code]||'#374151'; }
+
+function umSlSetTrigger() {
+    const trig = document.getElementById('umRoomTrigger');
+    const txt  = document.getElementById('umRoomTrigTxt');
+    if (!umSlSelected) {
+        txt.innerHTML = `<span class="um-rt-ph">${TH?'เลือกห้องปฏิบัติการ...':'Select laboratory...'}</span>`;
+        trig.classList.remove('has-room');
+        document.getElementById('fRoomId').value = '';
+    } else {
+        const col = umBldColor(umSlSelected.building_code);
+        txt.innerHTML = `<div class="um-rt-name" style="color:${col}">${escHtml(umSlSelected.room_number||umSlSelected.name||'–')}</div><div class="um-rt-bld" style="color:${col}88"><i class="fas fa-building" style="font-size:9px;margin-right:3px"></i>${escHtml(umSlSelected.building_name||'')}</div>`;
+        trig.classList.add('has-room');
+        document.getElementById('fRoomId').value = umSlSelected.id;
+    }
+}
+
+function umSlRenderGrid() {
+    umSlView = 'grid';
+    document.getElementById('umSlNav').style.display = 'none';
+    document.getElementById('umSlHdrSub').textContent = TH?'เลือกอาคารเพื่อดูรายการห้อง':'Select a building to browse rooms';
+    const q = document.getElementById('umSlSearch').value.trim().toLowerCase();
+    const list = q ? umSlBuildings.filter(b=>(b.code||'').toLowerCase().includes(q)||(b.name||'').toLowerCase().includes(q)) : umSlBuildings;
+    if (!list.length) { document.getElementById('umSlBody').innerHTML=`<div class="um-sl-empty"><i class="fas fa-search"></i>${TH?'ไม่พบอาคาร':'No buildings found'}</div>`; return; }
+    let html = '<div class="um-sl-grid">';
+    list.forEach(b => {
+        const col = umBldColor(b.code);
+        html += `<div class="um-sl-bld" data-bid="${b.id}" style="border-left-color:${col}">
+            <div class="um-sl-bld-num" style="color:${col}">${escHtml(b.code)}</div>
+            <div class="um-sl-bld-name">${escHtml(b.name)}</div>
+            <div class="um-sl-bld-badge"><i class="fas fa-door-closed"></i>${b.room_count} ${TH?'ห้อง':'rooms'}</div>
+            <i class="fas fa-chevron-right um-sl-bld-arrow"></i>
+        </div>`;
+    });
+    html += '</div>';
+    document.getElementById('umSlBody').innerHTML = html;
+    document.getElementById('umSlBody').querySelectorAll('[data-bid]').forEach(card => {
+        card.addEventListener('click', () => {
+            umSlActiveBld = umSlBuildings.find(b=>b.id==card.getAttribute('data-bid'));
+            umSlLoadRooms(umSlActiveBld.id);
+        });
+    });
+}
+
+async function umSlLoadRooms(bldId) {
+    if (umSlRoomsCache[bldId]) { umSlRenderRooms(umSlRoomsCache[bldId]); return; }
+    document.getElementById('umSlBody').innerHTML = `<div class="um-sl-empty"><i class="fas fa-spinner fa-spin"></i> ${TH?'กำลังโหลด...':'Loading...'}</div>`;
+    try {
+        const res = await fetch(`/v1/api/auth.php?action=public_rooms&building_id=${bldId}`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        umSlRoomsCache[bldId] = (data.data||[]).map(r=>({...r, id:parseInt(r.id,10)}));
+        umSlRenderRooms(umSlRoomsCache[bldId]);
+    } catch(e) {
+        document.getElementById('umSlBody').innerHTML = `<div class="um-sl-empty"><i class="fas fa-exclamation-circle"></i> ${TH?'โหลดไม่สำเร็จ':'Load failed'}</div>`;
+    }
+}
+
+function umSlRenderRooms(rooms) {
+    umSlView = 'rooms';
+    const col = umBldColor(umSlActiveBld.code);
+    document.getElementById('umSlNavCur').textContent = umSlActiveBld.name;
+    document.getElementById('umSlNav').style.display = 'flex';
+    document.getElementById('umSlHdrSub').textContent = umSlActiveBld.name;
+    const q = document.getElementById('umSlSearch').value.trim().toLowerCase();
+    const list = q ? rooms.filter(r=>(r.room_number||'').toLowerCase().includes(q)||(r.name||'').toLowerCase().includes(q)) : rooms;
+    const floors={}, floorOrd=[];
+    list.forEach(r=>{ const f=r.floor!=null?String(r.floor):''; if(!floors[f]){floors[f]=[];floorOrd.push(f);} floors[f].push(r); });
+    let html='';
+    floorOrd.forEach(f=>{
+        if(f) html+=`<div class="um-sl-floor-hdr">${TH?'ชั้น':'Floor'} ${escHtml(f)}</div>`;
+        floors[f].forEach(r=>{
+            const isSel = umSlSelected && umSlSelected.id===r.id;
+            html+=`<div class="um-sl-room${isSel?' sel':''}" data-rid="${r.id}">
+                <div class="um-sl-room-chk"><i class="fas fa-check"></i></div>
+                <div class="um-sl-room-ic" style="background:${col}1a;color:${col}"><i class="fas fa-door-closed"></i></div>
+                <div class="um-sl-room-body">
+                    <div class="um-sl-room-top">
+                        <span class="um-sl-room-code" style="color:${col}">${escHtml(r.room_number||'–')}</span>
+                        ${r.floor!=null?`<span class="um-sl-room-floor">${TH?'ชั้น':'F'}${r.floor}</span>`:''}
+                    </div>
+                    ${r.name?`<div class="um-sl-room-name">${escHtml(r.name)}</div>`:''}
+                </div>
+            </div>`;
+        });
+    });
+    if(!html) html=`<div class="um-sl-empty"><i class="fas fa-door-open"></i>${TH?'ไม่พบห้อง':'No rooms found'}</div>`;
+    document.getElementById('umSlBody').innerHTML=html;
+    document.getElementById('umSlBody').querySelectorAll('.um-sl-room').forEach(row=>{
+        row.addEventListener('click',()=>{
+            const rid=parseInt(row.getAttribute('data-rid'),10);
+            const room=rooms.find(r=>r.id===rid); if(!room) return;
+            umSlSelected = (umSlSelected&&umSlSelected.id===rid) ? null : {
+                id:rid, room_number:room.room_number||'', name:room.name||'', floor:room.floor,
+                building_id:parseInt(umSlActiveBld.id), building_code:umSlActiveBld.code, building_name:umSlActiveBld.name
+            };
+            umSlRenderRooms(rooms);
+            umSlUpdateFooter();
+        });
+    });
+    umSlUpdateFooter();
+}
+
+function umSlUpdateFooter() {
+    const footer=document.getElementById('umSlFooter');
+    if(!umSlSelected){footer.classList.remove('visible');return;}
+    footer.classList.add('visible');
+    document.getElementById('umSlFooterRoom').textContent=umSlSelected.room_number||umSlSelected.name||'–';
+    document.getElementById('umSlFooterBld').textContent=umSlSelected.building_name||'';
+}
+
+function umSlConfirm() {
+    if(!umSlSelected) return;
+    umSlSetTrigger();
+    umSlClose();
+}
+
+async function umSlOpen() {
+    document.getElementById('umSlOv').classList.add('open');
+    document.getElementById('umSlSearch').value='';
+    if(!umSlBuildings.length) {
+        document.getElementById('umSlBody').innerHTML=`<div class="um-sl-empty"><i class="fas fa-spinner fa-spin"></i></div>`;
+        try {
+            const res=await fetch('/v1/api/auth.php?action=public_buildings');
+            const data=await res.json();
+            if(data.success) umSlBuildings=data.data||[];
+        } catch(e){ document.getElementById('umSlBody').innerHTML=`<div class="um-sl-empty"><i class="fas fa-exclamation-circle"></i> ${TH?'โหลดไม่สำเร็จ':'Load failed'}</div>`; return; }
+    }
+    if(umSlSelected&&umSlActiveBld&&umSlRoomsCache[umSlActiveBld.id]){ umSlRenderRooms(umSlRoomsCache[umSlActiveBld.id]); }
+    else { umSlRenderGrid(); }
+    setTimeout(()=>document.getElementById('umSlSearch').focus(),80);
+}
+
+function umSlClose() {
+    document.getElementById('umSlOv').classList.remove('open');
+    document.getElementById('umSlFooter').classList.remove('visible');
+}
+
+function umSlGoGrid() {
+    document.getElementById('umSlSearch').value='';
+    umSlRenderGrid();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('umSlOv').addEventListener('click',e=>{ if(e.target===e.currentTarget) umSlClose(); });
+    document.getElementById('umSlSearch').addEventListener('input',()=>{
+        if(umSlView==='rooms'&&umSlActiveBld&&umSlRoomsCache[umSlActiveBld.id]) umSlRenderRooms(umSlRoomsCache[umSlActiveBld.id]);
+        else umSlRenderGrid();
+    });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElementById('umSlOv').classList.contains('open')) umSlClose(); });
+});
+
 /* ─── Add / Edit ─── */
 function openAddModal() {
     document.getElementById('fUserId').value = '';
@@ -894,6 +1278,9 @@ function openAddModal() {
     document.getElementById('fPassword').required = true;
     document.getElementById('pwHint').textContent = TH?'(จำเป็น)':'(required)';
     resetOrgFields();
+    umSlSelected = null; umSlActiveBld = null;
+    umSlSetTrigger();
+    document.getElementById('umRoomSec').style.display = '';
     document.getElementById('userModal').classList.add('show');
 }
 
@@ -912,12 +1299,16 @@ function openEditModal(userId) {
     document.getElementById('fPassword').required = false;
     document.getElementById('pwHint').textContent = TH?'(เว้นว่างถ้าไม่เปลี่ยน)':'(leave blank to keep)';
     document.getElementById('modalTitle').innerHTML = `<i class="fas fa-user-edit" style="color:#6366f1"></i> ${TH?'แก้ไขผู้ใช้':'Edit User'}`;
+    document.getElementById('umRoomSec').style.display = 'none';
     resetOrgFields();
     if (allStores.length > 0) setTimeout(() => setOrgFromUser(u), 50);
     document.getElementById('userModal').classList.add('show');
 }
 
-function closeModal() { document.getElementById('userModal').classList.remove('show'); }
+function closeModal() {
+    document.getElementById('userModal').classList.remove('show');
+    umSlClose();
+}
 
 async function saveUser(e) {
     e.preventDefault();
@@ -939,10 +1330,27 @@ async function saveUser(e) {
     btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     try {
         let res;
-        if (isEdit) { data.user_id = parseInt(userId); res = await apiFetch('/v1/api/auth.php?action=users_update', { method:'POST', body:JSON.stringify(data) }); }
-        else { data.username = document.getElementById('fUsername').value.trim(); data.password = pw; res = await apiFetch('/v1/api/auth.php?action=users', { method:'POST', body:JSON.stringify(data) }); }
-        if (res.success) { closeModal(); showToast(isEdit ? (TH?'อัปเดตสำเร็จ':'Updated') : (TH?'เพิ่มผู้ใช้สำเร็จ':'User added'), 'ok'); loadData(); }
-        else showToast(res.error || 'Error', 'err');
+        if (isEdit) {
+            data.user_id = parseInt(userId);
+            res = await apiFetch('/v1/api/auth.php?action=users_update', { method:'POST', body:JSON.stringify(data) });
+        } else {
+            data.username = document.getElementById('fUsername').value.trim();
+            data.password = pw;
+            res = await apiFetch('/v1/api/auth.php?action=users', { method:'POST', body:JSON.stringify(data) });
+            if (res.success && umSlSelected && res.data && res.data.user_id) {
+                try {
+                    await apiFetch('/v1/api/auth.php?action=user_room_access_update', {
+                        method:'POST',
+                        body: JSON.stringify({ user_id: res.data.user_id, room_ids: [umSlSelected.id], primary_room_id: umSlSelected.id })
+                    });
+                } catch(_){}
+            }
+        }
+        if (res.success) {
+            closeModal();
+            showToast(isEdit ? (TH?'อัปเดตสำเร็จ':'Updated') : (TH?'เพิ่มผู้ใช้สำเร็จ':'User added'), 'ok');
+            loadData();
+        } else showToast(res.error || 'Error', 'err');
     } catch(e) { showToast(e.message || 'Error', 'err'); }
     finally { btn.disabled = false; btn.innerHTML = `<i class="fas fa-save"></i> ${TH?'บันทึก':'Save'}`; }
 }
@@ -1005,10 +1413,13 @@ async function showRoomPopover(e, userId) {
         const name  = u ? `${u.first_name||''} ${u.last_name||''}`.trim() : `#${userId}`;
         const initials = u ? ((u.first_name||'')[0]||'') + ((u.last_name||'')[0]||'') : '?';
         const bgColor  = u ? (roleAvBg[u.role_name] || '#6366f1') : '#6366f1';
+        const avHtml   = (u && u.avatar_url)
+            ? `<img src="${escHtml(u.avatar_url)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="var p=this.parentNode;p.style.background='${bgColor}';p.innerHTML='${escHtml(initials.toUpperCase())}'">`
+            : escHtml(initials.toUpperCase());
 
         box.innerHTML = `
             <div class="rmp-hdr">
-                <div class="rmp-hdr-ic" style="background:${bgColor}">${escHtml(initials.toUpperCase())}</div>
+                <div class="rmp-hdr-ic" style="background:${(u && u.avatar_url) ? 'transparent' : bgColor}">${avHtml}</div>
                 <div>
                     <div class="rmp-hdr-name">${escHtml(name)}</div>
                     <div class="rmp-hdr-sub">${rooms.length} ${TH?'ห้องที่ดูแล':'managed rooms'}</div>
@@ -1071,8 +1482,14 @@ async function openRoomModal(userId) {
     // User header
     const initials = u ? ((u.first_name||'')[0]||'') + ((u.last_name||'')[0]||'') : '?';
     const bgColor = u ? (roleAvBg[u.role_name] || '#6366f1') : '#6366f1';
-    document.getElementById('rmUserAv').textContent = initials.toUpperCase() || '?';
-    document.getElementById('rmUserAv').style.background = bgColor;
+    const av = document.getElementById('rmUserAv');
+    if (u && u.avatar_url) {
+        av.style.background = 'transparent';
+        av.innerHTML = `<img src="${escHtml(u.avatar_url)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.style.background='${bgColor}';this.parentNode.innerHTML='${escHtml(initials.toUpperCase())}'">`;
+    } else {
+        av.style.background = bgColor;
+        av.textContent = initials.toUpperCase() || '?';
+    }
     document.getElementById('rmUserName').textContent = u ? `${u.first_name||''} ${u.last_name||''}`.trim() : `#${userId}`;
     document.getElementById('rmUserAt').textContent = u ? `@${u.username||''}  ·  ${u.role_display||u.role_name||''}` : '';
     document.getElementById('rmSearch').value = '';

@@ -1674,6 +1674,7 @@ function renderTxnCard(t) {
     const isTransferPending = isPending && type === 'transfer';
     const canApproveTransfer = isTransferPending && (IS_ADMIN || IS_MANAGER || t.to_user_id == UID);
     const canApproveBorrow   = isPending && !isTransferPending && (IS_ADMIN || IS_MANAGER || t.from_user_id == UID);
+    const isBorrower         = isPending && type === 'borrow' && t.to_user_id == UID;
     if (canApproveTransfer) {
         actions = `<div class="txn-card-actions">
             <button onclick="event.stopPropagation();approveTxn(${t.id})" class="ci-btn ci-btn-primary ci-btn-sm"><i class="fas fa-handshake"></i> ${TH?'ยืนยันรับโอน':'Accept'}</button>
@@ -1683,6 +1684,10 @@ function renderTxnCard(t) {
         actions = `<div class="txn-card-actions">
             <button onclick="event.stopPropagation();approveTxn(${t.id})" class="ci-btn ci-btn-primary ci-btn-sm"><i class="fas fa-check"></i> ${TH?'อนุมัติ':'Approve'}</button>
             <button onclick="event.stopPropagation();rejectTxn(${t.id})" class="ci-btn ci-btn-danger ci-btn-sm"><i class="fas fa-times"></i> ${TH?'ปฏิเสธ':'Reject'}</button>
+        </div>`;
+    } else if (isBorrower) {
+        actions = `<div class="txn-card-actions">
+            <button onclick="event.stopPropagation();cancelBorrowRequest(${t.id})" class="ci-btn ci-btn-sm" style="border:1.5px solid #f59e0b;background:#fffbeb;color:#92400e;font-weight:700;gap:5px"><i class="fas fa-ban"></i> ${TH?'ยกเลิกคำขอยืม':'Cancel Request'}</button>
         </div>`;
     }
     if (type === 'borrow' && t.status === 'completed' && t.to_user_id == UID) {
@@ -1711,6 +1716,7 @@ function renderTxnCard(t) {
                         ${t.barcode ? `<span><i class="fas fa-barcode"></i> ${t.barcode}</span>` : ''}
                     </div>
                     ${lifecycle}
+                    ${isCancelled && type === 'borrow' ? `<div style="display:inline-flex;align-items:center;gap:5px;margin-top:7px;padding:4px 10px;background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:6px;font-size:10px;font-weight:700;color:#6b7280;letter-spacing:.2px"><i class="fas fa-ban" style="font-size:9px"></i>${TH?'ยกเลิกคำขอยืมแล้ว':'Borrow request cancelled'}</div>` : ''}
                 </div>
             </div>
             <div class="txn-card-right">
@@ -2396,8 +2402,9 @@ async function submitTxn() {
 // ========== APPROVE / REJECT ==========
 let _actConfirmTxnId = null, _actConfirmMode = null;
 
-async function approveTxn(id) { _openActConfirm(id, 'approve'); }
-async function rejectTxn(id)  { _openActConfirm(id, 'reject');  }
+async function approveTxn(id)        { _openActConfirm(id, 'approve'); }
+async function rejectTxn(id)         { _openActConfirm(id, 'reject');  }
+async function cancelBorrowRequest(id){ _openActConfirm(id, 'cancel'); }
 
 async function _openActConfirm(id, mode) {
     _actConfirmTxnId = id; _actConfirmMode = mode;
@@ -2412,17 +2419,19 @@ async function _openActConfirm(id, mode) {
         const t = d.data;
         const isTransfer = t.txn_type === 'transfer';
         const isApprove  = mode === 'approve';
+        const isCancel   = mode === 'cancel';
 
         // Detect qty shortage before user confirms
         const srcQty     = t.source_remaining_qty ?? null;
         const reqQty     = parseFloat(t.quantity) || 0;
         const qtyShort   = isApprove && srcQty !== null && srcQty < reqQty;
 
-        const accentColor  = isApprove ? '#16a34a' : '#dc2626';
-        const accentLight  = isApprove ? '#f0fdf4' : '#fef2f2';
-        const accentBorder = isApprove ? '#bbf7d0' : '#fecaca';
+        const accentColor  = isCancel ? '#d97706' : isApprove ? '#16a34a' : '#dc2626';
+        const accentLight  = isCancel ? '#fffbeb'  : isApprove ? '#f0fdf4' : '#fef2f2';
+        const accentBorder = isCancel ? '#fde68a'  : isApprove ? '#bbf7d0' : '#fecaca';
         let titleText, titleIcon;
-        if (isApprove && isTransfer) { titleText = TH?'ยืนยันรับโอนกรรมสิทธิ์':'Accept Transfer'; titleIcon = 'fa-handshake'; }
+        if (isCancel)                { titleText = TH?'ยกเลิกคำขอยืม':'Cancel Borrow Request'; titleIcon = 'fa-ban'; }
+        else if (isApprove && isTransfer) { titleText = TH?'ยืนยันรับโอนกรรมสิทธิ์':'Accept Transfer'; titleIcon = 'fa-handshake'; }
         else if (isApprove)          { titleText = TH?'ยืนยันอนุมัติรายการ':'Confirm Approval'; titleIcon = 'fa-check-circle'; }
         else                         { titleText = TH?'ยืนยันปฏิเสธรายการ':'Confirm Rejection'; titleIcon = 'fa-times-circle'; }
         title.innerHTML = `<i class="fas ${titleIcon}" style="color:${qtyShort?'#d97706':accentColor}"></i> ${titleText}`;
@@ -2488,13 +2497,18 @@ async function _openActConfirm(id, mode) {
                 <i class="fas fa-info-circle" style="color:#d97706;margin-top:2px;flex-shrink:0"></i>
                 <span>${TH?'การยืนยันรับโอนจะย้ายกรรมสิทธิ์ขวดสารนี้มาเป็นของคุณทันที':'Accepting transfers full bottle ownership to you immediately.'}</span>
             </div>`:''}
-            ${!isApprove?`
+            ${isCancel?`
+            <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:11px 14px;margin-bottom:14px;display:flex;gap:9px;align-items:flex-start;font-size:12px;color:#92400e;line-height:1.55">
+                <i class="fas fa-info-circle" style="color:#d97706;margin-top:2px;flex-shrink:0"></i>
+                <span>${TH?'การยกเลิกจะแจ้งให้เจ้าของสารทราบ คุณสามารถยืมใหม่อีกครั้งได้ในภายหลัง':'Cancelling will notify the chemical owner. You can submit a new borrow request later.'}</span>
+            </div>`:''}
+            ${!isApprove&&!isCancel?`
             <div style="margin-bottom:14px">
                 <label style="font-size:11px;font-weight:600;color:var(--c2);display:block;margin-bottom:6px">${TH?'เหตุผลที่ปฏิเสธ (ไม่บังคับ)':'Rejection reason (optional)'}</label>
                 <textarea id="actConfirmReason" rows="3" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;resize:vertical;outline:none;box-sizing:border-box;transition:border-color .15s" onfocus="this.style.borderColor='#dc2626'" onblur="this.style.borderColor='var(--border)'" placeholder="${TH?'ระบุเหตุผล...':'Enter reason...'}"></textarea>
             </div>`:''}
             <div style="display:flex;gap:9px">
-                <button onclick="closeActConfirm()" style="flex:1;padding:11px;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--c2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='var(--c2)'" onmouseout="this.style.borderColor='var(--border)'">${TH?'ยกเลิก':'Cancel'}</button>
+                <button onclick="closeActConfirm()" style="flex:1;padding:11px;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--c2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='var(--c2)'" onmouseout="this.style.borderColor='var(--border)'">${TH?'ปิด':'Close'}</button>
                 <button id="actConfirmSubmitBtn" onclick="_submitActConfirm()" style="flex:2;padding:11px;border:none;border-radius:10px;background:${qtyShort?'#dc2626':accentColor};color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity .15s" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
                     <i class="fas ${qtyShort?'fa-ban':titleIcon}"></i> ${qtyShort?(TH?'ปฏิเสธรายการนี้':'Reject this request'):titleText}
                 </button>
@@ -2523,6 +2537,11 @@ async function _submitActConfirm() {
             } else {
                 showToast(TH?'อนุมัติแล้ว':'Approved', 'success');
             }
+        } else if (_actConfirmMode === 'cancel') {
+            const d = await apiFetch('/v1/api/borrow.php?action=cancel_borrow', {method:'POST', body:JSON.stringify({txn_id:_actConfirmTxnId})});
+            if (!d.success) throw new Error(d.error);
+            closeActConfirm(); loadDashboard(); loadList();
+            showToast(TH?'ยกเลิกคำขอยืมแล้ว':'Borrow request cancelled', 'info');
         } else {
             const reason = document.getElementById('actConfirmReason')?.value || '';
             const d = await apiFetch('/v1/api/borrow.php?action=reject', {method:'POST', body:JSON.stringify({txn_id:_actConfirmTxnId, reason})});

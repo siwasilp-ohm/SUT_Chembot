@@ -424,11 +424,11 @@ function handleDelete($action, $user, $isAdmin, $isManager) {
     if (!$id) throw new Exception('ID required');
     switch ($action) {
         case 'chemical':
-            if (!$isManager) throw new Exception('Permission denied', 403);
+            if (!$isAdmin) throw new Exception('Permission denied: admin only', 403);
             $cnt = (int)Database::fetch("SELECT COUNT(*) as c FROM containers WHERE chemical_id = :id AND status='active'", [':id'=>$id])['c'];
-            if ($cnt) throw new Exception("Cannot delete: $cnt active containers");
+            if ($cnt) throw new Exception("ไม่สามารถลบได้: มี {$cnt} ภาชนะในคลัง");
             Database::update('chemicals', ['is_active'=>0], 'id = :id', [':id'=>$id]);
-            echo json_encode(['success'=>true,'message'=>'Chemical deactivated']);
+            echo json_encode(['success'=>true,'message'=>'ลบสารเคมีเรียบร้อยแล้ว']);
             break;
         case 'file':
             $file = Database::fetch("SELECT * FROM chemical_sds_files WHERE id = :id", [':id'=>$id]);

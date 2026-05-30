@@ -174,11 +174,12 @@ try {
                         FROM users u
                         JOIN roles r ON u.role_id = r.id
                         LEFT JOIN (
-                            SELECT user_id,
+                            SELECT ura.user_id,
                                    COUNT(*) AS room_count,
-                                   MAX(CASE WHEN is_primary = 1 THEN room_id ELSE NULL END) AS primary_room_id
-                            FROM user_room_access
-                            GROUP BY user_id
+                                   MAX(CASE WHEN ura.is_primary = 1 THEN ura.room_id ELSE NULL END) AS primary_room_id
+                            FROM user_room_access ura
+                            JOIN rooms r ON r.id = ura.room_id
+                            GROUP BY ura.user_id
                         ) ura ON ura.user_id = u.id
                         LEFT JOIN rooms    pr ON pr.id  = ura.primary_room_id
                         LEFT JOIN buildings pb ON pb.id = pr.building_id
@@ -229,7 +230,51 @@ try {
                     throw new Exception('Only admins can create users');
                 }
                 $data = json_decode(file_get_contents('php://input'), true);
-                $result = Auth::register($data);
+
+                // Validate required fields
+                foreach (['username','email','password','first_name','last_name'] as $f) {
+                    if (empty($data[$f])) throw new Exception("{$f} is required");
+                }
+                if (strlen($data['password']) < 6) throw new Exception('Password must be at least 6 characters');
+
+                // Uniqueness checks
+                if (Database::fetch("SELECT id FROM users WHERE username = :u", [':u' => $data['username']]))
+                    throw new Exception('Username already exists');
+                if (Database::fetch("SELECT id FROM users WHERE email = :e", [':e' => $data['email']]))
+                    throw new Exception('Email already exists');
+
+                // Resolve role
+                $roleId = !empty($data['role_id']) ? (int)$data['role_id'] : null;
+                if (!$roleId) {
+                    $defaultRole = Database::fetch("SELECT id FROM roles WHERE name='user'");
+                    $roleId = $defaultRole ? (int)$defaultRole['id'] : null;
+                }
+                if (!$roleId) throw new Exception('Role not found');
+
+                Database::beginTransaction();
+                try {
+                    $insertData = [
+                        'organization_id' => 1,
+                        'role_id'         => $roleId,
+                        'username'        => $data['username'],
+                        'email'           => $data['email'],
+                        'password_hash'   => password_hash($data['password'], PASSWORD_DEFAULT),
+                        'first_name'      => $data['first_name'],
+                        'last_name'       => $data['last_name'],
+                        'phone'           => $data['phone'] ?? null,
+                        'department'      => $data['department'] ?? null,
+                        'position'        => $data['position']  ?? null,
+                        'store_id'        => !empty($data['store_id']) ? (int)$data['store_id'] : null,
+                        'is_active'       => 1,
+                        'theme_preference'=> 'auto',
+                        'language'        => 'th',
+                    ];
+                    $newUserId = Database::insert('users', $insertData);
+                    Database::insert('notification_settings', ['user_id' => $newUserId]);
+                    Database::commit();
+                } catch (Exception $e) { Database::rollback(); throw $e; }
+
+                $result = ['user_id' => $newUserId, 'message' => 'User created successfully'];
                 echo json_encode(['success' => true, 'data' => $result]);
                 
             } else {
@@ -535,6 +580,15 @@ try {
             echo json_encode(['success' => true, 'data' => $roles]);
             break;
 
+        case 'public_org_hierarchy':
+            $stores = Database::fetchAll(
+                "SELECT id, center_name, division_name, section_name, store_name
+                 FROM lab_stores WHERE is_active = 1
+                 ORDER BY center_name, division_name, section_name, store_name"
+            );
+            echo json_encode(['success' => true, 'data' => $stores]);
+            break;
+
         case 'labs_list':
         case 'org_hierarchy':
             $user = Auth::requireAuth();
@@ -577,7 +631,7 @@ try {
                 [':uid' => $targetUserId]
             );
 
-            // All rooms that have containers (for the picker)
+            // All rooms (for the picker)
             $allRooms = Database::fetchAll(
                 "SELECT r.id, r.name, r.code, r.floor, r.room_type, r.safety_level,
                         b.id AS building_id, b.name AS building_name,
@@ -588,7 +642,6 @@ try {
                  LEFT JOIN containers c ON c.room_id = r.id
                  GROUP BY r.id, r.name, r.code, r.floor, r.room_type, r.safety_level,
                           b.id, b.name, b.code, b.shortname
-                 HAVING container_count > 0
                  ORDER BY b.code, r.floor, r.code"
             );
 

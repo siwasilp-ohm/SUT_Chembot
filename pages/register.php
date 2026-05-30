@@ -194,6 +194,13 @@ $lang = I18n::getCurrentLang();
     .lang-sw a{padding:4px 10px;border-radius:4px;font-size:11px;font-weight:500;color:#999;text-decoration:none;transition:all .12s}
     .lang-sw a:hover{color:#333;background:#eee}
     .lang-sw a.active{color:#fff;background:var(--accent)}
+    /* ── Org section ── */
+    .org-sec{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:14px}
+    .org-sec-hdr{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+    .org-sec-hdr i{color:#6366f1;font-size:12px}
+    .org-bc{display:none;align-items:center;gap:6px;font-size:11px;color:#64748b;background:#fff;border:1px solid #e2e8f0;border-radius:7px;padding:7px 10px;margin-top:10px}
+    .org-bc i{color:var(--accent);font-size:10px}
+    .fg select:disabled{background:#f1f5f9;color:#94a3b8;cursor:not-allowed}
     </style>
 </head>
 <body>
@@ -219,21 +226,50 @@ $lang = I18n::getCurrentLang();
                 <div class="fg"><label><?php echo __('register_password_confirm'); ?></label><input type="password" name="password_confirm" required></div>
             </div>
             <div class="fg"><label><?php echo __('register_phone'); ?></label><input type="tel" name="phone"></div>
-            <div class="fg-row">
-                <div class="fg">
-                    <label><?php echo __('register_lab'); ?></label>
-                    <button type="button" class="sl-trigger" id="slTrigger" onclick="slOpen()">
-                        <div class="sl-trig-ic"><i class="fas fa-flask"></i></div>
-                        <div class="sl-trig-txt" id="slTriggerTxt">
-                            <span class="sl-trig-ph"><?= $lang==='th'?'เลือกห้องปฏิบัติการ...':'Select laboratory...' ?></span>
-                        </div>
-                        <i class="fas fa-chevron-right sl-trig-caret"></i>
-                    </button>
-                    <input type="hidden" name="room_id" id="roomIdInput" value="">
-                </div>
-                <div class="fg"><label><?php echo __('register_department'); ?></label><input type="text" name="department"></div>
+            <div class="fg">
+                <label><?php echo __('register_lab'); ?></label>
+                <button type="button" class="sl-trigger" id="slTrigger" onclick="slOpen()">
+                    <div class="sl-trig-ic"><i class="fas fa-flask"></i></div>
+                    <div class="sl-trig-txt" id="slTriggerTxt">
+                        <span class="sl-trig-ph"><?= $lang==='th'?'เลือกห้องปฏิบัติการ...':'Select laboratory...' ?></span>
+                    </div>
+                    <i class="fas fa-chevron-right sl-trig-caret"></i>
+                </button>
+                <input type="hidden" name="room_id" id="roomIdInput" value="">
             </div>
-            <div class="fg"><label><?php echo __('register_position'); ?></label><input type="text" name="position"></div>
+            <!-- ── สังกัดองค์กร ── -->
+            <div class="org-sec">
+                <div class="org-sec-hdr"><i class="fas fa-sitemap"></i><?= $lang==='th'?'สังกัดองค์กร':'Organization' ?></div>
+                <div class="fg-row">
+                    <div class="fg" style="margin-bottom:10px">
+                        <label><i class="fas fa-building" style="margin-right:4px;font-size:10px;color:#6366f1"></i><?= $lang==='th'?'ศูนย์':'Center' ?></label>
+                        <select id="rCenter" class="fg" style="padding:9px 12px;border:1px solid #ddd;border-radius:5px;font-size:13px;font-family:inherit;width:100%" onchange="orgChange('center')">
+                            <option value="">-- <?= $lang==='th'?'เลือกศูนย์':'Select Center' ?> --</option>
+                        </select>
+                    </div>
+                    <div class="fg" style="margin-bottom:10px">
+                        <label><i class="fas fa-sitemap" style="margin-right:4px;font-size:10px;color:#e65100"></i><?= $lang==='th'?'ฝ่าย':'Division' ?></label>
+                        <select id="rDivision" name="department" style="padding:9px 12px;border:1px solid #ddd;border-radius:5px;font-size:13px;font-family:inherit;width:100%" onchange="orgChange('division')" disabled>
+                            <option value="">-- <?= $lang==='th'?'เลือกฝ่าย':'Select Division' ?> --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="fg-row">
+                    <div class="fg" style="margin-bottom:0">
+                        <label><i class="fas fa-layer-group" style="margin-right:4px;font-size:10px;color:#1a8a5c"></i><?= $lang==='th'?'งาน':'Section' ?></label>
+                        <select id="rSection" name="position" style="padding:9px 12px;border:1px solid #ddd;border-radius:5px;font-size:13px;font-family:inherit;width:100%" onchange="orgChange('section')" disabled>
+                            <option value="">-- <?= $lang==='th'?'เลือกงาน':'Select Section' ?> --</option>
+                        </select>
+                    </div>
+                    <div class="fg" style="margin-bottom:0">
+                        <label><i class="fas fa-warehouse" style="margin-right:4px;font-size:10px;color:#2563eb"></i><?= $lang==='th'?'คลัง':'Store' ?></label>
+                        <select id="rStore" name="store_id" style="padding:9px 12px;border:1px solid #ddd;border-radius:5px;font-size:13px;font-family:inherit;width:100%" disabled>
+                            <option value="">-- <?= $lang==='th'?'เลือกคลัง':'Select Store' ?> --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="org-bc" id="orgBc"><i class="fas fa-map-marker-alt"></i><span id="orgBcTxt"></span></div>
+            </div>
             <div class="chk">
                 <input type="checkbox" name="terms" required style="margin-top:2px">
                 <span><?php echo __('register_terms'); ?> <a href="#"><?php echo __('register_terms_link'); ?></a> <?php echo $lang==='th'?'และ':'and'; ?> <a href="#"><?php echo __('register_privacy_link'); ?></a></span>
@@ -555,6 +591,94 @@ async function buildingsLoad() {
 }
 
 buildingsLoad();
+
+/* ── Org cascade ─────────────────────────────────── */
+let orgStores = [];
+
+function escOrg(s){ return String(s||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+
+async function orgLoad() {
+    try {
+        const res  = await fetch('/v1/api/auth.php?action=public_org_hierarchy');
+        const data = await res.json();
+        if (!data.success) return;
+        orgStores = data.data || [];
+        const centers = [...new Set(orgStores.map(s => s.center_name).filter(Boolean))].sort();
+        const sel = document.getElementById('rCenter');
+        sel.innerHTML = `<option value="">-- <?= $lang==='th'?'เลือกศูนย์':'Select Center' ?> --</option>` +
+            centers.map(c => `<option value="${escOrg(c)}">${escOrg(c)}</option>`).join('');
+    } catch(e) {}
+}
+
+function orgChange(level) {
+    const center   = document.getElementById('rCenter').value;
+    const division = document.getElementById('rDivision').value;
+    const section  = document.getElementById('rSection').value;
+    const TH_      = <?= $lang==='th'?'true':'false' ?>;
+
+    if (level === 'center') {
+        const divSel = document.getElementById('rDivision');
+        const secSel = document.getElementById('rSection');
+        const stoSel = document.getElementById('rStore');
+        if (center) {
+            const divs = [...new Set(orgStores.filter(s => s.center_name === center).map(s => s.division_name).filter(Boolean))].sort();
+            divSel.innerHTML = `<option value="">-- ${TH_?'เลือกฝ่าย':'Select Division'} --</option>` +
+                divs.map(d => `<option value="${escOrg(d)}">${escOrg(d)}</option>`).join('');
+            divSel.disabled = false;
+        } else {
+            divSel.innerHTML = `<option value="">-- ${TH_?'เลือกฝ่าย':'Select Division'} --</option>`;
+            divSel.disabled = true;
+        }
+        secSel.innerHTML = `<option value="">-- ${TH_?'เลือกงาน':'Select Section'} --</option>`; secSel.disabled = true;
+        stoSel.innerHTML = `<option value="">-- ${TH_?'เลือกคลัง':'Select Store'} --</option>`; stoSel.disabled = true;
+    }
+    if (level === 'division') {
+        const secSel = document.getElementById('rSection');
+        const stoSel = document.getElementById('rStore');
+        if (division) {
+            const sects = [...new Set(orgStores.filter(s => s.center_name === center && s.division_name === division).map(s => s.section_name).filter(Boolean))].sort();
+            secSel.innerHTML = `<option value="">-- ${TH_?'เลือกงาน':'Select Section'} --</option>` +
+                sects.map(s => `<option value="${escOrg(s)}">${escOrg(s)}</option>`).join('');
+            secSel.disabled = false;
+        } else {
+            secSel.innerHTML = `<option value="">-- ${TH_?'เลือกงาน':'Select Section'} --</option>`; secSel.disabled = true;
+        }
+        stoSel.innerHTML = `<option value="">-- ${TH_?'เลือกคลัง':'Select Store'} --</option>`; stoSel.disabled = true;
+    }
+    if (level === 'section') {
+        const stoSel = document.getElementById('rStore');
+        if (section) {
+            const stores = orgStores.filter(s => s.center_name === center && s.division_name === division && s.section_name === section);
+            stoSel.innerHTML = `<option value="">-- ${TH_?'เลือกคลัง':'Select Store'} --</option>` +
+                stores.map(s => `<option value="${escOrg(s.id)}">${escOrg(s.store_name)}</option>`).join('');
+            stoSel.disabled = false;
+        } else {
+            stoSel.innerHTML = `<option value="">-- ${TH_?'เลือกคลัง':'Select Store'} --</option>`; stoSel.disabled = true;
+        }
+    }
+    orgUpdateBc();
+}
+
+function orgUpdateBc() {
+    const center   = document.getElementById('rCenter').value;
+    const division = document.getElementById('rDivision').value;
+    const section  = document.getElementById('rSection').value;
+    const storeId  = document.getElementById('rStore').value;
+    const bc = document.getElementById('orgBc');
+    const parts = [center, division, section].filter(Boolean);
+    if (storeId) {
+        const st = orgStores.find(s => String(s.id) === String(storeId));
+        if (st) parts.push(st.store_name);
+    }
+    if (parts.length) {
+        bc.style.display = 'flex';
+        document.getElementById('orgBcTxt').textContent = parts.join(' › ');
+    } else {
+        bc.style.display = 'none';
+    }
+}
+
+orgLoad();
 
 document.getElementById('registerForm').addEventListener('submit', async function (e) {
     e.preventDefault();

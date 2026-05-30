@@ -69,6 +69,20 @@ function has3DModel(string $type, ?string $material): bool {
     return (bool)Database::fetch("SELECT id FROM packaging_3d_models WHERE {$w} LIMIT 1", $bind);
 }
 
+// ── Helper: convert quantity to kg ───────────────────────────────
+function srToKg(float $qty, string $unit): float {
+    return match(strtolower(trim($unit))) {
+        'kg'    => $qty,
+        'g'     => $qty / 1000,
+        'mg'    => $qty / 1000000,
+        'l'     => $qty,          // assume 1 kg/L
+        'ml'    => $qty / 1000,   // assume 1 g/mL
+        'oz'    => $qty * 0.028350,
+        'lb'    => $qty * 0.453592,
+        default => $qty / 1000,
+    };
+}
+
 // ── Helper: json response ─────────────────────────────────────────
 function jsonOk($data = null): void {
     echo json_encode(['success' => true, 'data' => $data]);
@@ -224,6 +238,374 @@ try {
                 [':q' => '%' . $q . '%']
             );
             jsonOk($rows);
+        }
+
+        // ── GET: safety_report ───────────────────────────────────────
+        if ($action === 'safety_report') {
+            $roomId = (int)($_GET['room_id'] ?? 0);
+            if (!$roomId) jsonErr('room_id required');
+            if (!userManagesRoom($uid, $roomId)) jsonErr('Access denied', 403);
+
+            $room = Database::fetch(
+                "SELECT r.name, r.code AS room_code, r.floor, b.name AS building_name, b.shortname AS building_short
+                 FROM rooms r LEFT JOIN buildings b ON b.id = r.building_id WHERE r.id = :rid",
+                [':rid' => $roomId]
+            );
+
+            // Pull quantity, physical state, and ALL available GHS sources.
+            // chemicals.hazard_statements  = JSON array like ["H225: Highly flammable...", ...]
+            // chemicals.hazard_pictograms  = JSON word-names like ["flammable","irritant"]
+            // chemical_ghs_data.ghs_pictograms = JSON GHS codes like ["GHS02","GHS07"]
+            // chemical_ghs_data.h_statements_text = free text possibly containing H-codes
+            $rows = Database::fetchAll(
+                "SELECT
+                    ct.current_quantity,
+                    ct.quantity_unit,
+                    ch.physical_state,
+                    ch.hazard_statements  AS chem_hstmt,
+                    ch.hazard_pictograms  AS chem_word_pics,
+                    ghs.ghs_pictograms    AS ghs_pics,
+                    ghs.h_statements      AS h_stmt_json,
+                    ghs.h_statements_text
+                 FROM containers ct
+                 JOIN chemicals ch ON ch.id = ct.chemical_id
+                 LEFT JOIN chemical_ghs_data ghs ON ghs.chemical_id = ch.id
+                 WHERE ct.room_id = :rid AND ct.is_active = 1
+                   AND ct.current_quantity > 0",
+                [':rid' => $roomId]
+            );
+
+            // ── H-code → Health Hazard category map ──────────────
+            $healthMap = [
+                'acute_toxicity'  => ['H300','H301','H302','H310','H311','H312','H330','H331','H332'],
+                'aspiration'      => ['H304'],
+                'carcinogenicity' => ['H350','H351'],
+                'germ_cell'       => ['H340','H341'],
+                'reproductive'    => ['H360','H361','H362'],
+                'sensitization'   => ['H317','H334'],
+                'eye_damage'      => ['H318','H319'],
+                'skin_corrosion'  => ['H314','H315'],
+                'stot_repeated'   => ['H372','H373'],
+                'stot_single'     => ['H370','H371'],
+            ];
+
+            // ── H-code → Physical Hazard category map ─────────────
+            $physMap = [
+                'corrosive_metals'   => ['H290'],
+                'explosives'         => ['H200','H201','H202','H203','H204','H205'],
+                'flammable_gas'      => ['H220','H221'],
+                'flammable_aerosols' => ['H222','H223'],
+                'flammable_liquids'  => ['H224','H225','H226'],
+                'flammable_solids'   => ['H228'],
+                'gas_pressure'       => ['H280','H281','H282','H283'],
+                'organic_peroxides'  => ['H240','H241','H242'],
+                'oxidizing_gases'    => ['H270'],
+                'oxidizing_liquids'  => ['H271','H272'],
+                'oxidizing_solids'   => ['H271','H272'],
+                'pyrophoric_liquids' => ['H250'],
+                'pyrophoric_solids'  => ['H250'],
+                'self_heating'       => ['H251','H252'],
+                'self_reactive'      => ['H243','H244','H245'],
+                'water_reactive'     => ['H260','H261'],
+            ];
+
+            // ── GHS Pictogram → category fallback map ─────────────
+            // Used when no H-codes are available. Physical state disambiguates.
+            $picHealthMap = [
+                'GHS05' => ['skin_corrosion'],
+                'GHS06' => ['acute_toxicity'],
+                'GHS07' => ['acute_toxicity','skin_corrosion','eye_damage','sensitization'],
+                'GHS08' => ['carcinogenicity','reproductive','stot_repeated','stot_single','aspiration','germ_cell'],
+            ];
+            // Physical hazard pictogram → (by state) mapping done inline below.
+
+            $zero   = ['solid' => 0.0, 'liquid' => 0.0, 'gas' => 0.0];
+            $health = array_fill_keys(array_keys($healthMap), $zero);
+            $phys   = array_fill_keys(array_keys($physMap),   $zero);
+            $stats  = ['total' => count($rows), 'with_hcodes' => 0, 'with_pics' => 0, 'no_ghs' => 0];
+
+            foreach ($rows as $ct) {
+                $kg    = srToKg((float)$ct['current_quantity'], $ct['quantity_unit'] ?? '');
+                if ($kg <= 0) continue;
+
+                $state = in_array($ct['physical_state'], ['solid','liquid','gas'])
+                            ? $ct['physical_state'] : 'solid';
+
+                // ── Step 1: Collect H-codes from ALL sources ──────
+                $hCodes = [];
+
+                // Source A: chemical_ghs_data.h_statements (JSON array of bare codes)
+                $arr = json_decode($ct['h_stmt_json'] ?? 'null', true);
+                if (is_array($arr)) {
+                    foreach ($arr as $v) {
+                        if (is_string($v)) {
+                            preg_match_all('/\bH\d{3}\b/i', $v, $m);
+                            foreach ($m[0] as $h) $hCodes[] = strtoupper($h);
+                        }
+                    }
+                }
+
+                // Source B: chemical_ghs_data.h_statements_text (free text)
+                if (!empty($ct['h_statements_text'])) {
+                    preg_match_all('/\bH\d{3}\b/i', $ct['h_statements_text'], $m);
+                    foreach ($m[0] as $h) $hCodes[] = strtoupper($h);
+                }
+
+                // Source C: chemicals.hazard_statements (JSON array like "H225: Highly Flammable...")
+                if (!empty($ct['chem_hstmt'])) {
+                    $arr2 = json_decode($ct['chem_hstmt'], true);
+                    if (is_array($arr2)) {
+                        foreach ($arr2 as $v) {
+                            if (is_string($v)) {
+                                preg_match_all('/\bH\d{3}\b/i', $v, $m2);
+                                foreach ($m2[0] as $h) $hCodes[] = strtoupper($h);
+                            }
+                        }
+                    }
+                }
+
+                $hCodes = array_values(array_unique($hCodes));
+
+                // ── Step 2: Collect GHS Pictograms ────────────────
+                // chemical_ghs_data.ghs_pictograms → GHS codes (GHS01-GHS09)
+                // chemicals.hazard_pictograms → word names (flammable, irritant, …) → convert
+                $wordToGhs = [
+                    'flammable'    => 'GHS02', 'oxidizing'    => 'GHS03',
+                    'explosive'    => 'GHS01', 'corrosive'    => 'GHS05',
+                    'toxic'        => 'GHS06', 'irritant'     => 'GHS07',
+                    'health_hazard'=> 'GHS08', 'gas_pressure' => 'GHS04',
+                    'environmental'=> 'GHS09',
+                ];
+                $pics = [];
+                // Prefer GHS-code format from ghs_data
+                if (!empty($ct['ghs_pics'])) {
+                    $pArr = json_decode($ct['ghs_pics'], true);
+                    if (is_array($pArr)) {
+                        foreach (array_filter($pArr, 'is_string') as $v) {
+                            $v = strtoupper(trim($v));
+                            if (preg_match('/^GHS\d{2}$/', $v)) $pics[] = $v;
+                        }
+                    }
+                }
+                // Fall back to word-name hazard_pictograms from chemicals table
+                if (empty($pics) && !empty($ct['chem_word_pics'])) {
+                    $pArr2 = json_decode($ct['chem_word_pics'], true);
+                    if (is_array($pArr2)) {
+                        foreach (array_filter($pArr2, 'is_string') as $w) {
+                            $gCode = $wordToGhs[strtolower(trim($w))] ?? null;
+                            if ($gCode) $pics[] = $gCode;
+                        }
+                    }
+                }
+                $pics = array_values(array_unique($pics));
+
+                // ── Step 3: Classify ──────────────────────────────
+                if (!empty($hCodes)) {
+                    // Authoritative: H-code based classification
+                    $stats['with_hcodes']++;
+
+                    foreach ($healthMap as $cat => $codes) {
+                        if (array_intersect($hCodes, $codes))
+                            $health[$cat][$state] += $kg;
+                    }
+                    foreach ($physMap as $cat => $codes) {
+                        if (!array_intersect($hCodes, $codes)) continue;
+                        // State-disambiguated categories
+                        if ($cat === 'oxidizing_liquids'  && $state !== 'liquid') continue;
+                        if ($cat === 'oxidizing_solids'   && $state !== 'solid')  continue;
+                        if ($cat === 'pyrophoric_liquids' && $state !== 'liquid') continue;
+                        if ($cat === 'pyrophoric_solids'  && $state !== 'solid')  continue;
+                        $phys[$cat][$state] += $kg;
+                    }
+
+                } elseif (!empty($pics)) {
+                    // Fallback: GHS pictogram based classification
+                    $stats['with_pics']++;
+
+                    // Health pictograms
+                    foreach ($picHealthMap as $pic => $cats) {
+                        if (!in_array($pic, $pics)) continue;
+                        foreach ($cats as $cat) $health[$cat][$state] += $kg;
+                    }
+
+                    // Physical pictograms (state-aware)
+                    foreach ($pics as $pic) {
+                        switch ($pic) {
+                            case 'GHS01':
+                                $phys['explosives'][$state] += $kg;
+                                break;
+                            case 'GHS02':
+                                if ($state === 'gas')    $phys['flammable_gas'][$state]     += $kg;
+                                elseif ($state === 'liquid') $phys['flammable_liquids'][$state] += $kg;
+                                else                         $phys['flammable_solids'][$state]  += $kg;
+                                break;
+                            case 'GHS03':
+                                if ($state === 'gas')        $phys['oxidizing_gases'][$state]   += $kg;
+                                elseif ($state === 'liquid') $phys['oxidizing_liquids'][$state] += $kg;
+                                else                         $phys['oxidizing_solids'][$state]  += $kg;
+                                break;
+                            case 'GHS04':
+                                $phys['gas_pressure'][$state] += $kg;
+                                break;
+                            case 'GHS05':
+                                $phys['corrosive_metals'][$state] += $kg;
+                                break;
+                        }
+                    }
+                } else {
+                    $stats['no_ghs']++;
+                }
+            }
+
+            jsonOk([
+                'room'           => $room,
+                'health_hazard'  => $health,
+                'physical_hazard'=> $phys,
+                'stats'          => $stats,
+            ]);
+        }
+
+        // ── GET: safety_chemicals ────────────────────────────────────
+        if ($action === 'safety_chemicals') {
+            $roomId   = (int)($_GET['room_id'] ?? 0);
+            $category = trim($_GET['category'] ?? '');
+            $tab      = ($_GET['tab'] ?? 'health') === 'physical' ? 'physical' : 'health';
+            $limitN   = min((int)($_GET['limit'] ?? 5), 100);
+            if (!$roomId) jsonErr('room_id required');
+            if (!userManagesRoom($uid, $roomId)) jsonErr('Access denied', 403);
+            if (!$category) jsonErr('category required');
+
+            $rows = Database::fetchAll(
+                "SELECT ct.current_quantity, ct.quantity_unit, ch.physical_state,
+                        ch.id AS chemical_id, ch.name, ch.cas_number,
+                        ch.hazard_statements  AS chem_hstmt,
+                        ch.hazard_pictograms  AS chem_word_pics,
+                        ghs.ghs_pictograms    AS ghs_pics,
+                        ghs.h_statements      AS h_stmt_json,
+                        ghs.h_statements_text
+                 FROM containers ct
+                 JOIN chemicals ch ON ch.id = ct.chemical_id
+                 LEFT JOIN chemical_ghs_data ghs ON ghs.chemical_id = ch.id
+                 WHERE ct.room_id = :rid AND ct.is_active = 1 AND ct.current_quantity > 0",
+                [':rid' => $roomId]
+            );
+
+            $healthMap = [
+                'acute_toxicity'  => ['H300','H301','H302','H310','H311','H312','H330','H331','H332'],
+                'aspiration'      => ['H304'],
+                'carcinogenicity' => ['H350','H351'],
+                'germ_cell'       => ['H340','H341'],
+                'reproductive'    => ['H360','H361','H362'],
+                'sensitization'   => ['H317','H334'],
+                'eye_damage'      => ['H318','H319'],
+                'skin_corrosion'  => ['H314','H315'],
+                'stot_repeated'   => ['H372','H373'],
+                'stot_single'     => ['H370','H371'],
+            ];
+            $physMap = [
+                'corrosive_metals'   => ['H290'],
+                'explosives'         => ['H200','H201','H202','H203','H204','H205'],
+                'flammable_gas'      => ['H220','H221'],
+                'flammable_aerosols' => ['H222','H223'],
+                'flammable_liquids'  => ['H224','H225','H226'],
+                'flammable_solids'   => ['H228'],
+                'gas_pressure'       => ['H280','H281','H282','H283'],
+                'organic_peroxides'  => ['H240','H241','H242'],
+                'oxidizing_gases'    => ['H270'],
+                'oxidizing_liquids'  => ['H271','H272'],
+                'oxidizing_solids'   => ['H271','H272'],
+                'pyrophoric_liquids' => ['H250'],
+                'pyrophoric_solids'  => ['H250'],
+                'self_heating'       => ['H251','H252'],
+                'self_reactive'      => ['H243','H244','H245'],
+                'water_reactive'     => ['H260','H261'],
+            ];
+            $picHealthMap = [
+                'GHS05'=>['skin_corrosion'],'GHS06'=>['acute_toxicity'],
+                'GHS07'=>['acute_toxicity','skin_corrosion','eye_damage','sensitization'],
+                'GHS08'=>['carcinogenicity','reproductive','stot_repeated','stot_single','aspiration','germ_cell'],
+            ];
+            $wordToGhs = ['flammable'=>'GHS02','oxidizing'=>'GHS03','explosive'=>'GHS01',
+                          'corrosive'=>'GHS05','toxic'=>'GHS06','irritant'=>'GHS07',
+                          'health_hazard'=>'GHS08','gas_pressure'=>'GHS04','environmental'=>'GHS09'];
+            $map = ($tab === 'health') ? $healthMap : $physMap;
+            $stateSpecific = ['oxidizing_liquids','pyrophoric_liquids','oxidizing_solids','pyrophoric_solids'];
+
+            $matched = [];
+            foreach ($rows as $ct) {
+                $kg = srToKg((float)$ct['current_quantity'], $ct['quantity_unit'] ?? '');
+                if ($kg <= 0) continue;
+                $state = in_array($ct['physical_state'],['solid','liquid','gas']) ? $ct['physical_state'] : 'solid';
+
+                // Collect H-codes (same triple-source logic)
+                $hCodes = [];
+                $arr = json_decode($ct['h_stmt_json'] ?? 'null', true);
+                if (is_array($arr)) foreach ($arr as $v) if (is_string($v)) { preg_match_all('/\bH\d{3}\b/i',$v,$m); foreach($m[0] as $h) $hCodes[]=strtoupper($h); }
+                if (!empty($ct['h_statements_text'])) { preg_match_all('/\bH\d{3}\b/i',$ct['h_statements_text'],$m); foreach($m[0] as $h) $hCodes[]=strtoupper($h); }
+                if (!empty($ct['chem_hstmt'])) { $a2=json_decode($ct['chem_hstmt'],true); if(is_array($a2)) foreach($a2 as $v) if(is_string($v)) { preg_match_all('/\bH\d{3}\b/i',$v,$m2); foreach($m2[0] as $h) $hCodes[]=strtoupper($h); } }
+                $hCodes = array_values(array_unique($hCodes));
+
+                // Collect GHS pics
+                $pics = [];
+                if (!empty($ct['ghs_pics'])) { $p=json_decode($ct['ghs_pics'],true); if(is_array($p)) foreach(array_filter($p,'is_string') as $v) { $v=strtoupper(trim($v)); if(preg_match('/^GHS\d{2}$/',$v)) $pics[]=$v; } }
+                if (empty($pics) && !empty($ct['chem_word_pics'])) { $p2=json_decode($ct['chem_word_pics'],true); if(is_array($p2)) foreach(array_filter($p2,'is_string') as $w) { $g=$wordToGhs[strtolower(trim($w))]??null; if($g) $pics[]=$g; } }
+
+                // Check if this container belongs to the requested category
+                $belongs = false;
+                if (!empty($hCodes) && isset($map[$category])) {
+                    $belongs = !empty(array_intersect($hCodes, $map[$category]));
+                    if ($belongs && in_array($category, $stateSpecific)) {
+                        if (str_ends_with($category,'_liquids') && $state !== 'liquid') $belongs = false;
+                        if (str_ends_with($category,'_solids')  && $state !== 'solid')  $belongs = false;
+                    }
+                } elseif (!empty($pics)) {
+                    if ($tab === 'health') {
+                        foreach ($picHealthMap as $pic => $cats) {
+                            if (in_array($pic,$pics) && in_array($category,$cats)) { $belongs=true; break; }
+                        }
+                    } else {
+                        $picPhysMap = [
+                            'GHS01'=>['explosives'],'GHS02'=>['flammable_gas','flammable_liquids','flammable_solids'],
+                            'GHS03'=>['oxidizing_gases','oxidizing_liquids','oxidizing_solids'],
+                            'GHS04'=>['gas_pressure'],'GHS05'=>['corrosive_metals'],
+                        ];
+                        foreach ($picPhysMap as $pic => $cats) {
+                            if (!in_array($pic,$pics) || !in_array($category,$cats)) continue;
+                            if ($pic==='GHS02') {
+                                $belongs = ($category==='flammable_gas'&&$state==='gas') || ($category==='flammable_liquids'&&$state==='liquid') || ($category==='flammable_solids'&&$state==='solid');
+                            } elseif ($pic==='GHS03') {
+                                $belongs = ($category==='oxidizing_gases'&&$state==='gas') || ($category==='oxidizing_liquids'&&$state==='liquid') || ($category==='oxidizing_solids'&&$state==='solid');
+                            } else { $belongs = true; }
+                            if ($belongs) break;
+                        }
+                    }
+                }
+
+                if ($belongs) {
+                    $cid = (int)$ct['chemical_id'];
+                    if (!isset($matched[$cid])) {
+                        $matched[$cid] = [
+                            'id'    => $cid,
+                            'name'  => $ct['name'],
+                            'cas'   => $ct['cas_number'] ?? '',
+                            'state' => $state,
+                            'qty_kg'=> 0.0,
+                            'h_codes'=> array_slice($hCodes,0,8),
+                            'pics'  => array_slice(array_values(array_unique($pics)),0,5),
+                        ];
+                    }
+                    $matched[$cid]['qty_kg'] += $kg;
+                }
+            }
+
+            $matched = array_values($matched);
+            usort($matched, fn($a,$b) => $b['qty_kg'] <=> $a['qty_kg']);
+            $totalCount = count($matched);
+            $totalKg    = array_sum(array_column($matched,'qty_kg'));
+            $chemicals  = array_slice($matched, 0, $limitN);
+            foreach ($chemicals as &$c) $c['qty_kg'] = round($c['qty_kg'], 3);
+
+            jsonOk(['chemicals'=>$chemicals,'total_count'=>$totalCount,'total_kg'=>round($totalKg,3)]);
         }
 
         jsonErr('Unknown action');
