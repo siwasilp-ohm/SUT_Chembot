@@ -492,9 +492,12 @@ class Layout {
         $isAdmin   = in_array($role, ['admin', 'lab_manager', 'ceo']);
 
         // Admin always sees everything; other roles respect page_permissions table.
+        // Pages listed in $alwaysVisible are forced on for every user regardless.
+        $alwaysVisible = ['myroom'];
         $roleId  = (int)($user['role_id'] ?? 0);
         $allowed = ($role === 'admin') ? [] : self::loadPagePerms($roleId);
-        $see     = function(string $k) use ($allowed): bool {
+        $see     = function(string $k) use ($allowed, $alwaysVisible): bool {
+            if (in_array($k, $alwaysVisible, true)) return true;
             return self::canSeePage($allowed, $k);
         };
 
@@ -568,9 +571,9 @@ class Layout {
                 <i class="fas fa-search icon"></i> <span class="sb-item-label"><?php echo __('nav_chemicals'); ?></span>
             </a>
             <?php endif; ?>
-            <!-- 5. ตำแหน่ง -->
+            <!-- 5. สถานที่จัดเก็บ -->
             <?php if ($see('locations')): ?>
-            <a href="/v1/pages/locations.php" class="sb-item <?php echo $activePage==='locations'?'active':''; ?>" data-label="<?php echo $lang==='th'?'ตำแหน่ง':'Locations'; ?>">
+            <a href="/v1/pages/locations.php" class="sb-item <?php echo $activePage==='locations'?'active':''; ?>" data-label="<?php echo $lang==='th'?'สถานที่จัดเก็บ':'Storage Locations'; ?>">
                 <i class="fas fa-sitemap icon"></i> <span class="sb-item-label"><?php echo __('nav_locations'); ?></span>
             </a>
             <?php endif; ?>
@@ -794,7 +797,8 @@ class Layout {
         const typeIcon={
             'expiry':'fa-clock','low_stock':'fa-battery-quarter','overdue_borrow':'fa-hourglass-end',
             'borrow_request':'fa-handshake','safety_violation':'fa-shield-alt','compliance':'fa-file-check',
-            'temperature_alert':'fa-thermometer-three-quarters','custom':'fa-bell'
+            'temperature_alert':'fa-thermometer-three-quarters','custom':'fa-bell',
+            'room_access_request':'fa-door-open'
         };
         const sevClass={'critical':'critical','warning':'warning','info':'info'};
         const sevLabel={'critical':lang==='th'?'วิกฤต':'Critical','warning':lang==='th'?'เตือน':'Warning','info':lang==='th'?'ข้อมูล':'Info'};
@@ -805,6 +809,8 @@ class Layout {
             const cid=n.container_id, chid=n.chemical_id, bid=n.borrow_request_id, lid=n.lab_id;
             const isAction=n.action_required&&n.action_required!='0';
             switch(t){
+                case 'room_access_request':
+                    return '/v1/pages/myroom.php?tab=requests';
                 case 'borrow_request':
                     if(isAction) return '/v1/pages/borrow.php?tab=pending'+(bid?'&highlight='+bid:'');
                     return '/v1/pages/borrow.php'+(bid?'?highlight='+bid:'');
@@ -1007,7 +1013,7 @@ class Layout {
     /* Close sidebar on nav item click (mobile) */
     document.querySelectorAll('.sb-nav a.sb-item').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=768){sidebar.classList.remove('open');overlay.classList.remove('show')}}));
     function toggleSub(el){el.classList.toggle('expanded');const s=el.nextElementSibling;if(s&&s.classList.contains('sb-sub'))s.classList.toggle('show')}
-    async function apiFetch(url,options={}){const t=document.cookie.split('; ').find(c=>c.startsWith('auth_token='))?.split('=')[1];const h={'Content-Type':'application/json',...(options.headers||{})};if(t)h['Authorization']='Bearer '+t;const r=await fetch(url,{...options,headers:h});if(!r.ok&&r.status===401){window.location.href='/v1/';throw new Error('Unauthorized')}return r.json()}
+    async function apiFetch(url,options={}){const t=document.cookie.split('; ').find(c=>c.startsWith('auth_token='))?.split('=')[1];const h={'Content-Type':'application/json',...(options.headers||{})};if(t)h['Authorization']='Bearer '+t;const r=await fetch(url,{...options,headers:h});if(!r.ok&&r.status===401){window.location.href='/v1/';throw new Error('Unauthorized')}const txt=await r.text();if(!txt.trim())throw new Error('เซิร์ฟเวอร์ไม่ตอบสนอง (empty response) — กรุณาลองใหม่');try{return JSON.parse(txt)}catch(_){throw new Error('รูปแบบข้อมูลจากเซิร์ฟเวอร์ไม่ถูกต้อง')}}
     function formatDate(s){if(!s)return'-';const l='<?php echo I18n::getCurrentLang(); ?>';return new Date(s).toLocaleDateString(l==='th'?'th-TH':'en-US',{year:'numeric',month:'short',day:'numeric'})}
     function statusBadge(status){const m={'active':['ci-badge-success','<?php echo __("status_active"); ?>'],'inactive':['ci-badge-default','<?php echo __("status_inactive"); ?>'],'expired':['ci-badge-danger','<?php echo __("status_expired"); ?>'],'empty':['ci-badge-warning','<?php echo __("status_empty"); ?>'],'quarantined':['ci-badge-danger','<?php echo __("status_quarantined"); ?>'],'pending':['ci-badge-warning','<?php echo __("status_pending"); ?>'],'approved':['ci-badge-success','<?php echo __("status_approved"); ?>'],'rejected':['ci-badge-danger','<?php echo __("status_rejected"); ?>'],'returned':['ci-badge-info','<?php echo __("status_returned"); ?>'],'fulfilled':['ci-badge-success','Fulfilled'],'overdue':['ci-badge-danger','Overdue']};const[c,lb]=m[status]||['ci-badge-default',status];return`<span class="ci-badge ${c}">${lb}</span>`}
     </script>

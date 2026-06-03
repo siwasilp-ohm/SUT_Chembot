@@ -273,6 +273,12 @@ function handlePost($action, $user, $isAdmin, $isManager) {
         case 'packaging_save':
             if (!$isManager) throw new Exception('Permission denied', 403);
             savePackaging($user); break;
+        case 'fetch_ghs_data':
+            if (!$isManager) throw new Exception('Permission denied', 403);
+            @set_time_limit(90);
+            $data = json_decode(file_get_contents('php://input'), true) ?: [];
+            echo json_encode(['success'=>true, 'data'=>fetchGhsData($data)]);
+            break;
         default: throw new Exception('Invalid action');
     }
 }
@@ -511,4 +517,163 @@ function savePackaging($user) {
         $newId = Database::insert('chemical_packaging', $fields);
         echo json_encode(['success' => true, 'message' => 'Packaging created', 'data' => ['id' => $newId]]);
     }
+}
+
+// ═══════════════════════════════════════════════════════
+// PubChem GHS Auto-Lookup
+// ═══════════════════════════════════════════════════════
+function fetchGhsData(array $data): array {
+    $cas  = trim($data['cas_number'] ?? '');
+    $name = trim($data['chemical_name'] ?? '');
+    $query = $cas ?: $name;
+    if (!$query) throw new Exception('กรุณาระบุ CAS Number หรือชื่อสาร');
+
+    $raw = pubchemFetch('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/' . rawurlencode($query) . '/JSON');
+    if (!$raw) throw new Exception("ไม่พบ \"$query\" ใน PubChem — ลองใช้ชื่อ IUPAC หรือชื่อสามัญ");
+
+    $pc  = json_decode($raw, true);
+    $cid = $pc['PC_Compounds'][0]['id']['id']['cid'] ?? null;
+    if (!$cid) throw new Exception('ไม่พบรหัส CID จาก PubChem');
+
+    $propRaw = pubchemFetch("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{$cid}/property/MolecularFormula,MolecularWeight,IUPACName,IsomericSMILES,InChIKey/JSON");
+    $props   = json_decode((string)$propRaw, true)['PropertyTable']['Properties'][0] ?? [];
+
+    $ghsRaw = pubchemFetch("https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/{$cid}/JSON?heading=Safety+and+Hazards");
+    $ghs    = parsePubchemGhs(json_decode((string)$ghsRaw, true));
+
+    $expRaw = pubchemFetch("https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/{$cid}/JSON?heading=Experimental+Properties");
+    $exp    = parsePubchemExp(json_decode((string)$expRaw, true));
+
+    return [
+        'cid'               => $cid,
+        'pubchem_url'       => "https://pubchem.ncbi.nlm.nih.gov/compound/{$cid}",
+        'molecular_formula' => $props['MolecularFormula'] ?? null,
+        'molecular_weight'  => isset($props['MolecularWeight']) ? (string)round((float)$props['MolecularWeight'], 4) : null,
+        'iupac_name'        => $props['IUPACName'] ?? null,
+        'inchikey'          => $props['InChIKey'] ?? null,
+        'ghs'               => $ghs,
+        'experimental'      => $exp,
+    ];
+}
+
+function pubchemFetch(string $url): ?string {
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 10,
+            CURLOPT_CONNECTTIMEOUT => 6,
+            CURLOPT_USERAGENT      => 'SUT-ChemBot/2.0 (Educational; Thailand)',
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS      => 3,
+        ]);
+        $out  = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        return ($out && $code === 200) ? $out : null;
+    }
+    $ctx = stream_context_create(['http' => ['timeout' => 15, 'user_agent' => 'SUT-ChemBot/2.0', 'ignore_errors' => false]]);
+    return @file_get_contents($url, false, $ctx) ?: null;
+}
+
+function parsePubchemGhs(?array $root): array {
+    $result = ['signal_word' => '', 'pictograms' => [], 'h_statements' => [], 'p_statements' => [], 'source_count' => 0];
+    $secs   = findPubchemSection($root['Record']['Section'] ?? [], 'GHS Classification');
+    if (empty($secs)) return $result;
+
+    $pics = []; $swords = []; $hstmts = []; $pstmts = [];
+
+    // PubChem returns GHS Classification as a flat Information[] array (Name key per item).
+    // Legacy format used sub-sections with TOCHeading per field — handle both.
+    $isFlat = isset($secs[0]['Name']) || isset($secs[0]['ReferenceNumber']);
+
+    if ($isFlat) {
+        foreach ($secs as $info) {
+            $name = $info['Name'] ?? '';
+            foreach ($info['Value']['StringWithMarkup'] ?? [] as $swm) {
+                $str = trim($swm['String'] ?? '');
+                if (stripos($name, 'Pictogram') !== false) {
+                    foreach ($swm['Markup'] ?? [] as $mk) {
+                        if (preg_match('/GHS(\d{2})/i', $mk['URL']   ?? '', $m)) $pics[] = 'GHS' . str_pad($m[1], 2, '0', STR_PAD_LEFT);
+                        if (preg_match('/GHS(\d{2})/i', $mk['Extra'] ?? '', $m)) $pics[] = 'GHS' . str_pad($m[1], 2, '0', STR_PAD_LEFT);
+                    }
+                }
+                if ($name === 'Signal' && $str) {
+                    if (stripos($str, 'Danger')  !== false) $swords[] = 'Danger';
+                    elseif (stripos($str, 'Warning') !== false) $swords[] = 'Warning';
+                }
+                if (stripos($name, 'Hazard Statement') !== false && $str && preg_match('/H\d{3}/', $str)) {
+                    $hstmts[] = $str;
+                }
+                if (stripos($name, 'Precautionary') !== false && $str) {
+                    preg_match_all('/P\d{3}[+\d]*/', $str, $m);
+                    $pstmts = array_merge($pstmts, $m[0]);
+                }
+            }
+        }
+        $result['source_count'] = count(array_filter($secs, fn($i) => ($i['Name'] ?? '') === 'Signal'));
+    } else {
+        // Legacy sub-section format
+        foreach ($secs as $sec) {
+            $h = $sec['TOCHeading'] ?? '';
+            foreach ($sec['Information'] ?? [] as $info) {
+                foreach ($info['Value']['StringWithMarkup'] ?? [] as $swm) {
+                    $str = trim($swm['String'] ?? '');
+                    if (stripos($h, 'Pictogram') !== false) {
+                        foreach ($swm['Markup'] ?? [] as $mk) {
+                            if (preg_match('/GHS(\d{2})/i', $mk['URL'] ?? '', $m)) $pics[] = 'GHS' . str_pad($m[1], 2, '0', STR_PAD_LEFT);
+                        }
+                    }
+                    if (stripos($h, 'Signal') !== false && $str) {
+                        if (stripos($str, 'Danger') !== false) $swords[] = 'Danger';
+                        elseif (stripos($str, 'Warning') !== false) $swords[] = 'Warning';
+                    }
+                    if (stripos($h, 'Hazard Statement') !== false && $str && preg_match('/H\d{3}/', $str)) $hstmts[] = $str;
+                    if (stripos($h, 'Precautionary') !== false && $str) {
+                        preg_match_all('/P\d{3}[+\d]*/', $str, $m);
+                        $pstmts = array_merge($pstmts, $m[0]);
+                    }
+                }
+            }
+        }
+        $result['source_count'] = count(array_filter($secs, fn($s) => stripos($s['TOCHeading'] ?? '', 'Signal') !== false));
+    }
+
+    $result['pictograms']  = array_values(array_unique($pics));
+    sort($result['pictograms']);
+    $result['signal_word'] = in_array('Danger', $swords) ? 'Danger' : (in_array('Warning', $swords) ? 'Warning' : ($swords[0] ?? ''));
+    $result['h_statements'] = array_values(array_unique($hstmts)); sort($result['h_statements']);
+    $result['p_statements'] = array_values(array_unique($pstmts)); sort($result['p_statements']);
+    return $result;
+}
+
+function parsePubchemExp(?array $root): array {
+    $result = [];
+    $secs   = findPubchemSection($root['Record']['Section'] ?? [], 'Experimental Properties');
+    if ($secs === null) return $result;
+    $want = ['Boiling Point'=>'boiling_point','Melting Point'=>'melting_point','Flash Point'=>'flash_point','Solubility'=>'solubility','Density'=>'density','Vapor Pressure'=>'vapor_pressure'];
+    foreach ($secs as $sec) {
+        $h = $sec['TOCHeading'] ?? '';
+        if (!isset($want[$h])) continue;
+        $info = ($sec['Information'] ?? [])[0] ?? null;
+        if (!$info) continue;
+        $val = trim($info['Value']['StringWithMarkup'][0]['String'] ?? '');
+        if (!$val && isset($info['Value']['Number'][0]))
+            $val = $info['Value']['Number'][0] . ' ' . ($info['Value']['Unit'] ?? '');
+        if ($val && !isset($result[$want[$h]])) $result[$want[$h]] = $val;
+    }
+    return $result;
+}
+
+function findPubchemSection(array $secs, string $heading): ?array {
+    foreach ($secs as $sec) {
+        if (($sec['TOCHeading'] ?? '') === $heading) return $sec['Section'] ?? $sec['Information'] ?? [];
+        if (!empty($sec['Section'])) {
+            $found = findPubchemSection($sec['Section'], $heading);
+            if ($found !== null) return $found;
+        }
+    }
+    return null;
 }

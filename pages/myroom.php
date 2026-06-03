@@ -44,9 +44,25 @@ Layout::head($TH ? 'ห้องของฉัน' : 'My Rooms');
 .mr-rt-cnt{background:rgba(0,0,0,.15);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700}
 .mr-room-tab.active .mr-rt-cnt{background:rgba(255,255,255,.25)}
 
-/* ── Stats Bar ── */
-@keyframes mr-stat-in{0%{opacity:0;transform:translateY(14px) scale(.95)}62%{transform:translateY(-3px) scale(1.015)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes mr-stat-ic-pop{0%{opacity:0;transform:scale(.5) rotate(-10deg)}65%{transform:scale(1.2) rotate(3deg)}100%{opacity:1;transform:scale(1) rotate(0deg)}}
+/* ══ Animation System ═══════════════════════════════════════════
+   Spring:  cubic-bezier(.34,1.28,.64,1)  — content pop (stats, cards, list)
+   Gentle:  cubic-bezier(.32,1.12,.64,1)  — overlays, modals
+   Smooth:  cubic-bezier(.22,1,.36,1)     — toasts, subtle slides
+   ═════════════════════════════════════════════════════════════ */
+
+/* Master spring entrance — everything that "pops in" from below */
+@keyframes mr-pop-in{
+  0%  {opacity:0;transform:translateY(16px) scale(.95)}
+  58% {opacity:1;transform:translateY(-4px) scale(1.016)}
+  100%{opacity:1;transform:translateY(0)   scale(1)}
+}
+/* Icon spring — scale + rotation */
+@keyframes mr-stat-ic-pop{
+  0%  {opacity:0;transform:scale(.45) rotate(-12deg)}
+  60% {transform:scale(1.22) rotate(4deg)}
+  100%{opacity:1;transform:scale(1)    rotate(0deg)}
+}
+/* Skeleton shimmer */
 @keyframes mr-sk-shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
 .mr-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
 .mr-stat{position:relative;overflow:hidden;background:#fff;border-radius:var(--stk-rs);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--stk-sh);border:1px solid var(--border,#e0e0e0);transition:border-color .15s,box-shadow .15s,transform .15s,background .15s;cursor:pointer;user-select:none}
@@ -58,12 +74,9 @@ Layout::head($TH ? 'ห้องของฉัน' : 'My Rooms');
 .mr-stat-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
 .mr-stat-v{font-size:20px;font-weight:800;color:var(--c1,#333);line-height:1;font-variant-numeric:tabular-nums}
 .mr-stat-l{font-size:10px;color:var(--c3,#999);margin-top:3px;text-transform:uppercase;letter-spacing:.4px}
-/* entrance animation */
-.mr-stat.entering{animation:mr-stat-in .44s cubic-bezier(.34,1.25,.64,1) both}
+/* entrance animation — reuse master keyframe */
+.mr-stat.entering{animation:mr-pop-in .44s cubic-bezier(.34,1.28,.64,1) both}
 .mr-stat.entering .mr-stat-ic{animation:mr-stat-ic-pop .4s cubic-bezier(.34,1.4,.64,1) both}
-/* mrList pop on filter change */
-@keyframes mr-list-pop{0%{opacity:0;transform:translateY(14px) scale(.95)}62%{transform:translateY(-3px) scale(1.015)}100%{opacity:1;transform:translateY(0) scale(1)}}
-.mr-list-anim{animation:mr-list-pop .44s cubic-bezier(.34,1.25,.64,1) both}
 /* skeleton */
 .mr-stat-sk{pointer-events:none;cursor:default}
 .mr-sk{border-radius:6px;background:linear-gradient(90deg,#f1f5f9 25%,#e4eaf4 50%,#f1f5f9 75%);background-size:800px 100%;animation:mr-sk-shimmer 1.5s ease-in-out infinite}
@@ -97,6 +110,14 @@ Layout::head($TH ? 'ห้องของฉัน' : 'My Rooms');
 .stk-btn{padding:8px 14px;border:none;border-radius:var(--stk-rs);font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:all .12s;white-space:nowrap}
 .stk-btn-g{background:transparent;color:var(--c3,#999);border:1.5px solid var(--border,#e0e0e0)}.stk-btn-g:hover{border-color:var(--mr);color:var(--mr)}
 .stk-btn-g.active{background:var(--mrbg);border-color:var(--mr);color:var(--mr)}
+.mr-toolbar-acts{display:flex;gap:6px;margin-left:auto;align-items:center;flex-shrink:0}
+@media(max-width:700px){
+  .mr-toolbar-acts{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:1px}
+  .mr-toolbar-acts::-webkit-scrollbar{display:none}
+  .mr-tba-lbl{display:none}
+  .mr-toolbar-acts .stk-btn{padding:7px 10px}
+  .mr-toolbar-acts .mr-mgmt-btn{padding:7px 10px}
+}
 
 /* ── Main Layout ── */
 .mr-layout{display:flex;gap:16px;align-items:flex-start;position:relative}
@@ -165,12 +186,14 @@ Layout::head($TH ? 'ห้องของฉัน' : 'My Rooms');
 .mr-cb:hover:not(:checked):not(.is-checked){border-color:var(--mr)}
 
 /* ─────────────── CARD VIEW ─────────────── */
-@keyframes mr-card-in{0%{opacity:0;transform:translateY(16px) scale(.95)}62%{transform:translateY(-3px) scale(1.012)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes mr-row-in{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
-@keyframes mr-grp-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.mr-card-anim{animation:mr-card-in .38s cubic-bezier(.34,1.18,.64,1) both}
-.mr-row-anim{animation:mr-row-in .2s ease both}
-.mr-grp-anim{animation:mr-grp-in .26s ease both}
+/* Cards — same spring as stats, shorter duration (smaller element) */
+.mr-card-anim{animation:mr-pop-in .36s cubic-bezier(.34,1.28,.64,1) both}
+/* Rows — gentle fade-up, no scale (inline element, scale looks off) */
+@keyframes mr-row-in{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+.mr-row-anim{animation:mr-row-in .24s cubic-bezier(.22,1,.36,1) both}
+/* Groups — light spring, slightly less bounce than full cards */
+@keyframes mr-grp-in{0%{opacity:0;transform:translateY(12px) scale(.98)}62%{opacity:1;transform:translateY(-2px) scale(1.005)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.mr-grp-anim{animation:mr-grp-in .34s cubic-bezier(.34,1.28,.64,1) both}
 .mr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .mr-card{background:#fff;border:1.5px solid var(--border,#e0e0e0);border-radius:var(--stk-r);overflow:hidden;transition:all .18s;position:relative}
 .mr-card:hover{border-color:var(--mr);box-shadow:var(--stk-shm);transform:translateY(-2px)}
@@ -221,8 +244,12 @@ Layout::head($TH ? 'ห้องของฉัน' : 'My Rooms');
 .mr-empty p{font-size:14px}
 
 /* ─────────────── BATCH BAR ─────────────── */
-@keyframes batchIn{from{opacity:0;transform:translateX(-50%) translateY(16px) scale(.96)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
-.stk-batch{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:1000;display:flex;align-items:center;gap:0;background:rgba(10,15,30,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:6px 8px;box-shadow:0 8px 40px rgba(0,0,0,.5),0 2px 12px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06);max-width:92vw;animation:batchIn .25s cubic-bezier(.34,1.56,.64,1)}
+@keyframes batchIn{
+  0%  {opacity:0;transform:translateX(-50%) translateY(18px) scale(.95)}
+  58% {opacity:1;transform:translateX(-50%) translateY(-3px) scale(1.012)}
+  100%{opacity:1;transform:translateX(-50%) translateY(0)    scale(1)}
+}
+.stk-batch{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:1000;display:flex;align-items:center;gap:0;background:rgba(10,15,30,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:6px 8px;box-shadow:0 8px 40px rgba(0,0,0,.5),0 2px 12px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06);max-width:92vw;animation:batchIn .34s cubic-bezier(.34,1.28,.64,1)}
 .bb-count{display:flex;align-items:center;gap:8px;padding:2px 12px 2px 6px;border-right:1px solid rgba(255,255,255,.1);margin-right:4px}
 .bb-num{background:var(--accent);color:#fff;font-size:13px;font-weight:800;min-width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 6px;line-height:1}
 .bb-lbl{font-size:11px;color:rgba(255,255,255,.55);font-weight:600;white-space:nowrap}
@@ -240,9 +267,35 @@ Layout::head($TH ? 'ห้องของฉัน' : 'My Rooms');
 /* ─────────────── MODALS ─────────────── */
 .mr-modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center;padding:20px}
 .mr-modal-ov.show{display:flex}
-.mr-modal{background:#fff;border-radius:var(--stk-r);width:100%;max-width:480px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.35);animation:mrIn .18s ease-out}
+
+/* ── Reject modal specific ── */
+.mr-reject-hdr{background:linear-gradient(135deg,#fef2f2,#fee2e2);border-bottom:1px solid #fecaca;padding:18px 20px;display:flex;align-items:center;gap:14px;border-radius:var(--stk-r) var(--stk-r) 0 0}
+.mr-reject-hdr-ic{width:44px;height:44px;border-radius:12px;background:#dc2626;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.mr-reject-hdr-title{font-size:16px;font-weight:800;color:#991b1b;margin:0}
+.mr-reject-hdr-sub{font-size:11px;color:#dc2626;margin-top:2px;opacity:.8}
+.mr-reject-hdr-close{margin-left:auto;background:none;border:none;font-size:20px;color:#ef4444;cursor:pointer;opacity:.6;padding:4px;line-height:1;flex-shrink:0}
+.mr-reject-hdr-close:hover{opacity:1}
+.mr-reject-user-card{display:flex;align-items:center;gap:12px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px}
+.mr-reject-user-av{width:46px;height:46px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;overflow:hidden;background:linear-gradient(135deg,#4338ca,#818cf8);color:#fff}
+.mr-reject-user-av img{width:100%;height:100%;object-fit:cover}
+.mr-reject-user-nm{font-size:14px;font-weight:700;color:var(--c1,#333)}
+.mr-reject-user-em{font-size:11px;color:var(--c3,#999);margin-top:2px}
+.mr-reject-room-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:7px;background:var(--mrbg);color:var(--mr);border:1px solid var(--mrbrd);flex-shrink:0}
+.mr-reject-msg-box{background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:12px;color:#92400e;font-style:italic;display:flex;gap:8px;align-items:flex-start}
+.mr-reject-textarea{width:100%;padding:10px 14px;border:1.5px solid #fecaca;border-radius:10px;font-size:13px;font-family:inherit;color:var(--c1,#333);background:#fef2f2;resize:vertical;min-height:80px;outline:none;box-sizing:border-box;transition:border .15s}
+.mr-reject-textarea:focus{border-color:#ef4444;background:#fff;box-shadow:0 0 0 3px rgba(239,68,68,.12)}
+.mr-reject-btn{display:inline-flex;align-items:center;gap:7px;padding:10px 24px;background:#dc2626;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.mr-reject-btn:hover{background:#b91c1c;box-shadow:0 4px 14px rgba(220,38,38,.35);transform:translateY(-1px)}
+.mr-reject-btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+.mr-reject-cancel{display:inline-flex;align-items:center;padding:10px 20px;background:#fff;color:var(--c2,#666);border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.mr-reject-cancel:hover{border-color:#cbd5e1;background:#f8fafc}
+.mr-modal{background:#fff;border-radius:var(--stk-r);width:100%;max-width:480px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.35);animation:mrIn .3s cubic-bezier(.32,1.12,.64,1)}
 .mr-modal.wide{max-width:620px}
-@keyframes mrIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+@keyframes mrIn{
+  0%  {opacity:0;transform:scale(.94) translateY(14px)}
+  60% {opacity:1;transform:scale(1.006) translateY(-2px)}
+  100%{opacity:1;transform:scale(1)    translateY(0)}
+}
 .mr-modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border,#e0e0e0);position:sticky;top:0;background:#fff;z-index:2}
 .mr-modal-hdr h3{font-size:15px;font-weight:700;margin:0;color:var(--mrd);display:flex;align-items:center;gap:8px}
 .mr-modal-hdr h3 i{color:var(--mr)}
@@ -263,11 +316,273 @@ Layout::head($TH ? 'ห้องของฉัน' : 'My Rooms');
 .mr-bpl-code{font-family:'Courier New',monospace;font-weight:700;flex-shrink:0}
 .mr-bpl-chem{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--c2,#666)}
 
+/* ══════════════════════════════════════════════════
+   NO-ROOMS STATE — Request Access
+══════════════════════════════════════════════════ */
+.mr-nr-wrap{max-width:900px;margin:0 auto}
+/* Hero */
+.mr-nr-hero{background:linear-gradient(135deg,#1e1b4b 0%,#3730a3 55%,#6366f1 100%);border-radius:var(--stk-r);padding:32px 36px;color:#fff;margin-bottom:20px;position:relative;overflow:hidden;display:flex;align-items:center;gap:24px}
+.mr-nr-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E") repeat;pointer-events:none}
+.mr-nr-hero-ic{width:72px;height:72px;border-radius:20px;background:rgba(255,255,255,.15);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;position:relative}
+.mr-nr-hero-body{position:relative;flex:1}
+.mr-nr-hero-body h2{font-size:22px;font-weight:800;margin:0 0 6px;line-height:1.2}
+.mr-nr-hero-body p{font-size:13px;opacity:.85;margin:0 0 16px;line-height:1.6}
+.mr-nr-hero-pills{display:flex;gap:8px;flex-wrap:wrap}
+.mr-nr-hero-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:50px;font-size:11px;font-weight:600}
+.mr-nr-hero-acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.mr-nr-hero-btn-prim{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);border-radius:50px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.mr-nr-hero-btn-prim:hover{background:rgba(255,255,255,.32);border-color:rgba(255,255,255,.55)}
+.mr-nr-hero-btn-sec{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--mr,#6366f1);border:none;border-radius:50px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;box-shadow:0 4px 14px rgba(99,102,241,.4)}
+.mr-nr-hero-btn-sec:hover{background:var(--mrd,#4338ca);box-shadow:0 6px 18px rgba(99,102,241,.5)}
+.mr-nr-req-hero-badge{background:rgba(255,255,255,.9);color:var(--mr,#6366f1);font-size:10px;font-weight:800;padding:1px 7px;border-radius:10px;line-height:1.4}
+/* ── Hero mobile layout ── */
+@media(max-width:640px){
+  .mr-nr-wrap{padding-bottom:80px}
+  .mr-nr-hero{
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    padding:32px 20px 28px;
+    gap:16px;
+    border-radius:20px
+  }
+  .mr-nr-hero-ic{
+    width:72px;height:72px;
+    border-radius:22px;
+    font-size:30px;
+    box-shadow:0 0 0 10px rgba(255,255,255,.07),0 0 0 20px rgba(255,255,255,.04)
+  }
+  .mr-nr-hero-body{text-align:center}
+  .mr-nr-hero-body h2{font-size:20px;margin-bottom:8px}
+  .mr-nr-hero-body p{font-size:12px;opacity:.82;line-height:1.75;margin-bottom:14px}
+  .mr-nr-hero-pills{justify-content:center;gap:6px}
+  .mr-nr-hero-pill{font-size:10px;padding:5px 10px;gap:4px}
+  .mr-nr-hero-acts{
+    flex-direction:column;
+    width:100%;
+    gap:9px;
+    margin-top:18px
+  }
+  .mr-nr-hero-btn-sec{
+    order:-1;
+    width:100%;
+    justify-content:center;
+    padding:14px 20px;
+    font-size:14px;
+    background:#fff;
+    color:var(--mr,#6366f1);
+    box-shadow:0 4px 18px rgba(0,0,0,.14);
+    border-radius:14px
+  }
+  .mr-nr-hero-btn-sec:hover{background:#f5f5ff;box-shadow:0 6px 22px rgba(0,0,0,.2)}
+  .mr-nr-hero-btn-prim{
+    width:100%;
+    justify-content:center;
+    padding:11px 20px;
+    font-size:13px;
+    border-radius:14px;
+    background:rgba(255,255,255,.12);
+    border-color:rgba(255,255,255,.3)
+  }
+}
+/* Tabs */
+.mr-nr-tabs{display:flex;gap:0;background:#fff;border-radius:var(--stk-rs);border:1.5px solid var(--border,#e2e8f0);overflow:hidden;margin-bottom:16px;box-shadow:var(--stk-sh)}
+.mr-nr-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;font-family:inherit;color:var(--c2,#666);transition:all .15s;border-right:1.5px solid var(--border,#e2e8f0)}
+.mr-nr-tab:last-child{border-right:none}
+.mr-nr-tab:hover{background:var(--mrbg,#eef2ff);color:var(--mr)}
+.mr-nr-tab.active{background:var(--mr,#6366f1);color:#fff}
+.mr-nr-tab-badge{font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:rgba(255,255,255,.25);line-height:1.4}
+.mr-nr-tab:not(.active) .mr-nr-tab-badge{background:var(--mrbrd,#c7d2fe);color:var(--mr)}
+/* My Requests panel */
+.mr-nr-req-list{display:flex;flex-direction:column;gap:10px}
+.mr-nr-req-card{background:#fff;border-radius:var(--stk-rs);border:1.5px solid var(--border,#e2e8f0);box-shadow:var(--stk-sh);padding:14px 16px;display:flex;align-items:center;gap:14px;transition:border-color .15s}
+.mr-nr-req-card.st-pending{border-left:4px solid #f59e0b}
+.mr-nr-req-card.st-approved{border-left:4px solid #22c55e}
+.mr-nr-req-card.st-rejected{border-left:4px solid #ef4444}
+.mr-nr-req-room{flex:1;min-width:0}
+.mr-nr-req-room-name{font-size:13px;font-weight:700;color:var(--c1,#333);margin-bottom:2px}
+.mr-nr-req-room-bld{font-size:11px;color:var(--c3,#999)}
+.mr-nr-req-st{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0}
+.mr-nr-req-st.st-pending{background:#fef3c7;color:#d97706}
+.mr-nr-req-st.st-approved{background:#dcfce7;color:#16a34a}
+.mr-nr-req-st.st-rejected{background:#fee2e2;color:#dc2626}
+.mr-nr-req-note{font-size:11px;color:var(--c3,#999);margin-top:4px;font-style:italic}
+.mr-nr-req-date{font-size:10px;color:var(--c3,#999);flex-shrink:0;text-align:right;line-height:1.6}
+/* Browse toolbar */
+.mr-nr-browse-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px;background:#fff;border:1.5px solid var(--border,#e2e8f0);border-radius:var(--stk-rs);padding:10px 12px;box-shadow:var(--stk-sh)}
+.mr-nr-bsearch{flex:1;min-width:180px;position:relative}
+.mr-nr-bsearch input{width:100%;padding:8px 12px 8px 34px;border:1.5px solid var(--border,#e2e8f0);border-radius:8px;font-size:12px;background:#f8fafc;color:var(--c1,#333);font-family:inherit;transition:border .15s;box-sizing:border-box}
+.mr-nr-bsearch input:focus{outline:none;border-color:var(--mr);background:#fff;box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.mr-nr-bsearch i{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--c3,#999);font-size:12px;pointer-events:none}
+.mr-nr-bsel{padding:7px 28px 7px 11px;border:1.5px solid var(--border,#e2e8f0);border-radius:8px;font-size:12px;font-family:inherit;background:#f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E") no-repeat right 10px center;-webkit-appearance:none;appearance:none;cursor:pointer;color:var(--c1,#333);transition:border .15s;min-width:0;max-width:140px}
+.mr-nr-bsel:focus{outline:none;border-color:var(--mr);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.mr-nr-bsel.has-val{border-color:var(--mr);background-color:#eef2ff;color:var(--mr);font-weight:600}
+.mr-nr-browse-info{font-size:11px;color:var(--c3,#999);width:100%;display:flex;align-items:center;gap:8px;padding-top:2px}
+.mr-nr-browse-info strong{color:var(--c1,#333)}
+.mr-nr-browse-clear{font-size:11px;font-weight:700;color:var(--mr);background:none;border:none;cursor:pointer;padding:0;font-family:inherit;margin-left:auto;display:flex;align-items:center;gap:4px;opacity:.8;transition:opacity .12s}
+.mr-nr-browse-clear:hover{opacity:1}
+.mr-nr-filter-tag{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;background:var(--mrbg);color:var(--mr);border:1px solid var(--mrbrd);border-radius:20px;font-size:10px;font-weight:700}
+/* Browse rooms panel */
+.mr-nr-rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.mr-nr-room-card{background:#fff;border-radius:var(--stk-r);border:1.5px solid var(--border,#e2e8f0);box-shadow:var(--stk-sh);overflow:hidden;transition:border-color .15s,box-shadow .15s,transform .15s}
+.mr-nr-room-card:hover{border-color:var(--mr);box-shadow:var(--stk-shm);transform:translateY(-2px)}
+.mr-nr-room-hdr{padding:14px 16px 10px;display:flex;align-items:flex-start;gap:10px}
+.mr-nr-room-ic{width:40px;height:40px;border-radius:10px;background:var(--mrbg,#eef2ff);color:var(--mr);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.mr-nr-room-ic.st-approved{background:#dcfce7;color:#16a34a}
+.mr-nr-room-ic.st-pending{background:#fef3c7;color:#d97706}
+.mr-nr-room-title{font-size:13px;font-weight:700;color:var(--c1,#333);margin:0 0 2px;line-height:1.3}
+.mr-nr-room-bld{font-size:11px;color:var(--c3,#999)}
+.mr-nr-room-bd{padding:0 16px 12px;display:flex;flex-direction:column;gap:6px}
+.mr-nr-room-stat{display:flex;gap:10px;flex-wrap:wrap}
+.mr-nr-room-chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:8px;background:var(--bg,#f8fafc);color:var(--c2,#666);border:1px solid var(--border,#e2e8f0)}
+.mr-nr-room-mgrs{display:flex;align-items:center;gap:6px;padding:8px 16px;border-top:1px solid var(--border,#e2e8f0);background:#fafafa;font-size:11px;color:var(--c3,#999)}
+.mr-nr-mgr-av{width:22px;height:22px;border-radius:50%;background:var(--mrbg);color:var(--mr);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid #fff;flex-shrink:0;overflow:hidden}
+.mr-nr-room-ft{padding:10px 16px 14px;border-top:1px solid var(--border,#e2e8f0)}
+.mr-nr-req-btn{width:100%;padding:8px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.mr-nr-req-btn.can-request{background:var(--mr);color:#fff}
+.mr-nr-req-btn.can-request:hover{background:var(--mrd,#4338ca)}
+.mr-nr-req-btn.is-pending{background:#fef3c7;color:#d97706;border:1.5px solid #fde68a;cursor:default}
+.mr-nr-req-btn.is-approved{background:#dcfce7;color:#16a34a;border:1.5px solid #bbf7d0;cursor:default}
+.mr-nr-req-btn.is-rejected{background:#fee2e2;color:#dc2626;border:1.5px solid #fecaca}
+.mr-nr-req-btn:disabled{opacity:.65;cursor:not-allowed}
+/* Request modal */
+.mr-req-modal-ov{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);z-index:8400;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.mr-req-modal-ov.show{opacity:1;pointer-events:auto}
+.mr-req-modal{background:#fff;border-radius:18px;width:480px;max-width:94vw;box-shadow:0 24px 64px rgba(0,0,0,.2);transform:translateY(18px) scale(.97);transition:transform .22s}
+.mr-req-modal-ov.show .mr-req-modal{transform:none}
+.mr-req-mhdr{display:flex;align-items:center;gap:12px;padding:20px 22px 16px;border-bottom:1px solid var(--border,#e2e8f0)}
+.mr-req-mbdy{padding:18px 22px;display:flex;flex-direction:column;gap:12px}
+.mr-req-mftr{display:flex;gap:10px;justify-content:flex-end;padding:14px 22px 18px;border-top:1px solid var(--border,#e2e8f0)}
+/* ── Room tab "+" add room button ── */
+.mr-room-tab-add{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:1.5px dashed var(--mrbrd,#c7d2fe);border-radius:var(--stk-rs,9px);background:transparent;color:var(--mr,#6366f1);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;flex-shrink:0;margin-left:6px}
+.mr-room-tab-add:hover{background:var(--mrbg,#eef2ff);border-style:solid}
+/* ── Add Room Modal overlay ── */
+.mr-ar-ov{position:fixed;inset:0;z-index:8050;background:rgba(2,10,30,.58);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:opacity .24s,visibility .24s}
+.mr-ar-ov.show{opacity:1;visibility:visible}
+.mr-ar-modal{background:#fff;border-radius:20px;width:100%;max-width:820px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.24),0 0 0 1px rgba(0,0,0,.04);transform:translateY(20px) scale(.97);transition:transform .3s cubic-bezier(.34,1.1,.64,1)}
+.mr-ar-ov.show .mr-ar-modal{transform:translateY(0) scale(1)}
+.mr-ar-drag-handle{display:none;width:40px;height:4px;background:rgba(0,0,0,.12);border-radius:2px;margin:10px auto 0;flex-shrink:0}
+.mr-ar-hdr{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 55%,#1e40af 100%);padding:18px 22px;display:flex;align-items:center;gap:14px;flex-shrink:0}
+.mr-ar-hdr-ic{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0}
+.mr-ar-close{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.1);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background .12s;flex-shrink:0}
+.mr-ar-close:hover{background:rgba(255,255,255,.25)}
+.mr-ar-tabs-bar{background:#fafbfc;border-bottom:2px solid #f1f5f9;flex-shrink:0;overflow-x:auto;scrollbar-width:none;padding:0 20px}
+.mr-ar-tabs-bar::-webkit-scrollbar{display:none}
+.mr-ar-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:20px}
+@keyframes mr-ar-up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@media(max-width:640px){
+  .mr-ar-ov{padding:0;align-items:flex-end}
+  .mr-ar-modal{border-radius:20px 20px 0 0;max-height:92vh;transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.08,.64,1)}
+  .mr-ar-ov.show .mr-ar-modal{transform:translateY(0);animation:mr-ar-up .32s cubic-bezier(.34,1.08,.64,1) both}
+  .mr-ar-drag-handle{display:block}
+  .mr-ar-hdr{padding:12px 16px}
+  .mr-ar-body{padding:14px 14px max(20px,calc(14px + env(safe-area-inset-bottom)))}
+}
+
+/* ══════════════════════════════════════════════════
+   ADMIN / MANAGER — Room Management Modal
+══════════════════════════════════════════════════ */
+.mr-mgmt-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:linear-gradient(135deg,#4338ca,#6366f1);color:#fff;border:none;border-radius:var(--stk-rs);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;position:relative;box-shadow:0 2px 10px rgba(67,56,202,.28);white-space:nowrap}
+.mr-mgmt-btn:hover{filter:brightness(1.09);box-shadow:0 4px 16px rgba(67,56,202,.42);transform:translateY(-1px)}
+.mr-mgmt-btn:active{transform:translateY(0);filter:brightness(.96)}
+.mr-mgmt-badge{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 4px;background:#ef4444;color:#fff;border-radius:10px;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.mr-mgmt-ov{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);z-index:3000;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+@media(min-width:640px){.mr-mgmt-ov{align-items:center}}
+.mr-mgmt-ov.show{opacity:1;pointer-events:auto}
+.mr-mgmt-modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:680px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 -8px 40px rgba(0,0,0,.2);transform:translateY(40px);transition:transform .28s cubic-bezier(.32,1.12,.64,1)}
+@media(min-width:640px){.mr-mgmt-modal{border-radius:20px;transform:translateY(20px) scale(.97)}}
+.mr-mgmt-ov.show .mr-mgmt-modal{transform:none}
+.mr-mgmt-hdr{display:flex;align-items:center;gap:12px;padding:18px 22px 14px;border-bottom:1px solid var(--border,#e2e8f0);flex-shrink:0}
+.mr-mgmt-hdr-ic{width:42px;height:42px;border-radius:12px;background:var(--mrbg,#eef2ff);color:var(--mr);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.mr-mgmt-tabs{display:flex;gap:0;border-bottom:1px solid var(--border,#e2e8f0);flex-shrink:0;background:#fafafa}
+.mr-mgmt-tab{flex:1;padding:10px 16px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:none;font-family:inherit;color:var(--c3,#999);transition:all .15s;border-bottom:2.5px solid transparent;display:flex;align-items:center;justify-content:center;gap:7px}
+.mr-mgmt-tab.active{color:var(--mr);border-bottom-color:var(--mr);background:#fff}
+.mr-mgmt-tab-badge{font-size:10px;font-weight:800;padding:1px 7px;border-radius:10px;background:#fee2e2;color:#dc2626;line-height:1.4}
+.mr-mgmt-body{padding:16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px}
+/* Pending request card */
+.mr-mgmt-req-card{background:#fff;border-radius:var(--stk-rs);border:1.5px solid var(--border,#e2e8f0);box-shadow:var(--stk-sh);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.mr-mgmt-req-card.reviewed{opacity:.6}
+.mr-mgmt-req-top{display:flex;align-items:center;gap:12px}
+.mr-mgmt-req-av{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;overflow:hidden;background:var(--mrbg);color:var(--mr)}
+.mr-mgmt-req-info{flex:1;min-width:0}
+.mr-mgmt-req-name{font-size:13px;font-weight:700;color:var(--c1,#333)}
+.mr-mgmt-req-email{font-size:10px;color:var(--c3,#999);margin-top:1px}
+.mr-mgmt-req-room{font-size:11px;font-weight:600;color:var(--mr);background:var(--mrbg);padding:2px 9px;border-radius:6px;border:1px solid var(--mrbrd);flex-shrink:0}
+.mr-mgmt-req-msg{font-size:12px;color:var(--c2,#666);background:#f8fafc;border-radius:8px;padding:8px 12px;border:1px solid var(--border,#e2e8f0);font-style:italic}
+.mr-mgmt-req-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mr-mgmt-req-date{font-size:10px;color:var(--c3,#999);margin-left:auto;white-space:nowrap}
+.mr-mgmt-approve-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
+.mr-mgmt-approve-btn:hover{background:#15803d}
+.mr-mgmt-reject-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;background:#fff;color:#dc2626;border:1.5px solid #fecaca;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.mr-mgmt-reject-btn:hover{background:#fee2e2;border-color:#ef4444}
+.mr-mgmt-req-status-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px}
+/* Room user card */
+.mr-mgmt-user-card{background:#fff;border-radius:var(--stk-rs);border:1.5px solid var(--border,#e2e8f0);box-shadow:var(--stk-sh);padding:12px 16px;display:flex;align-items:center;gap:12px}
+.mr-mgmt-user-av{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;overflow:hidden;background:var(--mrbg);color:var(--mr)}
+.mr-mgmt-user-info{flex:1;min-width:0}
+.mr-mgmt-user-name{font-size:13px;font-weight:700;color:var(--c1,#333)}
+.mr-mgmt-user-role{font-size:10px;color:var(--c3,#999);margin-top:1px}
+.mr-mgmt-primary-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;background:#fef3c7;color:#d97706;border:1px solid #fde68a;flex-shrink:0}
+.mr-mgmt-revoke-btn{padding:5px 12px;border:1.5px solid #fecaca;background:#fff;color:#dc2626;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;flex-shrink:0}
+.mr-mgmt-revoke-btn:hover{background:#fee2e2;border-color:#ef4444}
+/* ── Revoke modal ── */
+.mr-revoke-hdr{background:linear-gradient(135deg,#1e1b4b,#3730a3);border-radius:var(--stk-r) var(--stk-r) 0 0;padding:20px 22px;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden}
+.mr-revoke-hdr::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.04'%3E%3Cpath d='M20 20h20v20H20zM0 0h20v20H0z'/%3E%3C/g%3E%3C/svg%3E") repeat}
+.mr-revoke-hdr-ic{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.15);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0;position:relative;border:1px solid rgba(255,255,255,.2)}
+.mr-revoke-hdr-body{flex:1;position:relative}
+.mr-revoke-hdr-title{font-size:17px;font-weight:800;color:#fff;margin:0}
+.mr-revoke-hdr-sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:3px}
+.mr-revoke-hdr-close{margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);font-size:16px;color:rgba(255,255,255,.8);cursor:pointer;padding:5px 8px;border-radius:8px;line-height:1;position:relative;transition:all .15s}
+.mr-revoke-hdr-close:hover{background:rgba(255,255,255,.3);color:#fff}
+.mr-revoke-user-card{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#f8fafc,#eef2ff);border:1.5px solid #e0e7ff;border-radius:14px;padding:14px 16px}
+.mr-revoke-user-av{width:50px;height:50px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;overflow:hidden;background:linear-gradient(135deg,#4338ca,#818cf8);color:#fff;border:3px solid #fff;box-shadow:0 2px 10px rgba(67,56,202,.2)}
+.mr-revoke-user-av img{width:100%;height:100%;object-fit:cover}
+.mr-revoke-user-nm{font-size:14px;font-weight:800;color:var(--c1,#1e293b)}
+.mr-revoke-user-role{font-size:10px;color:var(--c3,#94a3b8);margin-top:2px}
+.mr-revoke-user-email{font-size:11px;color:#6366f1;margin-top:1px;font-weight:500}
+.mr-revoke-warn{background:#fef9c3;border:1.5px solid #fde047;border-radius:10px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start}
+.mr-revoke-warn-ic{width:28px;height:28px;border-radius:8px;background:#facc15;color:#713f12;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px}
+.mr-revoke-warn-txt{font-size:12px;color:#713f12;line-height:1.5}
+.mr-revoke-warn-txt strong{font-weight:700;display:block;margin-bottom:2px}
+.mr-revoke-room-pill{display:inline-flex;align-items:center;gap:6px;background:#eef2ff;color:#4338ca;border:1.5px solid #c7d2fe;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700}
+.mr-revoke-confirm-btn{display:inline-flex;align-items:center;gap:7px;padding:11px 24px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;box-shadow:0 2px 10px rgba(220,38,38,.3)}
+.mr-revoke-confirm-btn:hover{filter:brightness(1.08);box-shadow:0 4px 16px rgba(220,38,38,.45);transform:translateY(-1px)}
+.mr-revoke-confirm-btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;box-shadow:none}
+.mr-revoke-cancel-btn{display:inline-flex;align-items:center;gap:6px;padding:11px 20px;background:#fff;color:var(--c2,#64748b);border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.mr-revoke-cancel-btn:hover{border-color:#cbd5e1;background:#f8fafc}
+/* ── Remove Co-Admin modal ── */
+.mr-rmadm-hdr{background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:var(--stk-r) var(--stk-r) 0 0;padding:20px 22px;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden}
+.mr-rmadm-hdr::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.04'%3E%3Cpath d='M20 20h20v20H20zM0 0h20v20H0z'/%3E%3C/g%3E%3C/svg%3E") repeat}
+.mr-rmadm-hdr-ic{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.15);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0;position:relative;border:1px solid rgba(255,255,255,.2)}
+.mr-rmadm-hdr-body{flex:1;position:relative}
+.mr-rmadm-hdr-title{font-size:17px;font-weight:800;color:#fff;margin:0}
+.mr-rmadm-hdr-sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:3px}
+.mr-rmadm-hdr-close{margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);font-size:16px;color:rgba(255,255,255,.8);cursor:pointer;padding:5px 8px;border-radius:8px;line-height:1;position:relative;transition:all .15s}
+.mr-rmadm-hdr-close:hover{background:rgba(255,255,255,.3);color:#fff}
+.mr-rmadm-user-card{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#f8fafc,#f5f3ff);border:1.5px solid #ede9fe;border-radius:14px;padding:14px 16px}
+.mr-rmadm-user-av{width:50px;height:50px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;overflow:hidden;background:linear-gradient(135deg,#6d28d9,#a78bfa);color:#fff;border:3px solid #fff;box-shadow:0 2px 10px rgba(109,40,217,.2)}
+.mr-rmadm-user-av img{width:100%;height:100%;object-fit:cover}
+.mr-rmadm-user-nm{font-size:14px;font-weight:800;color:var(--c1,#1e293b)}
+.mr-rmadm-user-sub{font-size:11px;color:var(--c3,#94a3b8);margin-top:2px}
+.mr-rmadm-co-badge{display:inline-flex;align-items:center;gap:4px;background:#f5f3ff;border:1.5px solid #ddd6fe;color:#6d28d9;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;margin-top:5px}
+.mr-rmadm-room-pill{display:inline-flex;align-items:center;gap:6px;background:#f5f3ff;color:#5b21b6;border:1.5px solid #ddd6fe;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700}
+.mr-rmadm-warn{background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start}
+.mr-rmadm-warn-ic{width:28px;height:28px;border-radius:8px;background:#fb923c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px}
+.mr-rmadm-warn-txt{font-size:12px;color:#9a3412;line-height:1.5}
+.mr-rmadm-warn-txt strong{font-weight:700;display:block;margin-bottom:2px}
+.mr-rmadm-confirm-btn{display:inline-flex;align-items:center;gap:7px;padding:11px 24px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;box-shadow:0 2px 10px rgba(220,38,38,.3)}
+.mr-rmadm-confirm-btn:hover{filter:brightness(1.08);box-shadow:0 4px 16px rgba(220,38,38,.45);transform:translateY(-1px)}
+.mr-rmadm-confirm-btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;box-shadow:none}
+.mr-rmadm-cancel-btn{display:inline-flex;align-items:center;gap:6px;padding:11px 20px;background:#fff;color:var(--c2,#64748b);border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.mr-rmadm-cancel-btn:hover{border-color:#cbd5e1;background:#f8fafc}
+.mr-mgmt-room-sel{padding:8px 14px;border:1.5px solid var(--border,#e2e8f0);border-radius:var(--stk-rs);font-size:12px;font-family:inherit;background:#fff;color:var(--c1,#333);width:100%;margin-bottom:10px;cursor:pointer;font-weight:600}
+.mr-mgmt-room-sel:focus{outline:none;border-color:var(--mr);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+
 /* ── Toast ── */
 .mr-toast-c{position:fixed;bottom:80px;right:24px;z-index:10000;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
-.mr-toast{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:toastIn .25s ease-out;transition:opacity .3s,transform .3s;max-width:340px}
+.mr-toast{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:toastIn .22s cubic-bezier(.22,1,.36,1);transition:opacity .28s,transform .28s;max-width:340px}
 .mr-toast.ok{background:#059669;color:#fff}.mr-toast.err{background:#dc2626;color:#fff}
-@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px) scale(.96)}to{opacity:1;transform:translateX(0) scale(1)}}
 
 /* ════════════════ STORAGE TREE PANEL ════════════════ */
 
@@ -472,11 +787,16 @@ body.mr-dragging .mr-content{opacity:.85}
 }
 
 /* ── Room Admin panel ── */
-.rm-admin-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:9px;background:#f8fafc;border:1px solid var(--border,#e0e0e0);margin-bottom:6px;transition:background .1s}
+.rm-admin-row{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:10px;background:#f8fafc;border:1px solid var(--border,#e0e0e0);margin-bottom:6px;transition:background .1s}
 .rm-admin-row:hover{background:var(--mrbg)}
 .rm-admin-info{flex:1;min-width:0}
-.rm-admin-name{font-size:13px;font-weight:600;color:var(--c1,#333)}
+.rm-admin-name{font-size:13px;font-weight:700;color:var(--c1,#333);margin-bottom:3px}
 .rm-admin-role{font-size:10px;color:var(--c3,#999);margin-top:1px}
+.rm-admin-contacts{display:flex;flex-direction:column;gap:3px;margin-top:4px}
+.rm-admin-contact{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--c2,#555);text-decoration:none;border-radius:5px;padding:2px 6px 2px 0;transition:color .12s}
+.rm-admin-contact:hover{color:var(--mr)}
+.rm-admin-contact i{width:13px;text-align:center;flex-shrink:0;color:var(--c3,#aaa)}
+.rm-admin-contact:hover i{color:var(--mr)}
 .rm-admin-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.3px}
 .rm-admin-badge.primary{background:#eef2ff;color:var(--mrd)}
 .rm-admin-badge.co{background:#f1f5f9;color:#64748b}
@@ -609,10 +929,14 @@ body.mr-dragging .mr-content{opacity:.85}
 .btx-item-qty input.qty-warn{border-color:#dc2626!important;background:#fff5f5!important;color:#dc2626!important}
 .btx-unit{font-size:10px;color:#94a3b8;font-weight:600;min-width:20px}
 /* ── Batch Confirm Popup (btc) ── */
-@keyframes mrBtcIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-.mr-btc-ov{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
+@keyframes mrBtcIn{
+  0%  {opacity:0;transform:translateY(18px) scale(.95)}
+  58% {opacity:1;transform:translateY(-3px) scale(1.01)}
+  100%{opacity:1;transform:translateY(0)   scale(1)}
+}
+.mr-btc-ov{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .22s}
 .mr-btc-ov.show{opacity:1;pointer-events:auto}
-.mr-btc-box{background:#fff;border-radius:22px;width:100%;max-width:440px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.06);animation:mrBtcIn .25s cubic-bezier(.34,1.1,.64,1)}
+.mr-btc-box{background:#fff;border-radius:22px;width:100%;max-width:440px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.06);animation:mrBtcIn .32s cubic-bezier(.32,1.12,.64,1)}
 .mr-btc-hdr{padding:20px 20px 16px;text-align:center;flex-shrink:0;border-bottom:1px solid #f1f5f9}
 .mr-btc-hdr-ic{width:52px;height:52px;border-radius:15px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 10px;box-shadow:0 8px 20px rgba(0,0,0,.15)}
 .mr-btc-hdr h3{margin:0;font-size:16px;font-weight:800;color:#0f172a}
@@ -632,10 +956,14 @@ body.mr-dragging .mr-content{opacity:.85}
 .mr-btc-btn-edit{width:100%;padding:11px;border:1.5px solid #e2e8f0;border-radius:12px;font-size:13px;font-weight:700;color:#64748b;background:#fff;cursor:pointer;font-family:inherit;transition:.15s}
 .mr-btc-btn-edit:hover{background:#f8fafc;border-color:#cbd5e1}
 /* ── Danger Confirm Popup ── */
-@keyframes mrDelIn{from{opacity:0;transform:scale(.92) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.mr-del-ov{position:fixed;inset:0;z-index:11000;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+@keyframes mrDelIn{
+  0%  {opacity:0;transform:scale(.9)    translateY(20px)}
+  58% {opacity:1;transform:scale(1.012) translateY(-3px)}
+  100%{opacity:1;transform:scale(1)    translateY(0)}
+}
+.mr-del-ov{position:fixed;inset:0;z-index:11000;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .22s}
 .mr-del-ov.show{opacity:1;pointer-events:auto}
-.mr-del-box{background:#fff;border-radius:24px;width:100%;max-width:380px;box-shadow:0 28px 80px rgba(0,0,0,.22),0 0 0 1px rgba(0,0,0,.05);animation:mrDelIn .22s cubic-bezier(.34,1.15,.64,1);overflow:hidden}
+.mr-del-box{background:#fff;border-radius:24px;width:100%;max-width:380px;box-shadow:0 28px 80px rgba(0,0,0,.22),0 0 0 1px rgba(0,0,0,.05);animation:mrDelIn .3s cubic-bezier(.32,1.12,.64,1);overflow:hidden}
 .mr-del-top{padding:28px 24px 20px;text-align:center}
 .mr-del-ic-wrap{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;position:relative}
 .mr-del-ic-wrap::before{content:'';position:absolute;inset:-6px;border-radius:50%;opacity:.15}
@@ -681,7 +1009,7 @@ body.mr-dragging .mr-content{opacity:.85}
 @media(max-width:540px){.rpt-scope-grid{grid-template-columns:repeat(2,1fr)}}
 
 /* Modal */
-.sr-overlay{position:fixed;inset:0;z-index:3000;background:rgba(2,10,30,.6);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto;opacity:0;visibility:hidden;transition:opacity .28s,visibility .28s}
+.sr-overlay{position:fixed;inset:0;z-index:8100;background:rgba(2,10,30,.6);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto;opacity:0;visibility:hidden;transition:opacity .28s,visibility .28s}
 .sr-overlay.show{opacity:1;visibility:visible}
 .sr-modal{background:#fff;border-radius:22px;width:100%;max-width:1020px;box-shadow:0 40px 120px rgba(0,0,0,.28),0 0 0 1px rgba(0,0,0,.04);margin:auto;overflow:hidden;transform:translateY(28px) scale(.97);transition:transform .35s cubic-bezier(.34,1.15,.64,1)}
 .sr-overlay.show .sr-modal{transform:translateY(0) scale(1)}
@@ -742,23 +1070,35 @@ body.mr-dragging .mr-content{opacity:.85}
 .sr-empty{text-align:center;padding:36px;color:#94a3b8;font-size:13px}
 .sr-empty i{font-size:40px;opacity:.2;display:block;margin-bottom:12px}
 .sr-note{font-size:10.5px;color:#94a3b8;margin-top:8px;line-height:1.6;padding:8px 12px;background:#fafbfc;border-radius:8px;border:1px solid #f1f5f9}
-/* Animations */
-@keyframes sr-modal-in{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes sr-slice-pop{0%{opacity:0;transform:scale(.5)}65%{transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
-@keyframes sr-row-slide{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+/* Animations — same spring system as main page */
+@keyframes sr-modal-in{
+  0%  {opacity:0;transform:translateY(28px) scale(.96)}
+  58% {opacity:1;transform:translateY(-4px) scale(1.008)}
+  100%{opacity:1;transform:translateY(0)   scale(1)}
+}
+/* Donut slices: scale from center (not from below — SVG has no "below") */
+@keyframes sr-slice-pop{0%{opacity:0;transform:scale(.55)}62%{transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+/* Legend rows: bottom-up (unified direction) */
+@keyframes sr-row-slide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* Bar grow: keep, it's purposeful */
 @keyframes sr-bar-grow{from{width:0!important}}
-@keyframes sr-tbl-row-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+/* Table rows: subtle fade-up */
+@keyframes sr-tbl-row-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes sr-fade-in{from{opacity:0}to{opacity:1}}
-.sr-anim-slice{animation:sr-slice-pop .55s cubic-bezier(.34,1.4,.64,1) both}
-.sr-anim-row{animation:sr-row-slide .32s ease both}
-.sr-anim-bar{animation:sr-bar-grow .75s cubic-bezier(.4,0,.2,1) both}
-.sr-anim-trow{animation:sr-tbl-row-in .28s ease both}
+.sr-anim-slice{animation:sr-slice-pop .52s cubic-bezier(.34,1.28,.64,1) both}
+.sr-anim-row{animation:sr-row-slide .28s cubic-bezier(.22,1,.36,1) both}
+.sr-anim-bar{animation:sr-bar-grow .8s cubic-bezier(.4,0,.2,1) both}
+.sr-anim-trow{animation:sr-tbl-row-in .22s cubic-bezier(.22,1,.36,1) both}
 .sr-slice-path{transition:filter .15s,opacity .15s}
 .sr-slice-path:hover{filter:brightness(1.1) drop-shadow(0 2px 6px rgba(0,0,0,.2));cursor:pointer}
 /* Chem Popup (slice click) */
-@keyframes sr-popup-in{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
-.sr-chem-popup{position:fixed;bottom:28px;right:28px;z-index:4000;width:320px;background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.22),0 0 0 1px rgba(0,0,0,.06);overflow:hidden;display:none}
-.sr-chem-popup.show{display:block;animation:sr-popup-in .3s cubic-bezier(.34,1.1,.64,1) both}
+@keyframes sr-popup-in{
+  0%  {opacity:0;transform:translateY(18px) scale(.95)}
+  58% {opacity:1;transform:translateY(-3px) scale(1.01)}
+  100%{opacity:1;transform:translateY(0)   scale(1)}
+}
+.sr-chem-popup{position:fixed;bottom:28px;right:28px;z-index:8200;width:320px;background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.22),0 0 0 1px rgba(0,0,0,.06);overflow:hidden;display:none}
+.sr-chem-popup.show{display:block;animation:sr-popup-in .32s cubic-bezier(.32,1.12,.64,1) both}
 .sr-cp-hdr{padding:13px 16px;display:flex;align-items:center;gap:9px}
 .sr-cp-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
 .sr-cp-title{flex:1;font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff}
@@ -782,7 +1122,171 @@ body.mr-dragging .mr-content{opacity:.85}
 .sr-cp-more-btn{width:100%;padding:7px 14px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
 .sr-cp-more-btn:hover{border-color:#1e40af;color:#1e40af;background:#eff6ff}
 .sr-cp-loading{padding:24px;text-align:center;color:#94a3b8;font-size:12px}
-@media(max-width:700px){.sr-chart-row{flex-direction:column}.sr-chart-box{max-width:100%;width:100%}.sr-legend-bar{display:none}.sr-chem-popup{bottom:16px;right:16px;left:16px;width:auto}}
+.sr-cp-item{cursor:pointer}
+.sr-cp-arrow{color:#cbd5e1;font-size:9px;flex-shrink:0;margin-left:2px;transition:color .12s}
+.sr-cp-item:hover .sr-cp-arrow{color:#1e40af}
+/* ── sr drag handle (hidden on desktop, shown in mobile via media query) ── */
+.sr-drag-handle{display:none;width:40px;height:4px;background:rgba(0,0,0,.12);border-radius:2px;margin:10px auto 0;flex-shrink:0}
+@media(max-width:700px){
+  .sr-chart-row{flex-direction:column}
+  .sr-chart-box{max-width:100%;width:100%}
+  .sr-legend-bar{display:none}
+  .sr-chem-popup{bottom:max(16px,env(safe-area-inset-bottom,16px));right:12px;left:12px;width:auto;max-height:60vh}
+  .sr-chem-popup.show{display:flex;flex-direction:column}
+  .sr-cp-list{max-height:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+}
+/* ── Drag handle ── */
+.srcd-drag-handle{width:36px;height:4px;background:rgba(0,0,0,.1);border-radius:2px;margin:10px auto 0;flex-shrink:0}
+/* ── srcd-body scroll ── */
+.srcd-body{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+/* ── srcd mobile breakpoint ── */
+@media(max-width:660px){
+  .srcd-modal{border-radius:16px 16px 0 0;max-height:94vh}
+  .srcd-hdr{padding:10px 14px}
+  .srcd-ghs-banner{padding:12px 14px;gap:10px}
+  .srcd-ghs-diamond{width:38px;height:38px}
+  .srcd-ghs-diamond i{font-size:13px}
+  .srcd-ghs-lbl{font-size:8.5px;max-width:46px}
+  .srcd-info-row{padding:8px 14px;gap:4px}
+  .srcd-pill{font-size:10px;padding:2px 8px}
+  .srcd-sec-hdr{padding:10px 14px;min-height:48px}
+  .srcd-sec-body{padding:4px 14px 14px}
+  .srcd-hrow{gap:6px}
+  .srcd-hdesc{font-size:11px}
+  .srcd-field-val{font-size:11.5px}
+  .srcd-props-grid{grid-template-columns:repeat(2,1fr);gap:6px}
+  .srcd-prop{padding:8px 10px}
+  .srcd-footer{padding:8px 14px;padding-bottom:max(8px,calc(8px + env(safe-area-inset-bottom)))}
+  .srcd-ghs-banner{padding-bottom:max(12px,calc(12px + env(safe-area-inset-bottom)))}
+}
+/* ── sr-modal bottom sheet (mobile) ── */
+@keyframes sr-modal-up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@media(max-width:640px){
+  .sr-overlay{
+    padding:0;
+    align-items:flex-end;
+    overflow:hidden
+  }
+  .sr-modal{
+    border-radius:20px 20px 0 0;
+    margin:0;
+    max-width:100%;
+    width:100%;
+    max-height:92vh;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    transform:translateY(100%);
+    transition:transform .32s cubic-bezier(.34,1.08,.64,1)
+  }
+  .sr-overlay.show .sr-modal{
+    transform:translateY(0);
+    animation:sr-modal-up .32s cubic-bezier(.34,1.08,.64,1) both
+  }
+  .sr-drag-handle{display:block}
+  /* Header */
+  .sr-hdr{padding:10px 14px 12px;flex-shrink:0}
+  .sr-hdr-ic{width:36px;height:36px;border-radius:10px;font-size:15px}
+  .sr-hdr-title{font-size:14px}
+  .sr-hdr-sub{gap:8px;margin-top:3px}
+  .sr-hdr-right{flex-direction:row;align-items:center;gap:6px}
+  .sr-hdr-actions{gap:4px}
+  .sr-hdr-btn{padding:7px 10px}
+  .sr-btn-lbl{display:none}
+  /* Tabs — scrollable so long labels don't overflow */
+  .sr-tabs{
+    padding:0 12px;
+    flex-shrink:0;
+    overflow-x:auto;
+    scrollbar-width:none
+  }
+  .sr-tabs::-webkit-scrollbar{display:none}
+  .sr-tab{padding:10px 12px;font-size:12px;gap:4px;white-space:nowrap}
+  /* Body — scrolls inside the modal */
+  .sr-body{
+    flex:1;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    padding:14px 14px max(20px,calc(14px + env(safe-area-inset-bottom)))
+  }
+}
+/* ═══════════════════════════════════════════════════════
+   Chemical Detail Overlay
+═══════════════════════════════════════════════════════ */
+@keyframes srcd-up{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.srcd-ov{position:fixed;inset:0;z-index:8300;background:rgba(2,10,30,.72);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s}
+.srcd-ov.show{opacity:1;visibility:visible}
+.srcd-modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:660px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.srcd-ov.show .srcd-modal{animation:srcd-up .3s cubic-bezier(.34,1.08,.64,1) both}
+/* Header */
+.srcd-hdr{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 55%,#1e40af 100%);padding:14px 18px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.srcd-btn{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.15);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:background .12s;flex-shrink:0}
+.srcd-btn:hover{background:rgba(255,255,255,.3)}
+.srcd-hdr-info{flex:1;min-width:0}
+.srcd-hdr-name{font-size:14px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
+.srcd-hdr-meta{font-size:10.5px;color:rgba(255,255,255,.7);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Scrollable body */
+.srcd-body{overflow-y:auto;flex:1}
+.srcd-loading{padding:40px;text-align:center;color:#94a3b8;font-size:12px}
+/* GHS Banner */
+.srcd-ghs-banner{padding:14px 18px;background:linear-gradient(to bottom,#f8fafc,#f1f5f9);border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.srcd-pics{display:flex;gap:10px;flex-wrap:wrap;flex:1}
+.srcd-no-ghs{font-size:11.5px;color:#94a3b8;font-style:italic}
+.srcd-ghs-item{display:flex;flex-direction:column;align-items:center;gap:5px}
+.srcd-ghs-diamond{width:44px;height:44px;background:#fff;border:2.5px solid #dc2626;box-shadow:0 0 0 1.5px rgba(220,38,38,.12),0 3px 10px rgba(0,0,0,.1);transform:rotate(45deg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.srcd-ghs-diamond i{transform:rotate(-45deg);font-size:14px;color:#1e293b}
+.srcd-ghs-lbl{font-size:9px;font-weight:600;color:#64748b;text-align:center;max-width:56px;line-height:1.3}
+.srcd-signal{padding:6px 16px;border-radius:99px;font-size:12px;font-weight:800;letter-spacing:.4px;flex-shrink:0;border:1.5px solid}
+.srcd-signal.danger{background:#fef2f2;color:#dc2626;border-color:#fecaca}
+.srcd-signal.warning{background:#fffbeb;color:#d97706;border-color:#fde68a}
+/* Info pills row */
+.srcd-info-row{display:flex;gap:5px;flex-wrap:wrap;padding:9px 18px;border-bottom:1px solid #f1f5f9}
+.srcd-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:10.5px;font-weight:600;background:#f1f5f9;color:#475569}
+.srcd-pill i{font-size:9px;color:#94a3b8}
+.srcd-pill.blue{background:#dbeafe;color:#1e40af}
+.srcd-pill.blue i{color:#93c5fd}
+/* Accordion */
+.srcd-sec{border-bottom:1px solid #f1f5f9}
+.srcd-sec-hdr{display:flex;align-items:center;gap:9px;padding:11px 18px;cursor:pointer;user-select:none;transition:background .12s}
+.srcd-sec-hdr:hover{background:#f8fafc}
+.srcd-sec-ic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.srcd-sec-label{flex:1;font-size:12.5px;font-weight:700;color:#1e293b}
+.srcd-sec-count{font-size:10px;padding:1px 7px;border-radius:8px;background:#f1f5f9;color:#64748b;font-weight:700}
+.srcd-sec-chev{font-size:10px;color:#94a3b8;transition:transform .2s}
+.srcd-sec.open .srcd-sec-chev{transform:rotate(180deg)}
+.srcd-sec-body{display:none;padding:4px 18px 16px}
+.srcd-sec.open .srcd-sec-body{display:block}
+/* H-code rows */
+.srcd-hlist{display:flex;flex-direction:column;gap:4px}
+.srcd-hrow{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #f8fafc}
+.srcd-hrow:last-child{border-bottom:none}
+.srcd-hbadge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;flex-shrink:0;margin-top:1px;font-family:'Courier New',monospace}
+.srcd-hbadge.H2{background:#fef9c3;color:#78350f}
+.srcd-hbadge.H3{background:#fee2e2;color:#991b1b}
+.srcd-hbadge.H4{background:#ede9fe;color:#5b21b6}
+.srcd-hbadge.Hx{background:#f1f5f9;color:#475569}
+.srcd-hdesc{font-size:11.5px;color:#334155;line-height:1.45}
+.srcd-hdesc-th{font-size:10.5px;color:#64748b;margin-top:1px}
+/* P-code pills */
+.srcd-pcodes{display:flex;flex-wrap:wrap;gap:4px;padding-top:4px}
+.srcd-ppill{font-size:10px;padding:2px 8px;border-radius:5px;background:#dbeafe;color:#1e40af;font-weight:700;font-family:'Courier New',monospace;cursor:default}
+/* SDS fields */
+.srcd-field{margin-bottom:12px}
+.srcd-field:last-child{margin-bottom:0}
+.srcd-field-lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.srcd-field-val{font-size:12px;color:#334155;line-height:1.65;white-space:pre-wrap}
+/* Physical props grid */
+.srcd-props-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;padding-top:4px}
+.srcd-prop{background:#f8fafc;border-radius:9px;padding:9px 12px;border:1px solid #f1f5f9}
+.srcd-prop-lbl{font-size:9.5px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.srcd-prop-val{font-size:13px;font-weight:700;color:#1e293b}
+/* Empty state */
+.srcd-empty{padding:16px 0;text-align:center;color:#94a3b8;font-size:11.5px;font-style:italic}
+/* Footer */
+.srcd-footer{padding:10px 18px;background:#f8fafc;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0}
+.srcd-footer-src{font-size:10.5px;color:#94a3b8}
 </style>
 <?php Layout::sidebar('myroom'); Layout::beginContent(); ?>
 
@@ -809,24 +1313,27 @@ body.mr-dragging .mr-content{opacity:.85}
       <i class="fas fa-search"></i>
       <input id="mrSearch" type="text" placeholder="<?= $TH ? 'ค้นหาสาร, รหัสขวด, CAS, สูตร...' : 'Search chemical, code, CAS, formula...' ?>">
     </div>
-    <div style="display:flex;gap:6px;margin-left:auto;align-items:center;flex-shrink:0">
+    <div class="mr-toolbar-acts">
       <div class="stk-vw" id="viewSwitcher">
         <button onclick="setView('table')" title="<?= $TH ? 'ตาราง' : 'Table' ?>"><i class="fas fa-list"></i></button>
         <button class="active" onclick="setView('card')" title="<?= $TH ? 'การ์ด' : 'Cards' ?>"><i class="fas fa-th-large"></i></button>
         <button onclick="setView('grouped')" title="<?= $TH ? 'จัดกลุ่มตามสาร' : 'Grouped by Chemical' ?>"><i class="fas fa-layer-group"></i></button>
       </div>
       <button class="stk-btn stk-btn-g" id="btnTreeToggle" onclick="toggleTree()">
-        <i class="fas fa-sitemap"></i> <span id="treeToggleLbl"><?= $TH ? 'ซ่อนต้นไม้' : 'Hide Tree' ?></span>
+        <i class="fas fa-sitemap"></i><span id="treeToggleLbl" class="mr-tba-lbl"> <?= $TH ? 'ซ่อนต้นไม้' : 'Hide Tree' ?></span>
       </button>
       <button class="stk-btn stk-btn-g" onclick="openMrRpt()" title="<?= $TH ? 'รายงานตำแหน่งสารเคมี' : 'Location Report' ?>">
-        <i class="fas fa-clipboard-list"></i> <?= $TH ? 'รายงาน' : 'Report' ?>
+        <i class="fas fa-clipboard-list"></i><span class="mr-tba-lbl"> <?= $TH ? 'รายงาน' : 'Report' ?></span>
       </button>
       <button class="stk-btn stk-btn-g" id="btnSafetyRpt" onclick="openSafetyReport()" title="<?= $TH ? 'รายงานความปลอดภัยสารเคมี' : 'Chemical Safety Report' ?>">
-        <i class="fas fa-shield-alt"></i> <?= $TH ? 'ความปลอดภัย' : 'Safety' ?>
+        <i class="fas fa-shield-alt"></i><span class="mr-tba-lbl"> <?= $TH ? 'ความปลอดภัย' : 'Safety' ?></span>
       </button>
-      <button class="stk-btn stk-btn-g" onclick="openManageAdmins()" title="<?= $TH ? 'จัดการผู้ดูแลห้อง' : 'Manage Room Admins' ?>">
-        <i class="fas fa-users-cog"></i>
+      <?php if (in_array($role, ['admin','lab_manager'])): ?>
+      <button class="mr-mgmt-btn" id="btnRoomMgmt" onclick="openMgmtModal()" title="<?= $TH ? 'จัดการห้อง' : 'Manage Room' ?>">
+        <i class="fas fa-users-cog"></i><span class="mr-tba-lbl"><?= $TH ? 'จัดการห้อง' : 'Manage' ?></span>
+        <span class="mr-mgmt-badge" id="mgmtBtnBadge" style="display:none">0</span>
       </button>
+      <?php endif; ?>
     </div>
   </div>
 
@@ -842,6 +1349,7 @@ body.mr-dragging .mr-content{opacity:.85}
 <!-- ══════════════════ Safety Report Modal ══════════════════ -->
 <div class="sr-overlay" id="srOverlay" onclick="if(event.target===this)closeSafetyReport()">
   <div class="sr-modal">
+    <div class="sr-drag-handle"></div>
     <div class="sr-hdr">
       <div class="sr-hdr-ic"><i class="fas fa-shield-alt"></i></div>
       <div class="sr-hdr-info">
@@ -849,10 +1357,10 @@ body.mr-dragging .mr-content{opacity:.85}
         <div class="sr-hdr-sub" id="srSub"></div>
       </div>
       <div class="sr-hdr-right">
-        <button class="sr-close" onclick="closeSafetyReport()"><i class="fas fa-times"></i></button>
         <div class="sr-hdr-actions">
-          <button class="sr-hdr-btn" onclick="srPrint()"><i class="fas fa-print"></i> <?= $TH?'พิมพ์':'Print' ?></button>
+          <button class="sr-hdr-btn" onclick="srPrint()"><i class="fas fa-print"></i><span class="sr-btn-lbl"> <?= $TH?'พิมพ์':'Print' ?></span></button>
         </div>
+        <button class="sr-close" onclick="closeSafetyReport()"><i class="fas fa-times"></i></button>
       </div>
     </div>
     <div class="sr-tabs">
@@ -884,18 +1392,163 @@ body.mr-dragging .mr-content{opacity:.85}
   </div>
 </div>
 
+<!-- ══════════════════ Chemical Detail Overlay ══════════════════ -->
+<div class="srcd-ov" id="srcdOv" onclick="if(event.target===this)srCloseChemDetail()">
+  <div class="srcd-modal" onclick="event.stopPropagation()">
+    <div class="srcd-drag-handle"></div>
+    <div class="srcd-hdr">
+      <button class="srcd-btn" onclick="srCloseChemDetail()" title="<?= $TH?'ย้อนกลับ':'Back' ?>"><i class="fas fa-arrow-left"></i></button>
+      <div class="srcd-hdr-info">
+        <div class="srcd-hdr-name" id="srcdName">—</div>
+        <div class="srcd-hdr-meta" id="srcdMeta">—</div>
+      </div>
+      <button class="srcd-btn" onclick="srCloseChemDetail()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="srcd-body" id="srcdBody">
+      <div class="srcd-loading"><i class="fas fa-spinner fa-spin" style="font-size:22px;display:block;margin-bottom:10px"></i><?= $TH?'กำลังโหลดข้อมูล...':'Loading...' ?></div>
+    </div>
+    <div class="srcd-footer" id="srcdFooter" style="display:none">
+      <span class="srcd-footer-src" id="srcdSrc"></span>
+    </div>
+  </div>
+</div>
+
 <!-- Mobile tree overlay + FAB (outside roomPanel) -->
 <div id="mrTreeOv" class="mr-tree-ov" onclick="closeMobileTree()"></div>
 <button id="treeFab" class="mr-tree-fab" onclick="openMobileTree()">
   <i class="fas fa-sitemap"></i> <span><?= $TH ? 'ผังห้อง' : 'Storage Map' ?></span>
 </button>
 
-<!-- No Rooms -->
+<!-- No Rooms — Request Access Interface -->
 <div id="noRooms" style="display:none">
-  <div class="mr-empty">
-    <i class="fas fa-door-closed"></i>
-    <p style="font-size:16px;font-weight:700;margin-bottom:8px"><?= $TH ? 'ไม่มีห้องที่รับผิดชอบ' : 'No rooms assigned' ?></p>
-    <p style="font-size:13px"><?= $TH ? 'กรุณาติดต่อผู้ดูแลระบบเพื่อกำหนดห้องให้คุณ' : 'Please contact an administrator to assign rooms to your account.' ?></p>
+  <div class="mr-nr-wrap">
+    <!-- Hero -->
+    <div class="mr-nr-hero">
+      <div class="mr-nr-hero-ic"><i class="fas fa-door-closed"></i></div>
+      <div class="mr-nr-hero-body">
+        <h2><?= $TH ? 'ยังไม่มีห้องที่รับผิดชอบ' : 'No rooms assigned' ?></h2>
+        <p><?= $TH ? 'คุณสามารถส่งคำขอเพื่อขอสิทธิ์เข้าถึงห้องปฏิบัติการที่ต้องการ<br>ผู้ดูแลระบบหรือ Lab Manager จะได้รับแจ้งและอนุมัติคำขอของคุณ'
+                  : 'Browse available rooms and submit a request.<br>The room manager or admin will review and approve your access.' ?></p>
+        <div class="mr-nr-hero-pills">
+          <span class="mr-nr-hero-pill"><i class="fas fa-search"></i><?= $TH ? 'เลือกห้องที่ต้องการ' : 'Browse rooms' ?></span>
+          <span class="mr-nr-hero-pill"><i class="fas fa-paper-plane"></i><?= $TH ? 'ส่งคำขอ' : 'Submit request' ?></span>
+          <span class="mr-nr-hero-pill"><i class="fas fa-check-circle"></i><?= $TH ? 'รอการอนุมัติ' : 'Await approval' ?></span>
+        </div>
+        <div class="mr-nr-hero-acts">
+          <button class="mr-nr-hero-btn-prim" onclick="openAddRoomModal('requests')">
+            <i class="fas fa-inbox"></i><?= $TH ? 'คำขอของฉัน' : 'My Requests' ?>
+            <span class="mr-nr-req-hero-badge" id="nrReqHeroBadge" style="display:none">0</span>
+          </button>
+          <button class="mr-nr-hero-btn-sec" onclick="openAddRoomModal('browse')">
+            <i class="fas fa-door-open"></i><?= $TH ? 'เลือกห้อง' : 'Browse Rooms' ?>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Request Access Modal -->
+<div class="mr-req-modal-ov" id="mrReqModalOv">
+  <div class="mr-req-modal">
+    <div class="mr-req-mhdr">
+      <div style="width:40px;height:40px;border-radius:11px;background:var(--mrbg);color:var(--mr);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0"><i class="fas fa-paper-plane"></i></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:800;color:var(--c1,#333);margin-bottom:2px"><?= $TH ? 'ขอสิทธิ์เข้าถึงห้อง' : 'Request Room Access' ?></div>
+        <div style="font-size:11px;color:var(--c3,#999)" id="mrReqModalRoomName">—</div>
+      </div>
+      <button onclick="closeReqModal()" style="width:30px;height:30px;border-radius:8px;border:none;background:var(--bg,#f8fafc);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--c2,#666);font-size:16px">&times;</button>
+    </div>
+    <div class="mr-req-mbdy">
+      <div style="background:var(--mrbg,#eef2ff);border:1.5px solid var(--mrbrd,#c7d2fe);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--mrd,#4338ca);display:flex;gap:8px;align-items:flex-start">
+        <i class="fas fa-info-circle" style="margin-top:1px;flex-shrink:0"></i>
+        <span><?= $TH ? 'คำขอนี้จะถูกส่งไปยัง Admin หรือ Lab Manager ที่รับผิดชอบห้อง เพื่อพิจารณาอนุมัติ'
+                      : 'Your request will be sent to the room manager or admin for review.' ?></span>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--c1,#333);display:block;margin-bottom:6px"><?= $TH ? 'ข้อความถึงผู้ดูแล (ไม่บังคับ)' : 'Message to manager (optional)' ?></label>
+        <textarea id="mrReqMessage" rows="3" style="width:100%;padding:10px 14px;border:1.5px solid var(--border,#e2e8f0);border-radius:10px;font-size:13px;font-family:inherit;resize:vertical;min-height:72px;box-sizing:border-box;transition:border .15s" placeholder="<?= $TH ? 'เหตุผลในการขอสิทธิ์...' : 'Reason for requesting access...' ?>" onfocus="this.style.borderColor='var(--mr)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,.1)'" onblur="this.style.borderColor='';this.style.boxShadow=''"></textarea>
+      </div>
+    </div>
+    <div class="mr-req-mftr">
+      <button onclick="closeReqModal()" style="padding:8px 18px;border:1.5px solid var(--border,#e2e8f0);background:#fff;color:var(--c2,#666);border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit"><?= $TH ? 'ยกเลิก' : 'Cancel' ?></button>
+      <button id="mrReqSubmitBtn" onclick="submitRoomRequest()" style="padding:9px 22px;background:var(--mr);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;transition:background .15s">
+        <i class="fas fa-paper-plane"></i><?= $TH ? 'ส่งคำขอ' : 'Send Request' ?>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Room Modal (Request Room Access) -->
+<div class="mr-ar-ov" id="mrAddRoomOv">
+  <div class="mr-ar-modal">
+    <div class="mr-ar-drag-handle"></div>
+    <div class="mr-ar-hdr">
+      <div class="mr-ar-hdr-ic"><i class="fas fa-door-open"></i></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:2px"><?= $TH ? 'ขอเพิ่มห้องรับผิดชอบ' : 'Request Room Access' ?></div>
+        <div style="font-size:11px;color:rgba(255,255,255,.7)"><?= $TH ? 'เลือกห้องและส่งคำขอสิทธิ์ดูแล' : 'Browse rooms and submit an access request' ?></div>
+      </div>
+      <button class="mr-ar-close" onclick="closeAddRoomModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="mr-ar-tabs-bar">
+      <div style="display:flex">
+        <button class="mr-nr-tab active" id="arTabRequests" onclick="switchArTab('requests',this)" style="flex:0 0 auto">
+          <i class="fas fa-inbox"></i><?= $TH ? 'คำขอของฉัน' : 'My Requests' ?>
+          <span class="mr-nr-tab-badge" id="nrReqBadge">0</span>
+        </button>
+        <button class="mr-nr-tab" id="arTabBrowse" onclick="switchArTab('browse',this)" style="flex:0 0 auto">
+          <i class="fas fa-door-open"></i><?= $TH ? 'เลือกห้อง' : 'Browse Rooms' ?>
+          <span class="mr-nr-tab-badge" id="nrRoomBadge">—</span>
+        </button>
+      </div>
+    </div>
+    <div class="mr-ar-body">
+      <div id="nrPanelRequests">
+        <div class="mr-empty" style="padding:40px 20px">
+          <i class="fas fa-circle-notch fa-spin" style="font-size:24px;opacity:.4"></i>
+          <p><?= $TH ? 'กำลังโหลด...' : 'Loading...' ?></p>
+        </div>
+      </div>
+      <div id="nrPanelBrowse" style="display:none">
+        <div class="mr-empty" style="padding:40px 20px">
+          <i class="fas fa-circle-notch fa-spin" style="font-size:24px;opacity:.4"></i>
+          <p><?= $TH ? 'กำลังโหลด...' : 'Loading...' ?></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin/Manager Room Management Modal -->
+<div class="mr-mgmt-ov" id="mrMgmtOv">
+  <div class="mr-mgmt-modal">
+    <div class="mr-mgmt-hdr">
+      <div class="mr-mgmt-hdr-ic"><i class="fas fa-users-cog"></i></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:800;color:var(--c1,#333);margin-bottom:2px"><?= $TH ? 'จัดการสิทธิ์ห้อง' : 'Room Access Management' ?></div>
+        <div style="font-size:11px;color:var(--c3,#999)"><?= $TH ? 'อนุมัติ ปฏิเสธ และจัดการผู้ใช้ในห้อง' : 'Approve, reject and manage users per room' ?></div>
+      </div>
+      <button onclick="closeMgmtModal()" style="width:30px;height:30px;border-radius:8px;border:none;background:var(--bg,#f8fafc);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--c2,#666);font-size:16px">&times;</button>
+    </div>
+    <div class="mr-mgmt-tabs">
+      <button class="mr-mgmt-tab active" id="mgmtTab_pending" onclick="switchMgmtTab('pending',this)">
+        <i class="fas fa-clock"></i><?= $TH ? 'รออนุมัติ' : 'Pending' ?>
+        <span class="mr-mgmt-tab-badge" id="mgmtPendingBadge" style="display:none">0</span>
+      </button>
+      <button class="mr-mgmt-tab" id="mgmtTab_users" onclick="switchMgmtTab('users',this)">
+        <i class="fas fa-users"></i><?= $TH ? 'ผู้ใช้ในห้อง' : 'Room Users' ?>
+      </button>
+      <button class="mr-mgmt-tab" id="mgmtTab_admins" onclick="switchMgmtTab('admins',this)">
+        <i class="fas fa-user-shield"></i><?= $TH ? 'เพิ่มผู้ดูแลร่วม' : 'Co-Admins' ?>
+      </button>
+    </div>
+    <div class="mr-mgmt-body" id="mrMgmtBody">
+      <div class="mr-empty" style="padding:32px 0">
+        <i class="fas fa-circle-notch fa-spin" style="font-size:22px;opacity:.4"></i>
+        <p><?= $TH ? 'กำลังโหลด...' : 'Loading...' ?></p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1178,28 +1831,6 @@ body.mr-dragging .mr-content{opacity:.85}
 </div>
 
 <!-- Modal: Manage Room Admins -->
-<div class="mr-modal-ov" id="modalAdmins">
-  <div class="mr-modal wide">
-    <div class="mr-modal-hdr">
-      <h3><i class="fas fa-users-cog"></i> <?= $TH ? 'ผู้ดูแลห้อง' : 'Room Admins' ?></h3>
-      <button class="mr-modal-x" onclick="closeModal('modalAdmins')">&times;</button>
-    </div>
-    <div class="mr-modal-body">
-      <div id="adminsList"></div>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border,#e0e0e0)">
-        <div style="font-size:11px;font-weight:700;color:var(--c2,#666);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px"><?= $TH ? 'เพิ่มผู้ดูแลร่วม' : 'Add Co-Admin' ?></div>
-        <div class="rm-search-wrap">
-          <i class="fas fa-search"></i>
-          <input type="text" id="adminSearch" placeholder="<?= $TH ? 'ค้นหาชื่อหรืออีเมล...' : 'Search by name or email...' ?>" oninput="searchUsersToAdd()">
-        </div>
-        <div id="adminSearchResults"></div>
-      </div>
-    </div>
-    <div class="mr-modal-footer">
-      <button class="mr-btn mr-btn-g" onclick="closeModal('modalAdmins')"><?= $TH ? 'ปิด' : 'Close' ?></button>
-    </div>
-  </div>
-</div>
 
 <script>
 const API = '/v1/api/myroom.php';
@@ -1233,16 +1864,629 @@ async function apiFetch(url, opts={}) {
   return (await fetch(url, {headers:h,...opts})).json();
 }
 
+/* ════════════════════════════════════════════════════════════
+   NO-ROOMS: Request Access System
+════════════════════════════════════════════════════════════ */
+const IS_MANAGER = <?= in_array($role, ['admin','lab_manager']) ? 'true' : 'false' ?>;
+let nrAllRooms   = [];
+let nrRequests   = [];
+let pendingReqId = null;   // room_id pending the modal submit
+let mgmtActiveTab = 'pending';
+let mgmtPendingData = [];
+
+/* ── No-Rooms Init ── */
+async function initNoRooms() {
+  document.getElementById('noRooms').style.display = '';
+  document.getElementById('heroMeta').innerHTML = heroMeta(0,0,0,0);
+  // Hide tree FAB — no rooms to navigate
+  const fab = document.getElementById('treeFab');
+  if (fab) fab.style.display = 'none';
+  // Load request count to update hero badge
+  const res = await apiFetch(API + '?action=my_requests');
+  nrRequests = res.success ? (res.data || []) : [];
+  const cnt = nrRequests.length;
+  const heroB = document.getElementById('nrReqHeroBadge');
+  if (heroB) { heroB.textContent = cnt; heroB.style.display = cnt ? '' : 'none'; }
+}
+
+/* ── Tab switch (add-room modal) ── */
+let arActiveTab = 'requests';
+function switchArTab(tab, btn) {
+  arActiveTab = tab;
+  document.querySelectorAll('#mrAddRoomOv .mr-nr-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('nrPanelRequests').style.display = tab === 'requests' ? '' : 'none';
+  document.getElementById('nrPanelBrowse').style.display   = tab === 'browse'   ? '' : 'none';
+  if (tab === 'browse' && !nrAllRooms.length) loadAllRooms();
+  else if (tab === 'requests') loadMyRequests();
+}
+
+/* ── Load user's own requests ── */
+async function loadMyRequests() {
+  const res = await apiFetch(API + '?action=my_requests');
+  nrRequests = res.success ? (res.data || []) : [];
+  const cnt = nrRequests.length;
+  const badge = document.getElementById('nrReqBadge');
+  if (badge) badge.textContent = cnt;
+  const heroB = document.getElementById('nrReqHeroBadge');
+  if (heroB) { heroB.textContent = cnt; heroB.style.display = cnt ? '' : 'none'; }
+  renderMyRequests();
+}
+
+function renderMyRequests() {
+  const el = document.getElementById('nrPanelRequests');
+  if (!nrRequests.length) {
+    el.innerHTML = `<div class="mr-empty" style="padding:48px 20px">
+      <i class="fas fa-inbox"></i>
+      <p style="font-size:14px;font-weight:700;margin-bottom:8px;color:var(--c2)">${TH ? 'ยังไม่มีคำขอ' : 'No requests yet'}</p>
+      <p style="font-size:12px">${TH ? 'กดแท็บ "เลือกห้อง" เพื่อส่งคำขอสิทธิ์เข้าห้อง' : 'Switch to "Browse Rooms" to request access'}</p>
+      <button class="mr-nr-req-btn can-request" style="margin-top:14px;max-width:200px;padding:9px 20px" onclick="switchArTab('browse',document.getElementById('arTabBrowse'))">
+        <i class="fas fa-door-open"></i>${TH ? 'เลือกห้อง' : 'Browse Rooms'}
+      </button>
+    </div>`;
+    return;
+  }
+  el.innerHTML = `<div class="mr-nr-req-list">${nrRequests.map(r => {
+    const stMap = {pending:{lbl:TH?'รออนุมัติ':'Pending',ic:'fa-clock',cls:'st-pending'},
+                   approved:{lbl:TH?'อนุมัติแล้ว':'Approved',ic:'fa-check-circle',cls:'st-approved'},
+                   rejected:{lbl:TH?'ปฏิเสธแล้ว':'Rejected',ic:'fa-times-circle',cls:'st-rejected'}};
+    const st = stMap[r.status] || stMap['pending'];
+    const floor = r.floor ? ` · ${TH?'ชั้น':'Fl.'} ${r.floor}` : '';
+    return `<div class="mr-nr-req-card st-${r.status}">
+      <div style="width:40px;height:40px;border-radius:10px;background:var(--mrbg);color:var(--mr);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0"><i class="fas fa-door-open"></i></div>
+      <div class="mr-nr-req-room">
+        <div class="mr-nr-req-room-name">${escH(r.room_name)} <span style="font-weight:400;color:var(--c3)">(${escH(r.room_code||'')})</span></div>
+        <div class="mr-nr-req-room-bld">${escH(r.bld_name||r.bld_short||'')}${floor}</div>
+        ${r.review_note ? `<div class="mr-nr-req-note"><i class="fas fa-comment" style="margin-right:4px"></i>${escH(r.review_note)}</div>` : ''}
+        ${r.status==='rejected'?`<button class="mr-nr-req-btn can-request" style="margin-top:8px;padding:6px 14px;max-width:160px;font-size:11px" onclick="openReqModal(${r.room_id},'${escH(r.room_name)}')"><i class="fas fa-redo"></i>${TH?'ส่งใหม่':'Re-request'}</button>`:''}
+      </div>
+      <div class="mr-nr-req-date">
+        <div class="mr-nr-req-st ${st.cls}"><i class="fas ${st.ic}"></i>${st.lbl}</div>
+        <div style="margin-top:6px">${fmtDate(r.created_at)}</div>
+        ${r.reviewed_by_name?`<div style="font-size:9px;margin-top:2px">by ${escH(r.reviewed_by_name)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+/* ── Browse filter state ── */
+const nrF = { q:'', bld:'', floor:'', status:'' };
+
+/* ── Load all rooms for browsing ── */
+async function loadAllRooms() {
+  const el = document.getElementById('nrPanelBrowse');
+  el.innerHTML = `<div class="mr-empty" style="padding:40px 20px"><i class="fas fa-circle-notch fa-spin" style="font-size:24px;opacity:.4"></i><p>${TH?'กำลังโหลด...':'Loading...'}</p></div>`;
+  const res = await apiFetch(API + '?action=all_rooms');
+  if (!res.success) { el.innerHTML = `<div class="mr-empty"><i class="fas fa-exclamation-triangle"></i><p>${escH(res.error||'Error')}</p></div>`; return; }
+  nrAllRooms = res.data || [];
+  document.getElementById('nrRoomBadge').textContent = nrAllRooms.length;
+
+  // Build filter options from data
+  const blds   = [...new Set(nrAllRooms.map(r => r.bld_name||r.bld_short||'').filter(Boolean))].sort();
+  const floors = [...new Set(nrAllRooms.map(r => r.floor).filter(Boolean))].sort((a,b)=>a-b);
+
+  // Render toolbar + grid wrapper
+  el.innerHTML = `
+    <div class="mr-nr-browse-bar">
+      <div class="mr-nr-bsearch">
+        <i class="fas fa-search"></i>
+        <input id="nrBsearch" type="text" placeholder="${TH?'ค้นหาชื่อห้อง รหัส อาคาร...':'Search room name, code, building...'}"
+               value="${escH(nrF.q)}" oninput="nrF.q=this.value;renderAllRooms()" autocomplete="off">
+      </div>
+      <select class="mr-nr-bsel${nrF.bld?' has-val':''}" id="nrBbld" onchange="nrF.bld=this.value;this.classList.toggle('has-val',!!this.value);renderAllRooms()">
+        <option value="">${TH?'อาคารทั้งหมด':'All buildings'}</option>
+        ${blds.map(b=>`<option value="${escH(b)}" ${nrF.bld===b?'selected':''}>${escH(b)}</option>`).join('')}
+      </select>
+      <select class="mr-nr-bsel${nrF.floor?' has-val':''}" id="nrBfloor" onchange="nrF.floor=this.value;this.classList.toggle('has-val',!!this.value);renderAllRooms()">
+        <option value="">${TH?'ทุกชั้น':'All floors'}</option>
+        ${floors.map(f=>`<option value="${f}" ${nrF.floor==f?'selected':''}>${TH?`ชั้น ${f}`:`Floor ${f}`}</option>`).join('')}
+      </select>
+      <select class="mr-nr-bsel${nrF.status?' has-val':''}" id="nrBstatus" onchange="nrF.status=this.value;this.classList.toggle('has-val',!!this.value);renderAllRooms()">
+        <option value="">${TH?'สถานะทั้งหมด':'All statuses'}</option>
+        <option value="none"     ${nrF.status==='none'     ?'selected':''}>${TH?'ยังไม่ได้ขอ':'Not requested'}</option>
+        <option value="pending"  ${nrF.status==='pending'  ?'selected':''}>${TH?'รออนุมัติ':'Pending'}</option>
+        <option value="approved" ${nrF.status==='approved' ?'selected':''}>${TH?'มีสิทธิ์อยู่แล้ว':'Already granted'}</option>
+        <option value="rejected" ${nrF.status==='rejected' ?'selected':''}>${TH?'ถูกปฏิเสธ':'Rejected'}</option>
+      </select>
+      <div class="mr-nr-browse-info">
+        <span id="nrBcount"></span>
+        <button class="mr-nr-browse-clear" id="nrBclear" onclick="nrClearFilters()" style="display:none">
+          <i class="fas fa-times-circle"></i>${TH?'ล้างตัวกรอง':'Clear filters'}
+        </button>
+      </div>
+    </div>
+    <div id="nrRoomGrid"></div>`;
+
+  renderAllRooms();
+}
+
+function nrClearFilters() {
+  nrF.q = ''; nrF.bld = ''; nrF.floor = ''; nrF.status = '';
+  const s = document.getElementById('nrBsearch');  if(s) s.value = '';
+  const b = document.getElementById('nrBbld');     if(b) { b.value=''; b.classList.remove('has-val'); }
+  const f = document.getElementById('nrBfloor');   if(f) { f.value=''; f.classList.remove('has-val'); }
+  const t = document.getElementById('nrBstatus');  if(t) { t.value=''; t.classList.remove('has-val'); }
+  renderAllRooms();
+}
+
+function renderAllRooms() {
+  const grid = document.getElementById('nrRoomGrid');
+  if (!grid) return;
+
+  // Apply filters
+  const q = nrF.q.trim().toLowerCase();
+  const list = nrAllRooms.filter(r => {
+    if (q && !`${r.name} ${r.code||''} ${r.room_number||''} ${r.bld_name||''} ${r.bld_short||''} ${r.room_type||''} ${r.responsibility_person||''}`.toLowerCase().includes(q)) return false;
+    if (nrF.bld   && (r.bld_name||r.bld_short||'') !== nrF.bld) return false;
+    if (nrF.floor && String(r.floor) !== String(nrF.floor)) return false;
+    if (nrF.status) {
+      const s = nrF.status;
+      const match = s === 'approved' ? r.access_status === 'has_access' : r.access_status === s;
+      if (!match) return false;
+    }
+    return true;
+  });
+
+  // Update info bar
+  const hasFilter = q || nrF.bld || nrF.floor || nrF.status;
+  const countEl = document.getElementById('nrBcount');
+  const clearEl = document.getElementById('nrBclear');
+  if (countEl) countEl.innerHTML = hasFilter
+    ? `${TH?'แสดง':'Showing'} <strong>${list.length}</strong> ${TH?'จาก':'of'} <strong>${nrAllRooms.length}</strong> ${TH?'ห้อง':'rooms'}`
+    : `${TH?'ห้องทั้งหมด':'Total'} <strong>${nrAllRooms.length}</strong> ${TH?'ห้อง':'rooms'}`;
+  if (clearEl) clearEl.style.display = hasFilter ? '' : 'none';
+
+  // Empty result
+  if (!list.length) {
+    grid.innerHTML = `<div class="mr-empty" style="padding:40px 20px">
+      <i class="fas fa-search"></i>
+      <p style="font-size:14px;font-weight:700;margin-bottom:6px;color:var(--c2)">${TH?'ไม่พบห้องที่ตรงกัน':'No rooms match'}</p>
+      <p style="font-size:12px">${TH?'ลองเปลี่ยนคำค้นหาหรือล้างตัวกรอง':'Try adjusting your search or clearing filters'}</p>
+      <button class="mr-nr-req-btn can-request" style="margin-top:12px;max-width:160px;padding:7px 16px;font-size:11px" onclick="nrClearFilters()">
+        <i class="fas fa-times"></i>${TH?'ล้างตัวกรอง':'Clear filters'}
+      </button>
+    </div>`;
+    return;
+  }
+
+  const stConfig = {
+    has_access: {ic:'fa-check-circle',cls:'st-approved',btnCls:'is-approved',btnLbl:TH?'มีสิทธิ์อยู่แล้ว':'Already granted'},
+    pending:    {ic:'fa-clock',       cls:'st-pending', btnCls:'is-pending', btnLbl:TH?'รออนุมัติ...':'Pending...'},
+    rejected:   {ic:'fa-times-circle',cls:'',           btnCls:'is-rejected',btnLbl:TH?'ส่งใหม่':'Re-request'},
+    none:       {ic:'fa-paper-plane', cls:'',           btnCls:'can-request',btnLbl:TH?'ขอสิทธิ์':'Request Access'},
+  };
+
+  // Highlight matching text
+  const hl = (s) => {
+    if (!q || !s) return escH(s||'');
+    const re = new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')', 'gi');
+    return escH(s).replace(re, '<mark style="background:#fef08a;border-radius:2px;padding:0 1px">$1</mark>');
+  };
+
+  grid.innerHTML = `<div class="mr-nr-rooms-grid">${list.map(r => {
+    const st = stConfig[r.access_status] || stConfig['none'];
+    const floor = r.floor ? (TH?`ชั้น ${r.floor}`:`Floor ${r.floor}`) : '';
+    const isGranted = r.access_status === 'has_access';
+    const isPending = r.access_status === 'pending';
+    const canClick  = !isGranted && !isPending;
+    const roomIcCls = isGranted ? 'st-approved' : isPending ? 'st-pending' : '';
+    const managersHtml = r.managers && r.managers.length
+      ? r.managers.slice(0,4).map(m => {
+          const initials = ((m.first_name||'?')[0]+(m.last_name||'?')[0]).toUpperCase();
+          return m.avatar_url
+            ? `<div class="mr-nr-mgr-av"><img src="${escH(m.avatar_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>`
+            : `<div class="mr-nr-mgr-av">${initials}</div>`;
+        }).join('') + (r.managers.length > 4 ? `<span style="font-size:10px;color:var(--c3)">+${r.managers.length-4}</span>` : '')
+      : `<span>${TH?'ยังไม่มีผู้ดูแล':'No managers assigned'}</span>`;
+    return `<div class="mr-nr-room-card">
+      <div class="mr-nr-room-hdr">
+        <div class="mr-nr-room-ic ${roomIcCls}"><i class="fas fa-door-open"></i></div>
+        <div style="flex:1;min-width:0">
+          <div class="mr-nr-room-title">${hl(r.name)}</div>
+          <div class="mr-nr-room-bld" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+            ${r.room_number||r.code ? `<span style="font-family:'Courier New',monospace;font-size:11px;font-weight:700;background:var(--mrbg);color:var(--mr);border:1px solid var(--mrbrd);border-radius:5px;padding:1px 6px;letter-spacing:.3px;flex-shrink:0">${hl(r.room_number||r.code)}</span>` : ''}
+            <span>${hl(r.bld_name||r.bld_short||'')}${floor?' · '+floor:''}</span>
+          </div>
+        </div>
+        ${r.access_status!=='none'?`<div class="mr-nr-req-st ${st.cls}" style="font-size:9px;padding:2px 8px"><i class="fas ${st.ic}"></i></div>`:''}
+      </div>
+      <div class="mr-nr-room-bd">
+        <div class="mr-nr-room-stat">
+          <span class="mr-nr-room-chip"><i class="fas fa-flask"></i>${r.total||0} ${TH?'สาร':'chems'}</span>
+          ${r.room_type?`<span class="mr-nr-room-chip"><i class="fas fa-tag"></i>${hl(r.room_type)}</span>`:''}
+          ${r.safety_level&&r.safety_level!=='general'?`<span class="mr-nr-room-chip" style="background:#fee2e2;color:#dc2626;border-color:#fecaca"><i class="fas fa-shield-alt"></i>${escH(r.safety_level)}</span>`:''}
+          ${floor?`<span class="mr-nr-room-chip"><i class="fas fa-layer-group"></i>${floor}</span>`:''}
+        </div>
+      </div>
+      <div class="mr-nr-room-mgrs">
+        <i class="fas fa-user-shield" style="font-size:11px;flex-shrink:0"></i>
+        ${managersHtml}
+      </div>
+      <div class="mr-nr-room-ft">
+        <button class="mr-nr-req-btn ${st.btnCls}" ${isGranted||isPending?'disabled':''}
+                onclick="${canClick?`openReqModal(${r.id},'${escH(r.name)}')`:''}">
+          <i class="fas ${st.ic}"></i>${st.btnLbl}
+        </button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+/* ── Request modal ── */
+let _reqRoomId = null;
+function openReqModal(roomId, roomName) {
+  _reqRoomId = roomId;
+  document.getElementById('mrReqModalRoomName').textContent = roomName;
+  document.getElementById('mrReqMessage').value = '';
+  document.getElementById('mrReqModalOv').classList.add('show');
+}
+function closeReqModal() {
+  document.getElementById('mrReqModalOv').classList.remove('show');
+  _reqRoomId = null;
+}
+document.getElementById('mrReqModalOv').addEventListener('click', e => { if (e.target===e.currentTarget) closeReqModal(); });
+
+/* ── Add Room Modal ── */
+function openAddRoomModal(tab) {
+  tab = tab || 'requests';
+  arActiveTab = tab;
+  const ov = document.getElementById('mrAddRoomOv');
+  ov.classList.add('show');
+  // Set active tab UI
+  document.querySelectorAll('#mrAddRoomOv .mr-nr-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById(tab === 'requests' ? 'arTabRequests' : 'arTabBrowse').classList.add('active');
+  document.getElementById('nrPanelRequests').style.display = tab === 'requests' ? '' : 'none';
+  document.getElementById('nrPanelBrowse').style.display   = tab === 'browse'   ? '' : 'none';
+  // Load data
+  if (tab === 'requests') loadMyRequests();
+  else if (!nrAllRooms.length) loadAllRooms(); else renderAllRooms();
+}
+function closeAddRoomModal() {
+  document.getElementById('mrAddRoomOv').classList.remove('show');
+}
+document.getElementById('mrAddRoomOv').addEventListener('click', e => { if (e.target===e.currentTarget) closeAddRoomModal(); });
+
+async function submitRoomRequest() {
+  if (!_reqRoomId) return;
+  const btn = document.getElementById('mrReqSubmitBtn');
+  const msg = document.getElementById('mrReqMessage').value.trim();
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>${TH?'กำลังส่ง...':'Sending...'}`;
+  const res = await apiFetch(API + '?action=request_access', {
+    method: 'POST',
+    body: JSON.stringify({ room_id: _reqRoomId, message: msg })
+  });
+  btn.disabled = false;
+  btn.innerHTML = `<i class="fas fa-paper-plane"></i>${TH?'ส่งคำขอ':'Send Request'}`;
+  if (!res.success) { showToast(res.error || 'Error', 'err'); return; }
+  closeReqModal();
+  showToast(TH ? `ส่งคำขอสำเร็จ — ${res.data?.room_name||''}` : `Request sent — ${res.data?.room_name||''}`, 'ok');
+  // Refresh both panels
+  nrAllRooms = []; // force reload
+  await loadMyRequests();
+  if (arActiveTab === 'browse') loadAllRooms();
+}
+
+/* ════════════════════════════════════════════════════════════
+   ADMIN/MANAGER: Room Management Modal
+════════════════════════════════════════════════════════════ */
+async function loadPendingCount() {
+  if (!IS_MANAGER) return;
+  const res = await apiFetch(API + '?action=pending_requests');
+  if (!res.success) return;
+  mgmtPendingData = res.data || [];
+  const pending = mgmtPendingData.filter(r => r.status === 'pending');
+  const badge = document.getElementById('mgmtBtnBadge');
+  const tBadge = document.getElementById('mgmtPendingBadge');
+  if (badge) { badge.textContent = pending.length; badge.style.display = pending.length ? '' : 'none'; }
+  if (tBadge) { tBadge.textContent = pending.length; tBadge.style.display = pending.length ? '' : 'none'; }
+}
+
+async function openMgmtModal(tab = 'pending') {
+  document.getElementById('mrMgmtOv').classList.add('show');
+  mgmtActiveTab = tab;
+  document.querySelectorAll('.mr-mgmt-tab').forEach(b => b.classList.remove('active'));
+  const tabBtn = document.getElementById('mgmtTab_' + tab);
+  if (tabBtn) tabBtn.classList.add('active');
+  if (tab === 'pending') await loadPendingRequests();
+  else if (tab === 'users') loadRoomUsers();
+  else if (tab === 'admins') await loadMgmtAdmins();
+}
+function closeMgmtModal() { document.getElementById('mrMgmtOv').classList.remove('show'); }
+document.getElementById('mrMgmtOv').addEventListener('click', e => { if (e.target===e.currentTarget) closeMgmtModal(); });
+
+function switchMgmtTab(tab, btn) {
+  mgmtActiveTab = tab;
+  document.querySelectorAll('.mr-mgmt-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (tab === 'pending') loadPendingRequests();
+  else if (tab === 'users') loadRoomUsers();
+  else if (tab === 'admins') loadMgmtAdmins();
+}
+
+async function loadMgmtAdmins() {
+  const body = document.getElementById('mrMgmtBody');
+  const rooms = S.rooms && S.rooms.length ? S.rooms : [];
+  if (!rooms.length) {
+    body.innerHTML = `<div class="mr-empty" style="padding:28px 0"><p>${TH?'ไม่มีห้องที่รับผิดชอบ':'No managed rooms'}</p></div>`;
+    return;
+  }
+  const defaultId = S.activeRoomId || rooms[0].room_id;
+  const selHtml = `<select class="mr-mgmt-room-sel" id="mgmtAdminRoomSel" onchange="fetchMgmtAdmins(+this.value)">
+    ${rooms.map(r => `<option value="${r.room_id}" ${r.room_id === defaultId ? 'selected' : ''}>${escH(r.bld_short||r.bld_code||'')} · ${escH(r.code)} ${escH(r.name)}</option>`).join('')}
+  </select>`;
+  body.innerHTML = selHtml + `
+    <div id="adminsList"><div class="mr-empty" style="padding:24px 0"><i class="fas fa-circle-notch fa-spin" style="opacity:.4"></i></div></div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border,#e0e0e0)">
+      <div style="font-size:11px;font-weight:700;color:var(--c2,#666);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">${TH?'เพิ่มผู้ดูแลร่วม':'Add Co-Admin'}</div>
+      <div class="rm-search-wrap">
+        <i class="fas fa-search"></i>
+        <input type="text" id="adminSearch" placeholder="${TH?'ค้นหาชื่อหรืออีเมล...':'Search by name or email...'}" oninput="searchUsersToAdd()">
+      </div>
+      <div id="adminSearchResults"></div>
+    </div>`;
+  await fetchMgmtAdmins(defaultId);
+}
+
+async function fetchMgmtAdmins(roomId) {
+  S.activeRoomId = roomId;
+  const list = document.getElementById('adminsList');
+  if (list) list.innerHTML = `<div class="mr-empty" style="padding:24px 0"><i class="fas fa-circle-notch fa-spin" style="opacity:.4"></i></div>`;
+  const inp = document.getElementById('adminSearch');
+  if (inp) { inp.value = ''; }
+  const res = document.getElementById('adminSearchResults');
+  if (res) res.innerHTML = '';
+  const r = await apiFetch(API + '?action=get_room_admins&room_id=' + roomId);
+  if (!r.success) { showToast(r.error || 'Error', 'err'); return; }
+  S.roomAdmins = r.data || [];
+  renderAdminsList();
+}
+
+async function loadPendingRequests() {
+  const body = document.getElementById('mrMgmtBody');
+  body.innerHTML = `<div class="mr-empty" style="padding:28px 0"><i class="fas fa-circle-notch fa-spin" style="font-size:22px;opacity:.4"></i></div>`;
+  const res = await apiFetch(API + '?action=pending_requests');
+  if (!res.success) { body.innerHTML = `<div class="mr-empty"><p>${escH(res.error)}</p></div>`; return; }
+  mgmtPendingData = res.data || [];
+  renderPendingRequests(body);
+}
+
+function renderPendingRequests(body) {
+  const pending  = mgmtPendingData.filter(r => r.status === 'pending');
+  const reviewed = mgmtPendingData.filter(r => r.status !== 'pending');
+  if (!mgmtPendingData.length) {
+    body.innerHTML = `<div class="mr-empty" style="padding:36px 0"><i class="fas fa-check-circle" style="color:#22c55e;opacity:.5"></i><p>${TH?'ไม่มีคำขอที่รอดำเนินการ':'No pending requests'}</p></div>`; return;
+  }
+  let html = '';
+  if (pending.length) {
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--c3);margin-bottom:4px">${TH?`รอตรวจสอบ (${pending.length})`:`Pending (${pending.length})`}</div>`;
+    html += pending.map(r => mgmtReqCard(r, false)).join('');
+  }
+  if (reviewed.length) {
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--c3);margin:10px 0 4px">${TH?`ดำเนินการแล้ว (${reviewed.length})`:`Reviewed (${reviewed.length})`}</div>`;
+    html += reviewed.map(r => mgmtReqCard(r, true)).join('');
+  }
+  body.innerHTML = html;
+}
+
+function mgmtReqCard(r, reviewed) {
+  const initials = ((r.first_name||'?')[0]+(r.last_name||'?')[0]).toUpperCase();
+  const avHtml = r.avatar_url
+    ? `<img src="${escH(r.avatar_url)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">`
+    : `<div class="mr-mgmt-req-av">${initials}</div>`;
+  const stMap = {pending:{lbl:TH?'รออนุมัติ':'Pending',cls:''},
+                 approved:{lbl:TH?'อนุมัติแล้ว':'Approved',bg:'#dcfce7',col:'#16a34a'},
+                 rejected:{lbl:TH?'ปฏิเสธแล้ว':'Rejected',bg:'#fee2e2',col:'#dc2626'}};
+  const st = stMap[r.status] || stMap['pending'];
+  return `<div class="mr-mgmt-req-card ${reviewed?'reviewed':''}" id="mgmtReq_${r.id}">
+    <div class="mr-mgmt-req-top">
+      <div style="flex-shrink:0">${avHtml}</div>
+      <div class="mr-mgmt-req-info">
+        <div class="mr-mgmt-req-name">${escH(r.first_name)} ${escH(r.last_name)}</div>
+        <div class="mr-mgmt-req-email">${escH(r.email||'')}</div>
+      </div>
+      <div class="mr-mgmt-req-room">${escH(r.bld_short||'')} · ${escH(r.room_code||'')} ${escH(r.room_name)}</div>
+    </div>
+    ${r.message?`<div class="mr-mgmt-req-msg"><i class="fas fa-quote-left" style="margin-right:5px;opacity:.5;font-size:10px"></i>${escH(r.message)}</div>`:''}
+    <div class="mr-mgmt-req-actions">
+      ${!reviewed
+        ? `<button class="mr-mgmt-approve-btn" onclick="reviewReq(${r.id},'approve')"><i class="fas fa-check"></i>${TH?'อนุมัติ':'Approve'}</button>
+           <button class="mr-mgmt-reject-btn"  onclick="reviewReq(${r.id},'reject')"><i class="fas fa-times"></i>${TH?'ปฏิเสธ':'Reject'}</button>`
+        : `<div class="mr-mgmt-req-status-badge" style="background:${st.bg||'#f1f5f9'};color:${st.col||'var(--c3)'}"><i class="fas ${r.status==='approved'?'fa-check-circle':'fa-times-circle'}"></i>${st.lbl}</div>
+           ${r.review_note?`<div style="font-size:10px;color:var(--c3);font-style:italic;flex:1">${escH(r.review_note)}</div>`:''}`
+      }
+      <div class="mr-mgmt-req-date">${fmtDate(r.created_at)}${r.created_at&&r.created_at.length>10?' '+String(r.created_at).slice(11,16):''}</div>
+    </div>
+  </div>`;
+}
+
+let _rejectReqId = null;
+
+function reviewReq(reqId, action) {
+  if (action === 'reject') {
+    const r = mgmtPendingData.find(x => x.id === reqId);
+    if (!r) return;
+    _rejectReqId = reqId;
+
+    // Populate modal
+    const initials = ((r.first_name||'?')[0]+(r.last_name||'?')[0]).toUpperCase();
+    const av = document.getElementById('rejectUserAv');
+    av.innerHTML = r.avatar_url ? `<img src="${escH(r.avatar_url)}" alt="">` : initials;
+
+    document.getElementById('rejectUserNm').textContent = (r.first_name||'') + ' ' + (r.last_name||'');
+    document.getElementById('rejectUserEm').textContent = r.email || '';
+    document.getElementById('rejectRoomTag').textContent = (r.bld_short ? r.bld_short + ' · ' : '') + (r.room_code||'') + ' ' + (r.room_name||'');
+    document.getElementById('rejectNote').value = '';
+
+    const msgBox = document.getElementById('rejectMsgBox');
+    if (r.message) {
+      document.getElementById('rejectMsgText').textContent = r.message;
+      msgBox.style.display = 'flex';
+    } else {
+      msgBox.style.display = 'none';
+    }
+
+    const btn = document.getElementById('btnConfirmReject');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-times-circle"></i> ยืนยันปฏิเสธ';
+
+    document.getElementById('modalReject').classList.add('show');
+    setTimeout(() => document.getElementById('rejectNote').focus(), 180);
+    return;
+  }
+  // approve — proceed directly
+  _submitReview(reqId, 'approve', '');
+}
+
+async function confirmReject() {
+  if (!_rejectReqId) return;
+  const note = document.getElementById('rejectNote').value.trim();
+  const btn = document.getElementById('btnConfirmReject');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังดำเนินการ...';
+  await _submitReview(_rejectReqId, 'reject', note);
+  closeModal('modalReject');
+  _rejectReqId = null;
+}
+
+async function _submitReview(reqId, action, note) {
+  const idx = mgmtPendingData.findIndex(r => r.id === reqId);
+  const prevStatus   = idx >= 0 ? mgmtPendingData[idx].status : null;
+  const prevNote     = idx >= 0 ? mgmtPendingData[idx].review_note : undefined;
+
+  // Optimistic update — move card immediately so buttons vanish
+  if (idx >= 0) {
+    mgmtPendingData[idx].status = action === 'approve' ? 'approved' : 'rejected';
+    if (note) mgmtPendingData[idx].review_note = note;
+  }
+  renderPendingRequests(document.getElementById('mrMgmtBody'));
+
+  const res = await apiFetch(API + '?action=review_request', {
+    method: 'POST',
+    body: JSON.stringify({ request_id: reqId, action, note })
+  });
+
+  if (!res.success) {
+    // Revert on failure
+    if (idx >= 0 && prevStatus !== null) {
+      mgmtPendingData[idx].status = prevStatus;
+      mgmtPendingData[idx].review_note = prevNote;
+    }
+    renderPendingRequests(document.getElementById('mrMgmtBody'));
+    showToast(res.error || 'Error', 'err');
+    return;
+  }
+
+  const d = res.data;
+  showToast(action === 'approve'
+    ? (TH ? `อนุมัติ ${d.user_name||''} เข้าห้อง ${d.room_name||''} แล้ว` : `Approved ${d.user_name||''} for ${d.room_name||''}`)
+    : (TH ? `ปฏิเสธคำขอของ ${d.user_name||''} แล้ว` : `Rejected request from ${d.user_name||''}`), 'ok');
+  loadPendingCount();
+}
+
+/* ── Room Users tab ── */
+async function loadRoomUsers() {
+  const body = document.getElementById('mrMgmtBody');
+  // Build room selector based on rooms the manager oversees
+  const rooms = S.rooms && S.rooms.length ? S.rooms : [];
+  if (!rooms.length) {
+    body.innerHTML = `<div class="mr-empty" style="padding:28px 0"><p>${TH?'ไม่มีห้องที่รับผิดชอบ':'No managed rooms'}</p></div>`; return;
+  }
+  const selHtml = `<select class="mr-mgmt-room-sel" id="mgmtRoomSel" onchange="fetchRoomUsers(this.value)">
+    ${rooms.map(r => `<option value="${r.room_id}">${escH(r.bld_short||r.bld_code||'')} · ${escH(r.code)} ${escH(r.name)}</option>`).join('')}
+  </select>`;
+  body.innerHTML = selHtml + `<div id="mgmtUsersList"><div class="mr-empty" style="padding:24px 0"><i class="fas fa-circle-notch fa-spin" style="opacity:.4"></i></div></div>`;
+  fetchRoomUsers(rooms[0].room_id);
+}
+
+let _fetchedRoomUsers = [];
+let _fetchedRoomId = 0;
+let _revokeCtx = null;
+let _rmAdminCtx = null;
+
+async function fetchRoomUsers(roomId) {
+  const list = document.getElementById('mgmtUsersList');
+  if (!list) return;
+  list.innerHTML = `<div class="mr-empty" style="padding:24px 0"><i class="fas fa-circle-notch fa-spin" style="opacity:.4"></i></div>`;
+  const res = await apiFetch(API + `?action=room_users&room_id=${roomId}`);
+  if (!res.success) { list.innerHTML = `<div class="mr-empty"><p>${escH(res.error)}</p></div>`; return; }
+  const users = res.data || [];
+  _fetchedRoomUsers = users;
+  _fetchedRoomId = roomId;
+  if (!users.length) { list.innerHTML = `<div class="mr-empty" style="padding:24px 0"><i class="fas fa-users"></i><p>${TH?'ยังไม่มีผู้ใช้ในห้องนี้':'No users in this room'}</p></div>`; return; }
+  const roomLabel = document.getElementById('mgmtRoomSel')?.selectedOptions[0]?.text || '';
+  list.innerHTML = users.map(u => {
+    const initials = ((u.first_name||'?')[0]+(u.last_name||'?')[0]).toUpperCase();
+    const avHtml = u.avatar_url
+      ? `<img src="${escH(u.avatar_url)}" style="width:38px;height:38px;border-radius:50%;object-fit:cover">`
+      : `<div class="mr-mgmt-user-av">${initials}</div>`;
+    const isSelf = parseInt(u.id) === CURRENT_UID;
+    return `<div class="mr-mgmt-user-card">
+      <div style="flex-shrink:0">${avHtml}</div>
+      <div class="mr-mgmt-user-info">
+        <div class="mr-mgmt-user-name">${escH(u.first_name)} ${escH(u.last_name)}</div>
+        <div class="mr-mgmt-user-role">${escH(u.role_display||u.role_name||'')} · ${escH(u.email||'')}</div>
+      </div>
+      ${u.is_primary ? `<span class="mr-mgmt-primary-badge"><i class="fas fa-star" style="margin-right:3px;font-size:8px"></i>${TH?'หลัก':'Primary'}</span>` : ''}
+      ${!isSelf ? `<button class="mr-mgmt-revoke-btn" onclick="showRevokeModal(${u.id},${roomId})">
+        <i class="fas fa-user-minus" style="margin-right:4px"></i>${TH?'ถอนสิทธิ์':'Revoke'}
+      </button>` : `<span style="font-size:10px;color:var(--c3);padding:5px 10px">${TH?'(คุณ)':'(you)'}</span>`}
+    </div>`;
+  }).join('');
+}
+
+function showRevokeModal(userId, roomId) {
+  const u = _fetchedRoomUsers.find(x => +x.id === +userId);
+  if (!u) return;
+  const roomLabel = document.getElementById('mgmtRoomSel')?.selectedOptions[0]?.text || '';
+  _revokeCtx = { userId, roomId, userName: (u.first_name||'')+' '+(u.last_name||''), roomLabel };
+
+  const initials = ((u.first_name||'?')[0]+(u.last_name||'?')[0]).toUpperCase();
+  const av = document.getElementById('revokeUserAv');
+  av.innerHTML = u.avatar_url ? `<img src="${escH(u.avatar_url)}" alt="">` : initials;
+  document.getElementById('revokeUserNm').textContent   = (u.first_name||'')+' '+(u.last_name||'');
+  document.getElementById('revokeUserRole').textContent  = u.role_display || u.role_name || '';
+  document.getElementById('revokeUserEmail').textContent = u.email || '';
+  document.getElementById('revokeRoomPill').textContent  = roomLabel;
+  document.getElementById('revokeWarnName').textContent  = (u.first_name||'')+' '+(u.last_name||'');
+
+  const btn = document.getElementById('btnConfirmRevoke');
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-user-minus"></i> ยืนยันถอนสิทธิ์';
+
+  document.getElementById('modalRevoke').classList.add('show');
+}
+
+async function confirmRevoke() {
+  if (!_revokeCtx) return;
+  const { userId, roomId, userName } = _revokeCtx;
+  const btn = document.getElementById('btnConfirmRevoke');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังดำเนินการ...';
+
+  const res = await apiFetch(API + '?action=revoke_access', {
+    method: 'POST',
+    body: JSON.stringify({ user_id: userId, room_id: roomId })
+  });
+
+  closeModal('modalRevoke');
+  _revokeCtx = null;
+
+  if (!res.success) { showToast(res.error || 'Error', 'err'); return; }
+  showToast(TH ? `ถอนสิทธิ์ ${userName} แล้ว` : `Revoked access for ${userName}`, 'ok');
+  fetchRoomUsers(roomId);
+}
+
 /* ── Init ── */
 async function init() {
   const res = await apiFetch(API + '?action=my_rooms');
   if (!res.success || !res.data?.length) {
-    document.getElementById('noRooms').style.display = '';
-    document.getElementById('heroMeta').innerHTML = heroMeta(0,0,0,0);
+    await initNoRooms();
     return;
   }
   S.rooms = res.data;
   renderHeroMeta(); renderRoomTabs(); selectRoom(S.rooms[0].room_id);
+  if (IS_MANAGER) loadPendingCount();
 }
 
 function heroMeta(total,rooms,unplaced,expiring) {
@@ -1265,7 +2509,7 @@ function renderRoomTabs() {
       <span class="mr-rt-name">${escH(r.name)}</span>
       <span class="mr-rt-cnt">${r.total}</span>
     </button>`
-  ).join('');
+  ).join('') + `<button class="mr-room-tab-add" onclick="openAddRoomModal('browse')" title="${TH?'ขอเพิ่มห้องรับผิดชอบ':'Request Room Access'}"><i class="fas fa-plus"></i><span class="mr-tba-lbl">${TH?'ขอเพิ่มห้อง':'Add Room'}</span></button>`;
 }
 
 async function selectRoom(roomId) {
@@ -1275,6 +2519,7 @@ async function selectRoom(roomId) {
   renderRoomTabs();
   document.getElementById('roomPanel').style.display = '';
   document.getElementById('noRooms').style.display   = 'none';
+  const fab = document.getElementById('treeFab'); if (fab) fab.style.display = '';
   showStatSkeleton();
   document.getElementById('storageTree').innerHTML = '<div class="mr-ld"><i class="fas fa-circle-notch fa-spin"></i></div>';
   showListSkeleton();
@@ -1974,7 +3219,6 @@ function rowActs(c) {
 /* ── Render dispatcher ── */
 function renderContainers(anim=false) {
   const list=getFiltered(), el=document.getElementById('mrList');
-  if (anim) { el.classList.remove('mr-list-anim'); void el.offsetWidth; el.classList.add('mr-list-anim'); }
   if (!list.length) {
     el.innerHTML=`<div class="mr-empty"><i class="fas fa-search"></i><p>${TH?'ไม่พบสารเคมี':'No chemicals found'}</p></div>`; return;
   }
@@ -2465,7 +3709,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape') {
     if(S.renaming){cancelRename();return;}
     if(document.getElementById('mrDrawer')?.classList.contains('open')){closeDrawer();return;}
-    ['modalAddCabinet','modalAddShelf','modalAddSlot','modalNote','modalPlace','modalBatchPlace','modalBorrow','modalAdmins','modalTxn','modalRpt'].forEach(closeModal);
+    ['modalAddCabinet','modalAddShelf','modalAddSlot','modalNote','modalPlace','modalBatchPlace','modalBorrow','modalTxn','modalRpt','modalRevoke','modalReject','modalRmAdmin'].forEach(closeModal);
   }
 });
 
@@ -2481,15 +3725,7 @@ function avatarHtml(u, size=36, fontSize=13) {
 
 /* ── Room Admin Management ── */
 async function openManageAdmins() {
-  if(!S.activeRoomId){showToast(TH?'เลือกห้องก่อน':'Select a room first','err');return;}
-  document.getElementById('adminsList').innerHTML=`<div style="text-align:center;padding:16px;color:var(--c3,#999)"><i class="fas fa-circle-notch fa-spin"></i></div>`;
-  document.getElementById('adminSearch').value='';
-  document.getElementById('adminSearchResults').innerHTML='';
-  openModal('modalAdmins');
-  const r=await apiFetch(API+'?action=get_room_admins&room_id='+S.activeRoomId);
-  if(!r.success){showToast(r.error||'Error','err');return;}
-  S.roomAdmins=r.data||[];
-  renderAdminsList();
+  await openMgmtModal('admins');
 }
 function renderAdminsList() {
   const el=document.getElementById('adminsList');
@@ -2500,14 +3736,22 @@ function renderAdminsList() {
     const name=[u.first_name||'',u.last_name||''].join(' ').trim()||u.email||'User';
     const isPrimary=parseInt(u.is_primary)===1;
     const canRemove=!isPrimary&&parseInt(u.id)!==CURRENT_UID;
+    const sub=[u.position,u.department].filter(Boolean).join(' · ');
+    const emailHtml=u.email
+      ?`<a class="rm-admin-contact" href="mailto:${escH(u.email)}" title="${TH?'ส่งอีเมล':'Send email'}"><i class="fas fa-envelope"></i>${escH(u.email)}</a>`:'';
+    const phoneHtml=u.phone
+      ?`<a class="rm-admin-contact" href="tel:${escH(u.phone)}" title="${TH?'โทร':'Call'}"><i class="fas fa-phone"></i>${escH(u.phone)}</a>`:'';
     return `<div class="rm-admin-row">
-      ${avatarHtml(u,36,13)}
+      <div style="flex-shrink:0;margin-top:1px">${avatarHtml(u,36,13)}</div>
       <div class="rm-admin-info">
         <div class="rm-admin-name">${escH(name)}</div>
-        <div class="rm-admin-role">${escH(u.email||'')}</div>
+        ${sub?`<div class="rm-admin-role">${escH(sub)}</div>`:''}
+        <div class="rm-admin-contacts">${emailHtml}${phoneHtml}</div>
       </div>
-      <span class="rm-admin-badge ${isPrimary?'primary':'co'}">${isPrimary?(TH?'ผู้ดูแลหลัก':'Primary'):(TH?'ผู้ดูแลร่วม':'Co-Admin')}</span>
-      ${canRemove?`<button class="rm-admin-rm" onclick="removeRoomAdmin(${u.id})" title="${TH?'ลบออก':'Remove'}"><i class="fas fa-times"></i></button>`:''}
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-top:1px">
+        <span class="rm-admin-badge ${isPrimary?'primary':'co'}">${isPrimary?(TH?'ผู้ดูแลหลัก':'Primary'):(TH?'ผู้ดูแลร่วม':'Co-Admin')}</span>
+        ${canRemove?`<button class="rm-admin-rm" onclick="removeRoomAdmin(${u.id})" title="${TH?'ลบออก':'Remove'}"><i class="fas fa-times"></i></button>`:''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -2544,11 +3788,52 @@ async function addRoomAdmin(userId, name) {
   if(r2.success) { S.roomAdmins=r2.data||[]; renderAdminsList(); }
 }
 async function removeRoomAdmin(userId) {
-  if(!confirm(TH?'ลบผู้ดูแลร่วมคนนี้ออก?':'Remove this co-admin?')) return;
-  const r=await apiFetch(API+'?action=remove_room_admin',{method:'POST',body:JSON.stringify({room_id:S.activeRoomId,user_id:userId})});
-  if(!r.success){showToast(r.error||'Error','err');return;}
-  showToast(TH?'ลบเรียบร้อย':'Removed','ok');
-  S.roomAdmins=S.roomAdmins.filter(u=>parseInt(u.id)!==parseInt(userId));
+  const u = S.roomAdmins.find(a => parseInt(a.id) === parseInt(userId));
+  if (!u) return;
+  _rmAdminCtx = { userId: parseInt(userId) };
+
+  const name = [u.first_name||'', u.last_name||''].join(' ').trim() || u.email || 'User';
+  const init = name.split(' ').map(w => w[0]||'').slice(0,2).join('').toUpperCase();
+  const avEl = document.getElementById('rmAdmUserAv');
+  if (u.avatar_url) {
+    avEl.innerHTML = `<img src="${escH(u.avatar_url)}" alt="${escH(init)}" style="width:100%;height:100%;object-fit:cover">`;
+    avEl.style.background = '';
+  } else {
+    avEl.innerHTML = escH(init);
+    avEl.style.background = 'linear-gradient(135deg,#6d28d9,#a78bfa)';
+  }
+  document.getElementById('rmAdmUserNm').textContent = name;
+  document.getElementById('rmAdmUserEmail').textContent = u.email || '';
+
+  const sel = document.getElementById('mgmtAdminRoomSel');
+  const roomLabel = sel ? sel.options[sel.selectedIndex]?.text : String(S.activeRoomId);
+  document.getElementById('rmAdmRoomPill').textContent = roomLabel || String(S.activeRoomId);
+
+  const btn = document.getElementById('btnConfirmRmAdmin');
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-user-slash"></i> ลบผู้ดูแลร่วมออก';
+
+  document.getElementById('modalRmAdmin').classList.add('show');
+}
+
+async function confirmRmAdmin() {
+  if (!_rmAdminCtx) return;
+  const { userId } = _rmAdminCtx;
+  const btn = document.getElementById('btnConfirmRmAdmin');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังดำเนินการ...';
+
+  const r = await apiFetch(API + '?action=remove_room_admin', {
+    method: 'POST',
+    body: JSON.stringify({ room_id: S.activeRoomId, user_id: userId })
+  });
+
+  closeModal('modalRmAdmin');
+  _rmAdminCtx = null;
+
+  if (!r.success) { showToast(r.error || 'Error', 'err'); return; }
+  showToast(TH ? 'ลบผู้ดูแลร่วมเรียบร้อย' : 'Co-admin removed', 'ok');
+  S.roomAdmins = S.roomAdmins.filter(u => parseInt(u.id) !== parseInt(userId));
   renderAdminsList();
 }
 
@@ -3800,8 +5085,114 @@ const SR_PHYS_SHORT = {
   self_heating:'Self-Heat.', self_reactive:'Self-React.',
   water_reactive:'Water React.',
 };
+const SR_HEALTH_SHORT_TH = {
+  acute_toxicity:'พิษเฉียบพลัน', aspiration:'อันตรายต่อปอด', carcinogenicity:'ก่อมะเร็ง',
+  germ_cell:'กลายพันธุ์', reproductive:'พิษสืบพันธุ์', sensitization:'ทำให้แพ้',
+  eye_damage:'ทำลายดวงตา', skin_corrosion:'กัดกร่อนผิว',
+  stot_repeated:'STOT-RE', stot_single:'STOT-SE',
+};
+const SR_PHYS_SHORT_TH = {
+  corrosive_metals:'กัดกร่อนโลหะ', explosives:'วัตถุระเบิด', flammable_gas:'แก๊สไวไฟ',
+  flammable_aerosols:'ละอองไวไฟ', flammable_liquids:'ของเหลวไวไฟ',
+  flammable_solids:'ของแข็งไวไฟ', gas_pressure:'แก๊สอัดความดัน',
+  organic_peroxides:'เปอร์ออกไซด์', oxidizing_gases:'แก๊สออกซิไดซ์',
+  oxidizing_liquids:'ออกซิไดซ์ (ล)', oxidizing_solids:'ออกซิไดซ์ (ข)',
+  pyrophoric_liquids:'ลุกไฟเอง (ล)', pyrophoric_solids:'ลุกไฟเอง (ข)',
+  self_heating:'ความร้อนเอง', self_reactive:'ปฏิกิริยาเอง',
+  water_reactive:'ทำปฏิกิริยาน้ำ',
+};
 
 let srData = null, srActiveTab = 'health';
+
+/* ── GHS pictogram config ───────────────────────────────────── */
+const SRCD_GHS = {
+  GHS01:{icon:'fa-bomb',           en:'Explosive',         th:'วัตถุระเบิด'},
+  GHS02:{icon:'fa-fire',           en:'Flammable',         th:'ไวไฟ'},
+  GHS03:{icon:'fa-radiation',      en:'Oxidizing',         th:'ออกซิไดซ์'},
+  GHS04:{icon:'fa-wind',           en:'Compressed Gas',    th:'แก๊สอัดความดัน'},
+  GHS05:{icon:'fa-flask',          en:'Corrosive',         th:'กัดกร่อน'},
+  GHS06:{icon:'fa-skull-crossbones',en:'Toxic',            th:'พิษร้ายแรง'},
+  GHS07:{icon:'fa-exclamation-triangle',en:'Harmful',      th:'เป็นอันตราย'},
+  GHS08:{icon:'fa-heartbeat',      en:'Health Hazard',     th:'อันตรายต่อสุขภาพ'},
+  GHS09:{icon:'fa-leaf',           en:'Environmental',     th:'อันตรายต่อสิ่งแวดล้อม'},
+};
+
+/* ── H-code descriptions (EN + TH) ─────────────────────────── */
+const H_EN = {
+  H200:'Unstable explosive',H201:'Explosive; mass explosion hazard',
+  H202:'Explosive; severe projection hazard',H203:'Explosive; fire, blast or projection hazard',
+  H204:'Fire or projection hazard',H205:'May mass explode in fire',
+  H220:'Extremely flammable gas',H221:'Flammable gas',
+  H222:'Extremely flammable aerosol',H223:'Flammable aerosol',
+  H224:'Extremely flammable liquid and vapour',H225:'Highly flammable liquid and vapour',
+  H226:'Flammable liquid and vapour',H228:'Flammable solid',
+  H240:'Heating may cause an explosion',H241:'Heating may cause a fire or explosion',
+  H242:'Heating may cause a fire',H243:'May cause fire or explosion if heated',
+  H244:'May cause fire if heated',H250:'Catches fire spontaneously if exposed to air',
+  H251:'Self-heating; may catch fire',H252:'Self-heating in large quantities; may catch fire',
+  H260:'In contact with water releases flammable gases which may ignite spontaneously',
+  H261:'In contact with water releases flammable gases',
+  H270:'May cause or intensify fire; oxidiser',H271:'May cause fire or explosion; strong oxidiser',
+  H272:'May intensify fire; oxidiser',
+  H280:'Contains gas under pressure; may explode if heated',
+  H281:'Contains refrigerated gas; may cause cryogenic burns or injury',
+  H290:'May be corrosive to metals',
+  H300:'Fatal if swallowed',H301:'Toxic if swallowed',H302:'Harmful if swallowed',
+  H304:'May be fatal if swallowed and enters airways',
+  H310:'Fatal in contact with skin',H311:'Toxic in contact with skin',H312:'Harmful in contact with skin',
+  H314:'Causes severe skin burns and eye damage',H315:'Causes skin irritation',
+  H317:'May cause an allergic skin reaction',
+  H318:'Causes serious eye damage',H319:'Causes serious eye irritation',
+  H330:'Fatal if inhaled',H331:'Toxic if inhaled',H332:'Harmful if inhaled',
+  H334:'May cause allergy or asthma symptoms or breathing difficulties if inhaled',
+  H335:'May cause respiratory irritation',H336:'May cause drowsiness or dizziness',
+  H340:'May cause genetic defects',H341:'Suspected of causing genetic defects',
+  H350:'May cause cancer',H351:'Suspected of causing cancer',
+  H360:'May damage fertility or the unborn child',
+  H361:'Suspected of damaging fertility or the unborn child',
+  H362:'May cause harm to breast-fed children',
+  H370:'Causes damage to organs',H371:'May cause damage to organs',
+  H372:'Causes damage to organs through prolonged or repeated exposure',
+  H373:'May cause damage to organs through prolonged or repeated exposure',
+};
+const H_TH = {
+  H200:'วัตถุระเบิดที่ไม่เสถียร',H201:'ระเบิด; อันตรายจากการระเบิดพร้อมกัน',
+  H202:'ระเบิด; อันตรายจากเศษระเบิดรุนแรง',H203:'ระเบิด; อันตรายจากไฟ แรงกระแทก หรือเศษระเบิด',
+  H204:'อันตรายจากไฟหรือเศษระเบิด',H205:'อาจระเบิดพร้อมกันเมื่อเกิดไฟ',
+  H220:'แก๊สไวไฟสูงมาก',H221:'แก๊สไวไฟ',
+  H222:'ละอองลอยไวไฟสูงมาก',H223:'ละอองลอยไวไฟ',
+  H224:'ของเหลวและไอระเหยไวไฟสูงมาก',H225:'ของเหลวและไอระเหยไวไฟสูง',
+  H226:'ของเหลวและไอระเหยไวไฟ',H228:'ของแข็งไวไฟ',
+  H240:'การให้ความร้อนอาจทำให้เกิดการระเบิด',H241:'การให้ความร้อนอาจทำให้เกิดไฟหรือการระเบิด',
+  H242:'การให้ความร้อนอาจทำให้เกิดไฟ',
+  H250:'ลุกไหม้เองหากสัมผัสอากาศ',
+  H251:'เกิดความร้อนได้เอง; อาจลุกไหม้',H252:'เกิดความร้อนได้เองในปริมาณมาก; อาจลุกไหม้',
+  H260:'สัมผัสน้ำแล้วปล่อยแก๊สไวไฟที่อาจลุกติดไฟได้เอง',
+  H261:'สัมผัสน้ำแล้วปล่อยแก๊สไวไฟ',
+  H270:'อาจทำให้เกิดหรือทำให้ไฟลุกรุนแรงขึ้น; ออกซิไดเซอร์',
+  H271:'อาจทำให้เกิดไฟหรือการระเบิด; ออกซิไดเซอร์รุนแรง',
+  H272:'อาจทำให้ไฟลุกรุนแรงขึ้น; ออกซิไดเซอร์',
+  H280:'บรรจุแก๊สภายใต้ความดัน; อาจระเบิดได้หากถูกความร้อน',
+  H281:'บรรจุแก๊สทำความเย็น; อาจทำให้เกิดแผลไหม้หรือบาดเจ็บจากความเย็น',
+  H290:'อาจกัดกร่อนโลหะ',
+  H300:'ถึงแก่ชีวิตหากกลืนกิน',H301:'เป็นพิษหากกลืนกิน',H302:'เป็นอันตรายหากกลืนกิน',
+  H304:'อาจถึงแก่ชีวิตหากกลืนกินและเข้าสู่ทางเดินหายใจ',
+  H310:'ถึงแก่ชีวิตหากสัมผัสผิวหนัง',H311:'เป็นพิษหากสัมผัสผิวหนัง',H312:'เป็นอันตรายหากสัมผัสผิวหนัง',
+  H314:'ทำให้ผิวหนังไหม้รุนแรงและทำลายดวงตา',H315:'ทำให้ผิวหนังระคายเคือง',
+  H317:'อาจทำให้เกิดอาการแพ้ที่ผิวหนัง',
+  H318:'ทำให้ดวงตาเสียหายอย่างรุนแรง',H319:'ทำให้ดวงตาระคายเคืองอย่างรุนแรง',
+  H330:'ถึงแก่ชีวิตหากสูดดม',H331:'เป็นพิษหากสูดดม',H332:'เป็นอันตรายหากสูดดม',
+  H334:'อาจทำให้เกิดอาการแพ้ หอบหืด หรือหายใจลำบากหากสูดดม',
+  H335:'อาจทำให้เกิดการระคายเคืองต่อระบบทางเดินหายใจ',H336:'อาจทำให้ง่วงซึมหรือวิงเวียน',
+  H340:'อาจทำให้เกิดการกลายพันธุ์ทางพันธุกรรม',H341:'น่าสงสัยว่าอาจทำให้เกิดการกลายพันธุ์ทางพันธุกรรม',
+  H350:'อาจก่อให้เกิดมะเร็ง',H351:'น่าสงสัยว่าอาจก่อให้เกิดมะเร็ง',
+  H360:'อาจเป็นอันตรายต่อความสามารถในการสืบพันธุ์หรือทารกในครรภ์',
+  H361:'น่าสงสัยว่าอาจเป็นอันตรายต่อความสามารถในการสืบพันธุ์หรือทารกในครรภ์',
+  H362:'อาจเป็นอันตรายต่อทารกที่กินนมแม่',
+  H370:'ทำให้อวัยวะเป้าหมายได้รับความเสียหาย',H371:'อาจทำให้อวัยวะเป้าหมายได้รับความเสียหาย',
+  H372:'ทำให้อวัยวะเป้าหมายเสียหายจากการได้รับสัมผัสซ้ำหรือยาวนาน',
+  H373:'อาจทำให้อวัยวะเป้าหมายเสียหายจากการได้รับสัมผัสซ้ำหรือยาวนาน',
+};
 
 async function openSafetyReport() {
   const roomId = S.activeRoomId;
@@ -3842,14 +5233,22 @@ function srSwitchTab(tab) {
 
 function srFmt(v) { return v <= 0 ? '0.00' : v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
 
-function srBuildRows(dataObj, labels, shortLabels) {
+function srBuildRows(dataObj, labels, shortLabels, shortLabelsTH) {
   const keys = Object.keys(labels);
   let rows = [], totSolid = 0, totLiq = 0, totGas = 0;
   for (const key of keys) {
     const d = dataObj[key] || {solid:0,liquid:0,gas:0};
     const s = d.solid||0, l = d.liquid||0, g = d.gas||0, t = s+l+g;
     totSolid += s; totLiq += l; totGas += g;
-    const shortLabel = shortLabels?.[key] || labels[key].split(' (')[0].slice(0, 16);
+    let shortLabel;
+    if (TH) {
+      shortLabel = shortLabelsTH?.[key] || (() => {
+        const m = labels[key].match(/\(([^)]+)\)/);
+        return m ? m[1].slice(0, 13) : labels[key].slice(0, 13);
+      })();
+    } else {
+      shortLabel = shortLabels?.[key] || labels[key].split(' (')[0].slice(0, 16);
+    }
     rows.push({key, label: labels[key], shortLabel, solid:s, liquid:l, gas:g, total:t});
   }
   return {rows, totSolid, totLiq, totGas, totTotal: totSolid+totLiq+totGas};
@@ -3894,10 +5293,15 @@ function srBuildChart(rows, tab) {
   if (othTotal > 0) main.push({key:'others', label:TH?'อื่นๆ':'Others', shortLabel:TH?'อื่นๆ':'Others', total:othTotal, color:'#94a3b8'});
 
   // ── SVG dimensions ─────────────────────────────────────
-  // cx biased left to give right-side labels more room
-  const W=560, H=320, cx=200, cy=160, OR=110, IR=66;
+  // cx=260 shifts donut right so left labels clear the donut (donut left edge = cx-OR = 145)
+  const W=740, H=340, cx=260, cy=170, OR=115, IR=70;
   const ARC_DOT_R = OR + 6;   // dot attachment radius
   const LABEL_R   = OR + 22;  // initial connector radius
+  const ELBOW_EXTRA = 30;
+  const R_LINE_END = cx + OR + 10;  // 385 — just outside right donut edge
+  const L_LINE_END = cx - OR - 10;  // 135 — just outside left donut edge
+  const R_TEXT_X   = R_LINE_END + 5;   // 390
+  const L_TEXT_X   = L_LINE_END - 5;   // 130
 
   // ── Slices ─────────────────────────────────────────────
   let angle = -Math.PI / 2;
@@ -3939,7 +5343,7 @@ function srBuildChart(rows, tab) {
   const LEFT  = slices.filter(s => Math.cos(s.mid) < 0) .sort((a,b) => Math.sin(a.mid)-Math.sin(b.mid));
 
   function stackY(group) {
-    const MIN_GAP = 14;
+    const MIN_GAP = 22;
     const pts = group.map(s => ({ ...s, y: cy + LABEL_R * Math.sin(s.mid) }));
     for (let pass = 0; pass < 10; pass++) {
       for (let i = 1; i < pts.length; i++) {
@@ -3958,10 +5362,6 @@ function srBuildChart(rows, tab) {
   const rightPts = stackY(RIGHT);
   const leftPts  = stackY(LEFT);
 
-  // Anchor x for label text
-  const R_ANCHOR = W - 6;
-  const L_ANCHOR = 6;
-
   let labels = '';
 
   // ── Special case: single 100% slice — label inside hole ─
@@ -3974,34 +5374,34 @@ function srBuildChart(rows, tab) {
     </g>`;
   } else {
 
-  const ELBOW_EXTRA = 28;
-
   for (const p of rightPts) {
     const pct = ((p.total/total)*100).toFixed(1);
-    const lbl = p.shortLabel || p.label.split(' (')[0].slice(0,14);
+    const lbl = p.shortLabel || p.label.split(' (')[0].slice(0,16);
     const dotX = (cx + ARC_DOT_R * Math.cos(p.mid)).toFixed(1);
     const dotY = (cy + ARC_DOT_R * Math.sin(p.mid)).toFixed(1);
-    const elbX = Math.min(cx + LABEL_R * Math.cos(p.mid) + ELBOW_EXTRA, W - 130).toFixed(1);
-    const lineX = (R_ANCHOR - 5).toFixed(1);
+    // elbX stays left of R_LINE_END so horizontal tick goes rightward ──►
+    const elbX = Math.min(cx + LABEL_R * Math.cos(p.mid) + ELBOW_EXTRA, R_LINE_END - 8).toFixed(1);
     const delay = (p.idx * 55 + 300);
     labels += `<g style="opacity:0;animation:sr-fade-in .3s ease ${delay}ms forwards">
       <circle cx="${dotX}" cy="${dotY}" r="3" fill="${p.color}"/>
-      <polyline points="${dotX},${dotY} ${elbX},${p.y.toFixed(1)} ${lineX},${p.y.toFixed(1)}" fill="none" stroke="${p.color}" stroke-width="1.1" opacity=".6"/>
-      <text x="${R_ANCHOR}" y="${(p.y+3.5).toFixed(1)}" text-anchor="end" font-size="8.5" font-weight="600" fill="#334155" font-family="Sarabun,sans-serif">${escH(lbl)} ${pct}%</text>
+      <polyline points="${dotX},${dotY} ${elbX},${p.y.toFixed(1)} ${R_LINE_END},${p.y.toFixed(1)}" fill="none" stroke="${p.color}" stroke-width="1.1" opacity=".7"/>
+      <text x="${R_TEXT_X}" y="${(p.y-4).toFixed(1)}" text-anchor="start" font-size="10" font-weight="600" fill="#334155" font-family="Sarabun,sans-serif">${escH(lbl)}</text>
+      <text x="${R_TEXT_X}" y="${(p.y+8).toFixed(1)}" text-anchor="start" font-size="9.5" fill="#64748b" font-family="Sarabun,sans-serif">${pct}%</text>
     </g>`;
   }
   for (const p of leftPts) {
     const pct = ((p.total/total)*100).toFixed(1);
-    const lbl = p.shortLabel || p.label.split(' (')[0].slice(0,14);
+    const lbl = p.shortLabel || p.label.split(' (')[0].slice(0,13);
     const dotX = (cx + ARC_DOT_R * Math.cos(p.mid)).toFixed(1);
     const dotY = (cy + ARC_DOT_R * Math.sin(p.mid)).toFixed(1);
-    const elbX = Math.max(cx + LABEL_R * Math.cos(p.mid) - ELBOW_EXTRA, 130).toFixed(1);
-    const lineX = (L_ANCHOR + 5).toFixed(1);
+    // elbX stays right of L_LINE_END so horizontal tick goes leftward ◄──
+    const elbX = Math.max(cx + LABEL_R * Math.cos(p.mid) - ELBOW_EXTRA, L_LINE_END + 8).toFixed(1);
     const delay = (p.idx * 55 + 300);
     labels += `<g style="opacity:0;animation:sr-fade-in .3s ease ${delay}ms forwards">
       <circle cx="${dotX}" cy="${dotY}" r="3" fill="${p.color}"/>
-      <polyline points="${dotX},${dotY} ${elbX},${p.y.toFixed(1)} ${lineX},${p.y.toFixed(1)}" fill="none" stroke="${p.color}" stroke-width="1.1" opacity=".6"/>
-      <text x="${L_ANCHOR}" y="${(p.y+3.5).toFixed(1)}" text-anchor="start" font-size="8.5" font-weight="600" fill="#334155" font-family="Sarabun,sans-serif">${escH(lbl)} ${pct}%</text>
+      <polyline points="${dotX},${dotY} ${elbX},${p.y.toFixed(1)} ${L_LINE_END},${p.y.toFixed(1)}" fill="none" stroke="${p.color}" stroke-width="1.1" opacity=".7"/>
+      <text x="${L_TEXT_X}" y="${(p.y-4).toFixed(1)}" text-anchor="end" font-size="10" font-weight="600" fill="#334155" font-family="Sarabun,sans-serif">${escH(lbl)}</text>
+      <text x="${L_TEXT_X}" y="${(p.y+8).toFixed(1)}" text-anchor="end" font-size="9.5" fill="#64748b" font-family="Sarabun,sans-serif">${pct}%</text>
     </g>`;
   }
 
@@ -4051,8 +5451,8 @@ function srRender() {
   if (!srData) return;
   const {health_hazard, physical_hazard} = srData;
 
-  const h = srBuildRows(health_hazard, SR_HEALTH_LABELS, SR_HEALTH_SHORT);
-  const p = srBuildRows(physical_hazard, SR_PHYS_LABELS, SR_PHYS_SHORT);
+  const h = srBuildRows(health_hazard, SR_HEALTH_LABELS, SR_HEALTH_SHORT, SR_HEALTH_SHORT_TH);
+  const p = srBuildRows(physical_hazard, SR_PHYS_LABELS, SR_PHYS_SHORT, SR_PHYS_SHORT_TH);
 
   const hNonZero = h.rows.filter(r=>r.total>0).length;
   const pNonZero = p.rows.filter(r=>r.total>0).length;
@@ -4123,10 +5523,20 @@ async function srSliceClick(key, tab, color) {
   const list   = document.getElementById('srCpList');
   const footer = document.getElementById('srCpFooter');
 
-  // Derive label from known label maps
-  const labelMap = tab === 'health' ? SR_HEALTH_LABELS : SR_PHYS_LABELS;
-  const shortMap = tab === 'health' ? SR_HEALTH_SHORT  : SR_PHYS_SHORT;
-  const label = (shortMap[key] || (labelMap[key]||key).split('(')[0]).trim();
+  // Derive label from known label maps (language-aware)
+  const labelMap  = tab === 'health' ? SR_HEALTH_LABELS    : SR_PHYS_LABELS;
+  const shortMap  = tab === 'health' ? SR_HEALTH_SHORT      : SR_PHYS_SHORT;
+  const shortMapTH= tab === 'health' ? SR_HEALTH_SHORT_TH   : SR_PHYS_SHORT_TH;
+  let label;
+  if (TH) {
+    label = shortMapTH[key] || (() => {
+      const full = labelMap[key] || key;
+      const m = full.match(/\(([^)]+)\)/);
+      return m ? m[1].trim() : full.trim();
+    })();
+  } else {
+    label = (shortMap[key] || (labelMap[key]||key).split('(')[0]).trim();
+  }
 
   hdr.style.background = color;
   dot.style.background = 'rgba(255,255,255,0.35)';
@@ -4166,7 +5576,7 @@ function srShowChemPopup(data, label, color) {
     const ic = SR_STATE_IC[c.state] || SR_STATE_IC.solid;
     const hpills = (c.h_codes||[]).slice(0,3).map(h => `<span class="sr-cp-hpill">${escH(h)}</span>`).join('');
     const delay = i * 45;
-    return `<div class="sr-cp-item" style="animation-delay:${delay}ms">
+    return `<div class="sr-cp-item" style="animation-delay:${delay}ms" onclick="srOpenChemDetail(${c.id},'${escH(c.name).replace(/'/g,"\\'")}')">
       <div class="sr-cp-ic" style="background:${ic.bg};color:${ic.fg}"><i class="fas ${ic.icon}"></i></div>
       <div class="sr-cp-name">
         <div class="sr-cp-chem-name" title="${escH(c.name)}">${escH(c.name)}</div>
@@ -4176,6 +5586,7 @@ function srShowChemPopup(data, label, color) {
         <div class="sr-cp-qty">${srFmt(c.qty_kg)} kg</div>
         <div class="sr-cp-hcodes">${hpills}</div>
       </div>
+      <i class="fas fa-chevron-right sr-cp-arrow"></i>
     </div>`;
   }).join('');
 
@@ -4206,6 +5617,184 @@ async function srLoadMoreChems() {
     btn.disabled = false;
     btn.innerHTML = `<i class="fas fa-list"></i> <span id="srCpMoreLbl">${TH?'โหลดเพิ่ม...':'Load more...'}</span>`;
   }
+}
+
+/* ════════════════════════════════════════════════════════════
+   CHEMICAL DETAIL OVERLAY
+════════════════════════════════════════════════════════════ */
+async function srOpenChemDetail(chemId, chemName) {
+  const roomId = S.activeRoomId; if (!roomId) return;
+  const ov   = document.getElementById('srcdOv');
+  const body = document.getElementById('srcdBody');
+  const foot = document.getElementById('srcdFooter');
+  document.getElementById('srcdName').textContent = chemName || '—';
+  document.getElementById('srcdMeta').textContent = TH ? 'กำลังโหลด...' : 'Loading...';
+  foot.style.display = 'none';
+  body.innerHTML = `<div class="srcd-loading"><i class="fas fa-spinner fa-spin" style="font-size:22px;display:block;margin-bottom:10px"></i>${TH?'กำลังโหลดข้อมูล...':'Loading...'}</div>`;
+  ov.classList.add('show');
+  try {
+    const res = await apiFetch(`/v1/api/myroom.php?action=chem_detail&chemical_id=${chemId}&room_id=${roomId}`);
+    if (!res.success) throw new Error(res.error || 'fail');
+    srRenderChemDetail(res.data);
+  } catch(e) {
+    body.innerHTML = `<div class="srcd-loading" style="color:#ef4444"><i class="fas fa-exclamation-triangle" style="display:block;font-size:22px;margin-bottom:10px"></i>${escH(e.message)}</div>`;
+  }
+}
+
+function srCloseChemDetail() {
+  document.getElementById('srcdOv').classList.remove('show');
+}
+
+function srcdToggle(el) {
+  el.closest('.srcd-sec').classList.toggle('open');
+}
+
+function srRenderChemDetail(d) {
+  // ── Header meta ───────────────────────────────────────────
+  document.getElementById('srcdName').textContent = d.name || '—';
+  const metaParts = [];
+  if (d.cas)     metaParts.push(`CAS ${d.cas}`);
+  if (d.formula) metaParts.push(d.formula);
+  if (d.weight)  metaParts.push(`MW ${d.weight}`);
+  document.getElementById('srcdMeta').textContent = metaParts.join('  ·  ') || '—';
+
+  // ── GHS Banner ────────────────────────────────────────────
+  const picsHtml = (d.pictograms||[]).length
+    ? (d.pictograms).map(code => {
+        const g = SRCD_GHS[code]; if (!g) return '';
+        const lbl = TH ? g.th : g.en;
+        return `<div class="srcd-ghs-item">
+          <div class="srcd-ghs-diamond"><i class="fas ${g.icon}"></i></div>
+          <div class="srcd-ghs-lbl">${escH(lbl)}</div>
+        </div>`;
+      }).join('')
+    : `<span class="srcd-no-ghs">${TH?'ไม่มีข้อมูล GHS':'No GHS data'}</span>`;
+
+  const sigCls = d.signal_word === 'Danger' ? 'danger' : d.signal_word === 'Warning' ? 'warning' : '';
+  const sigHtml = d.signal_word && sigCls
+    ? `<div class="srcd-signal ${sigCls}">${d.signal_word === 'Danger' ? (TH?'⚠ อันตราย':'⚠ DANGER') : (TH?'⚡ ระวัง':'⚡ WARNING')}</div>` : '';
+
+  // ── Info pills ────────────────────────────────────────────
+  const stateLabels = {solid:TH?'ของแข็ง':'Solid', liquid:TH?'ของเหลว':'Liquid', gas:TH?'แก็ส':'Gas'};
+  const statePills = `<span class="srcd-pill"><i class="fas fa-atom"></i>${escH(stateLabels[d.state]||d.state)}</span>`;
+  const qtyPill = d.room_qty_kg > 0
+    ? `<span class="srcd-pill blue"><i class="fas fa-weight"></i>${srFmt(d.room_qty_kg)} kg · ${d.container_count} ${TH?'ภาชนะ':'containers'}</span>` : '';
+  const appPill = d.appearance ? `<span class="srcd-pill"><i class="fas fa-eye"></i>${escH(d.appearance)}</span>` : '';
+  const odorPill = d.odor ? `<span class="srcd-pill"><i class="fas fa-wind"></i>${escH(d.odor)}</span>` : '';
+
+  // ── H-code section ────────────────────────────────────────
+  const hRows = (d.h_codes||[]).map(h => {
+    const en = d.h_stmt_full?.[h] || H_EN[h] || '';
+    const th = H_TH[h] || '';
+    const cat = h.startsWith('H2') ? 'H2' : h.startsWith('H3') ? 'H3' : h.startsWith('H4') ? 'H4' : 'Hx';
+    const desc = TH && th ? `<div class="srcd-hdesc">${escH(th)}</div><div class="srcd-hdesc-th" style="font-size:10.5px;color:#94a3b8">${escH(en)}</div>`
+                          : `<div class="srcd-hdesc">${escH(en || h)}</div>`;
+    return `<div class="srcd-hrow"><span class="srcd-hbadge ${cat}">${escH(h)}</span><div>${desc}</div></div>`;
+  }).join('');
+
+  // ── P-code section ────────────────────────────────────────
+  const pPills = (d.p_codes||[]).map(p => `<span class="srcd-ppill">${escH(p)}</span>`).join('');
+
+  // ── SDS helper ───────────────────────────────────────────
+  const field = (lbl, val, icon='fa-info-circle') => !val ? '' :
+    `<div class="srcd-field">
+      <div class="srcd-field-lbl"><i class="fas ${icon}"></i>${escH(lbl)}</div>
+      <div class="srcd-field-val">${escH(val)}</div>
+    </div>`;
+
+  // ── Physical props ────────────────────────────────────────
+  const prop = (lbl, val, unit='') => val !== null && val !== undefined && val !== ''
+    ? `<div class="srcd-prop"><div class="srcd-prop-lbl">${escH(lbl)}</div><div class="srcd-prop-val">${val}${unit?`<span style="font-size:10px;font-weight:400;color:#64748b"> ${unit}</span>`:''}</div></div>`
+    : '';
+  const physProps = [
+    prop(TH?'จุดเดือด':'Boiling Pt.', d.boiling_point, '°C'),
+    prop(TH?'จุดหลอมเหลว':'Melting Pt.', d.melting_point, '°C'),
+    prop(TH?'จุดวาบไฟ':'Flash Pt.', d.flash_point, '°C'),
+    prop(TH?'ความหนาแน่น':'Density', d.density, 'g/mL'),
+    prop(TH?'น้ำหนักโมเลกุล':'Mol. Weight', d.weight, 'g/mol'),
+  ].filter(Boolean).join('');
+
+  // ── First aid content ─────────────────────────────────────
+  const fa = d.first_aid || {};
+  const faHtml = [
+    field(TH?'สูดดม':'Inhalation', fa.inhalation, 'fa-lungs'),
+    field(TH?'สัมผัสผิวหนัง':'Skin contact', fa.skin, 'fa-hand-sparkles'),
+    field(TH?'สัมผัสดวงตา':'Eye contact', fa.eye, 'fa-eye'),
+    field(TH?'กลืนกิน':'Ingestion', fa.ingestion, 'fa-pills'),
+  ].filter(Boolean).join('') || `<div class="srcd-empty">${TH?'ไม่มีข้อมูล':'No data available'}</div>`;
+
+  // ── Fire content ──────────────────────────────────────────
+  const fire = d.fire || {};
+  const fireHtml = [
+    field(TH?'สารดับเพลิงที่ใช้ได้':'Suitable extinguishing', fire.suitable, 'fa-fire-extinguisher'),
+    field(TH?'สารดับเพลิงที่ห้ามใช้':'Unsuitable extinguishing', fire.unsuitable, 'fa-ban'),
+    field(TH?'อันตรายพิเศษจากไฟ':'Special fire hazards', fire.special, 'fa-exclamation-circle'),
+  ].filter(Boolean).join('') || `<div class="srcd-empty">${TH?'ไม่มีข้อมูล':'No data available'}</div>`;
+
+  // ── Storage/handling content ──────────────────────────────
+  const stoHtml = [
+    field(TH?'การจัดเก็บ':'Storage', d.storage, 'fa-warehouse'),
+    field(TH?'การจัดการ':'Handling', d.handling, 'fa-hands'),
+    field(TH?'การกำจัด':'Disposal', d.disposal, 'fa-trash-alt'),
+  ].filter(Boolean).join('') || `<div class="srcd-empty">${TH?'ไม่มีข้อมูล':'No data available'}</div>`;
+
+  // ── Transport content ─────────────────────────────────────
+  const tr = d.transport || {};
+  const trHtml = [
+    field(TH?'UN Number':'UN Number', tr.un_number, 'fa-hashtag'),
+    field(TH?'ชื่อการขนส่ง':'Proper shipping name', tr.proper_name, 'fa-truck'),
+    field(TH?'ประเภทอันตราย':'Hazard class', tr.hazard_class, 'fa-tag'),
+    field(TH?'กลุ่มบรรจุ':'Packing group', tr.packing_group, 'fa-box'),
+  ].filter(Boolean).join('') || `<div class="srcd-empty">${TH?'ไม่มีข้อมูล':'No data available'}</div>`;
+
+  // ── PPE / toxicity content ────────────────────────────────
+  const ppeHtml = [
+    field(TH?'อุปกรณ์ป้องกันส่วนบุคคล (PPE)':'Personal Protective Equipment (PPE)', d.ppe, 'fa-hard-hat'),
+    field('LD50', d.ld50, 'fa-vial'),
+    field('LC50', d.lc50, 'fa-flask'),
+    field(TH?'ค่าขีดจำกัดการรับสัมผัส':'Exposure limits', d.exposure_limits, 'fa-lungs-virus'),
+  ].filter(Boolean).join('') || `<div class="srcd-empty">${TH?'ไม่มีข้อมูล':'No data available'}</div>`;
+
+  // ── Section builder ───────────────────────────────────────
+  const sec = (title, icon, iconBg, iconColor, body, count='', openByDefault=false) => `
+    <div class="srcd-sec${openByDefault?' open':''}">
+      <div class="srcd-sec-hdr" onclick="srcdToggle(this)">
+        <div class="srcd-sec-ic" style="background:${iconBg};color:${iconColor}"><i class="fas ${icon}"></i></div>
+        <span class="srcd-sec-label">${title}</span>
+        ${count ? `<span class="srcd-sec-count">${count}</span>` : ''}
+        <i class="fas fa-chevron-down srcd-sec-chev"></i>
+      </div>
+      <div class="srcd-sec-body">${body}</div>
+    </div>`;
+
+  const hCount = (d.h_codes||[]).length;
+  const pCount = (d.p_codes||[]).length;
+
+  // ── Assemble body ─────────────────────────────────────────
+  document.getElementById('srcdBody').innerHTML = `
+    <div class="srcd-ghs-banner">
+      <div class="srcd-pics">${picsHtml}</div>
+      ${sigHtml}
+    </div>
+    <div class="srcd-info-row">${statePills}${qtyPill}${appPill}${odorPill}</div>
+    ${hCount ? sec(TH?'⚠ Hazard Statements':'⚠ Hazard Statements','fa-radiation','#fef2f2','#dc2626',`<div class="srcd-hlist">${hRows}</div>`,hCount,true) : ''}
+    ${pCount ? sec(TH?'P Precautionary Statements':'P Precautionary Statements','fa-shield-alt','#eff6ff','#1e40af',`<div class="srcd-pcodes">${pPills}</div><div style="font-size:10.5px;color:#94a3b8;margin-top:8px">${TH?'รหัส P แสดงมาตรการป้องกัน':'P-codes indicate precautionary measures'}</div>`,pCount) : ''}
+    ${sec(TH?'การปฐมพยาบาล':'First Aid','fa-first-aid','#f0fdf4','#16a34a',faHtml)}
+    ${sec(TH?'การเก็บรักษาและการจัดการ':'Storage & Handling','fa-warehouse','#fffbeb','#d97706',stoHtml)}
+    ${sec(TH?'การดับเพลิง':'Fire Fighting','fa-fire-extinguisher','#fef2f2','#dc2626',fireHtml)}
+    ${physProps ? sec(TH?'คุณสมบัติทางกายภาพ':'Physical Properties','fa-atom','#f5f3ff','#7c3aed',`<div class="srcd-props-grid">${physProps}</div>`) : ''}
+    ${sec(TH?'การขนส่ง':'Transport','fa-truck','#f0f9ff','#0369a1',trHtml)}
+    ${sec(TH?'PPE และความเป็นพิษ':'PPE & Toxicity','fa-hard-hat','#fdf4ff','#9333ea',ppeHtml)}
+  `;
+
+  // ── Footer ────────────────────────────────────────────────
+  const foot = document.getElementById('srcdFooter');
+  const src  = document.getElementById('srcdSrc');
+  const srcParts = [];
+  if (d.source) srcParts.push(d.source);
+  if (d.sds_last_updated) srcParts.push((TH?'อัปเดต:':'Updated:') + ' ' + d.sds_last_updated);
+  src.textContent = srcParts.join(' · ');
+  foot.style.display = srcParts.length ? 'flex' : 'none';
 }
 
 function srPrint() {
@@ -4258,5 +5847,140 @@ function srPrintTable(rows, totSolid, totLiq, totGas, totTotal) {
     <tfoot><tr><td>ปริมาณรวมทั้งหมด (kg)*:</td><td>${srFmt(totSolid)}</td><td>${srFmt(totLiq)}</td><td>${srFmt(totGas)}</td><td>${srFmt(totTotal)}</td></tr></tfoot></table>`;
 }
 </script>
+
+<!-- ═══ Revoke Access Modal ═══ -->
+<div class="mr-modal-ov" id="modalRevoke">
+  <div class="mr-modal" style="max-width:440px;overflow:visible">
+    <div class="mr-revoke-hdr">
+      <div class="mr-revoke-hdr-ic"><i class="fas fa-user-minus"></i></div>
+      <div class="mr-revoke-hdr-body">
+        <div class="mr-revoke-hdr-title">ถอนสิทธิ์การใช้ห้อง</div>
+        <div class="mr-revoke-hdr-sub">การดำเนินการนี้จะลบสิทธิ์เข้าถึงทันที</div>
+      </div>
+      <button class="mr-revoke-hdr-close" onclick="closeModal('modalRevoke')">&times;</button>
+    </div>
+    <div class="mr-modal-body" style="gap:14px;background:#fff;border-radius:0 0 var(--stk-r) var(--stk-r)">
+      <!-- User info card -->
+      <div class="mr-revoke-user-card">
+        <div class="mr-revoke-user-av" id="revokeUserAv"></div>
+        <div style="flex:1;min-width:0">
+          <div class="mr-revoke-user-nm" id="revokeUserNm">—</div>
+          <div class="mr-revoke-user-role" id="revokeUserRole"></div>
+          <div class="mr-revoke-user-email" id="revokeUserEmail"></div>
+        </div>
+      </div>
+      <!-- Room pill -->
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--c3)">
+        <i class="fas fa-door-open" style="color:#4338ca"></i>
+        <span>จะถูกถอนสิทธิ์ออกจากห้อง</span>
+        <span class="mr-revoke-room-pill"><i class="fas fa-map-marker-alt" style="font-size:9px"></i><span id="revokeRoomPill">—</span></span>
+      </div>
+      <!-- Warning -->
+      <div class="mr-revoke-warn">
+        <div class="mr-revoke-warn-ic"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="mr-revoke-warn-txt">
+          <strong>ผลกระทบ</strong>
+          <span id="revokeWarnName">ผู้ใช้</span> จะไม่สามารถเข้าถึงข้อมูลในห้องนี้ได้อีกทันที หากต้องการกลับเข้าถึงจะต้องส่งคำขอใหม่
+        </div>
+      </div>
+    </div>
+    <div class="mr-modal-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;border-radius:0 0 var(--stk-r) var(--stk-r)">
+      <button class="mr-revoke-cancel-btn" onclick="closeModal('modalRevoke')">
+        <i class="fas fa-arrow-left" style="font-size:11px"></i> ยกเลิก
+      </button>
+      <button class="mr-revoke-confirm-btn" id="btnConfirmRevoke" onclick="confirmRevoke()">
+        <i class="fas fa-user-minus"></i> ยืนยันถอนสิทธิ์
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Reject Request Modal ═══ -->
+<div class="mr-modal-ov" id="modalReject">
+  <div class="mr-modal" style="max-width:460px">
+    <div class="mr-reject-hdr">
+      <div class="mr-reject-hdr-ic"><i class="fas fa-times"></i></div>
+      <div>
+        <div class="mr-reject-hdr-title">ปฏิเสธคำขอ</div>
+        <div class="mr-reject-hdr-sub">ระบุเหตุผล (ถ้ามี) แล้วยืนยันการปฏิเสธ</div>
+      </div>
+      <button class="mr-reject-hdr-close" onclick="closeModal('modalReject')">&times;</button>
+    </div>
+    <div class="mr-modal-body" style="gap:12px">
+      <!-- User card -->
+      <div class="mr-reject-user-card">
+        <div class="mr-reject-user-av" id="rejectUserAv"></div>
+        <div style="flex:1;min-width:0">
+          <div class="mr-reject-user-nm" id="rejectUserNm">—</div>
+          <div class="mr-reject-user-em" id="rejectUserEm">—</div>
+        </div>
+        <div class="mr-reject-room-tag" id="rejectRoomTag">—</div>
+      </div>
+      <!-- Request message (shown only if present) -->
+      <div class="mr-reject-msg-box" id="rejectMsgBox" style="display:none">
+        <i class="fas fa-quote-left" style="opacity:.5;font-size:11px;margin-top:2px;flex-shrink:0"></i>
+        <span id="rejectMsgText"></span>
+      </div>
+      <!-- Note -->
+      <div>
+        <label style="display:block;font-size:11px;font-weight:700;color:#991b1b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+          <i class="fas fa-comment-alt" style="margin-right:4px"></i>เหตุผลการปฏิเสธ <span style="font-weight:400;opacity:.6">(ไม่บังคับ)</span>
+        </label>
+        <textarea class="mr-reject-textarea" id="rejectNote" placeholder="เช่น ยังไม่ได้รับการอนุมัติจากหัวหน้าภาค / ห้องนี้ไม่รับผู้ใช้ใหม่ในขณะนี้..."></textarea>
+      </div>
+    </div>
+    <div class="mr-modal-footer" style="background:#fef2f2;border-top:1px solid #fecaca;border-radius:0 0 var(--stk-r) var(--stk-r)">
+      <button class="mr-reject-cancel" onclick="closeModal('modalReject')"><i class="fas fa-arrow-left" style="font-size:11px"></i> ยกเลิก</button>
+      <button class="mr-reject-btn" id="btnConfirmReject" onclick="confirmReject()">
+        <i class="fas fa-times-circle"></i> ยืนยันปฏิเสธ
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Remove Co-Admin Modal ═══ -->
+<div class="mr-modal-ov" id="modalRmAdmin">
+  <div class="mr-modal" style="max-width:440px;overflow:visible">
+    <div class="mr-rmadm-hdr">
+      <div class="mr-rmadm-hdr-ic"><i class="fas fa-user-slash"></i></div>
+      <div class="mr-rmadm-hdr-body">
+        <div class="mr-rmadm-hdr-title">ลบผู้ดูแลร่วม</div>
+        <div class="mr-rmadm-hdr-sub">ผู้ใช้จะสูญเสียสิทธิ์การจัดการห้องทันที</div>
+      </div>
+      <button class="mr-rmadm-hdr-close" onclick="closeModal('modalRmAdmin')">&times;</button>
+    </div>
+    <div class="mr-modal-body" style="gap:14px;background:#fff;border-radius:0 0 var(--stk-r) var(--stk-r)">
+      <!-- User info card -->
+      <div class="mr-rmadm-user-card">
+        <div class="mr-rmadm-user-av" id="rmAdmUserAv"></div>
+        <div style="flex:1;min-width:0">
+          <div class="mr-rmadm-user-nm" id="rmAdmUserNm">—</div>
+          <div class="mr-rmadm-user-sub" id="rmAdmUserEmail"></div>
+          <div><span class="mr-rmadm-co-badge"><i class="fas fa-shield-alt" style="font-size:9px"></i> ผู้ดูแลร่วม</span></div>
+        </div>
+      </div>
+      <!-- Room label -->
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--c3)">
+        <i class="fas fa-door-open" style="color:#6d28d9"></i>
+        <span>จะถูกถอดออกจากห้อง</span>
+        <span class="mr-rmadm-room-pill"><i class="fas fa-map-marker-alt" style="font-size:9px"></i><span id="rmAdmRoomPill">—</span></span>
+      </div>
+      <!-- Warning -->
+      <div class="mr-rmadm-warn">
+        <div class="mr-rmadm-warn-ic"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="mr-rmadm-warn-txt">
+          <strong>หมายเหตุ</strong>
+          ผู้ดูแลร่วมจะไม่สามารถจัดการห้อง อนุมัติคำขอ หรือดูข้อมูลที่ถูกจำกัดได้อีกต่อไป — อย่างไรก็ตาม สิทธิ์การเข้าใช้ห้องยังคงอยู่
+        </div>
+      </div>
+    </div>
+    <div class="mr-modal-footer" style="background:#f5f3ff;border-top:1px solid #ddd6fe;border-radius:0 0 var(--stk-r) var(--stk-r)">
+      <button class="mr-rmadm-cancel-btn" onclick="closeModal('modalRmAdmin')"><i class="fas fa-arrow-left" style="font-size:11px"></i> ยกเลิก</button>
+      <button class="mr-rmadm-confirm-btn" id="btnConfirmRmAdmin" onclick="confirmRmAdmin()">
+        <i class="fas fa-user-slash"></i> ลบผู้ดูแลร่วมออก
+      </button>
+    </div>
+  </div>
+</div>
 
 <?php Layout::endContent(); ?>

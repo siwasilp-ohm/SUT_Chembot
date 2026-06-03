@@ -844,6 +844,74 @@ Layout::head('ข้อมูลสารเคมี Master');
 .ar-anchor-pill{display:none;align-items:center;gap:6px;justify-content:center;padding:6px 14px;border-radius:10px;background:rgba(108,92,231,.1);border:1px solid rgba(108,92,231,.15);font-size:11px;font-weight:600;color:#a78bfa;animation:arAnchorGlow 2s ease-in-out infinite}
 .ar-anchor-pill.show{display:flex}
 @keyframes arAnchorGlow{0%,100%{border-color:rgba(108,92,231,.15)}50%{border-color:rgba(108,92,231,.4)}}
+
+/* ═══ GHS Auto-Lookup Panel ═══ */
+.ghs-auto-panel{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1.5px solid #bae6fd;border-radius:12px;margin-bottom:20px;overflow:hidden}
+.ghs-auto-hdr{display:flex;align-items:center;gap:12px;padding:14px 16px;flex-wrap:wrap;gap:10px}
+.ghs-auto-hdr-left{display:flex;align-items:center;gap:10px;flex:1;min-width:200px}
+.ghs-auto-hdr-ic{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#0284c7,#38bdf8);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ghs-auto-title{font-size:13px;font-weight:800;color:#0c4a6e}
+.ghs-auto-sub{font-size:10px;color:#0369a1;margin-top:1px}
+.ghs-auto-search{display:flex;gap:6px;align-items:center;flex:1;min-width:220px}
+.ghs-auto-inp{flex:1;padding:7px 11px;border:1.5px solid #bae6fd;border-radius:8px;font-size:12px;font-family:inherit;background:#fff;color:#0c4a6e;outline:none;transition:border .15s}
+.ghs-auto-inp:focus{border-color:#0284c7;box-shadow:0 0 0 3px rgba(2,132,199,.12)}
+.ghs-auto-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:linear-gradient(135deg,#0284c7,#0369a1);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.ghs-auto-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.ghs-auto-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.ghs-auto-result{border-top:1px solid #bae6fd;background:#fff}
+
+/* Result states */
+.ghs-auto-fetching{padding:16px;text-align:center;color:#0369a1;font-size:12px;display:flex;align-items:center;justify-content:center;gap:8px}
+.ghs-auto-err{padding:14px 16px;background:#fef2f2;color:#dc2626;font-size:12px;display:flex;align-items:center;gap:8px;border-top:1px solid #fecaca}
+.ghs-auto-err i{font-size:14px;flex-shrink:0}
+
+/* Found result */
+.ghs-auto-found{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.ghs-auto-found-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ghs-cid-badge{display:inline-flex;align-items:center;gap:5px;background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700}
+.ghs-pubchem-link{display:inline-flex;align-items:center;gap:4px;color:#0284c7;font-size:11px;font-weight:600;text-decoration:none}
+.ghs-pubchem-link:hover{text-decoration:underline}
+.ghs-auto-props{display:flex;gap:12px;flex-wrap:wrap;margin-left:auto}
+.ghs-auto-prop{font-size:10px;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:6px;border:1px solid #e2e8f0}
+.ghs-auto-prop b{color:#334155}
+
+/* Sections */
+.ghs-auto-sec{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px}
+.ghs-auto-sec-hdr{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.ghs-auto-sec-label{font-size:11px;font-weight:700;color:#475569}
+.ghs-auto-cnt{background:#e0f2fe;color:#0284c7;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700}
+.ghs-auto-no-data{font-size:11px;color:#94a3b8;font-style:italic}
+
+/* Pictogram preview chips */
+.ghs-auto-pics{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ghs-auto-pic-chip{display:flex;align-items:center;gap:4px;background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;padding:4px 8px;font-size:10px;font-weight:600;color:#334155}
+.ghs-auto-pic-chip img{width:22px;height:22px}
+
+/* Signal word */
+.ghs-sw-danger{display:inline-flex;align-items:center;gap:5px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:800}
+.ghs-sw-warning{display:inline-flex;align-items:center;gap:5px;background:#fffbeb;border:1px solid #fde68a;color:#d97706;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:800}
+.ghs-sw-none{display:inline-flex;align-items:center;gap:5px;background:#f1f5f9;border:1px solid #e2e8f0;color:#64748b;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:700}
+
+/* Statements preview */
+.ghs-stmts-preview{display:flex;flex-direction:column;gap:3px;max-height:100px;overflow-y:auto}
+.ghs-stmt-chip{font-size:11px;color:#374151;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:3px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Experimental properties grid */
+.ghs-exp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
+.ghs-exp-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px}
+.ghs-exp-lbl{font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px}
+.ghs-exp-val{font-size:12px;font-weight:700;color:#1e293b;margin-top:2px;word-break:break-word}
+
+/* Import bar */
+.ghs-auto-import-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;flex-wrap:wrap}
+.ghs-auto-import-note{font-size:11px;color:#15803d;display:flex;align-items:center;gap:5px}
+.ghs-import-all-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;box-shadow:0 2px 10px rgba(22,163,74,.25)}
+.ghs-import-all-btn:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 4px 16px rgba(22,163,74,.4)}
+.ghs-source-attr{font-size:10px;color:#94a3b8;text-align:right}
+
+/* Applied flash animation */
+@keyframes ghsApplied{0%{background:#dcfce7}100%{background:transparent}}
+.ghs-applied{animation:ghsApplied 1.2s ease-out}
 </style>
 
 <?php Layout::endContent(); ?>
@@ -2762,9 +2830,16 @@ async function submitModelRequest(e, chemId) {
     }
 }
 
+let _ghsAutoMeta = {};
+let _ghsAutoFetched = null;
+
 // ═══════ GHS Editor ═══════
 async function showGhsEditor(chemId) {
     closeDetail();
+    const chem = (currentDetail?.id == chemId ? currentDetail : null) || chemicals.find(c => +c.id === +chemId) || {};
+    _ghsAutoMeta = { cas: chem.cas_number || '', name: chem.name || '', id: chemId };
+    _ghsAutoFetched = null;
+
     document.getElementById('ghsTitle').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#ef4444"></i> แก้ไข GHS / Safety Data';
     document.getElementById('ghsBody').innerHTML = '<div class="ci-loading" style="padding:40px"><div class="ci-spinner"></div></div>';
     document.getElementById('ghsModal').classList.add('show');
@@ -2773,8 +2848,32 @@ async function showGhsEditor(chemId) {
         const d = await apiFetch('/v1/api/chemicals.php?action=ghs&chemical_id=' + chemId);
         const ghs = d.data || {};
         const pics = ghs.ghs_pictograms || [];
+        const autoQ = esc(_ghsAutoMeta.cas || _ghsAutoMeta.name);
 
         let html = `<form id="ghsForm" onsubmit="saveGhs(event,${chemId})">
+
+        <!-- ── Auto-Lookup Panel ── -->
+        <div class="ghs-auto-panel">
+          <div class="ghs-auto-hdr">
+            <div class="ghs-auto-hdr-left">
+              <div class="ghs-auto-hdr-ic"><i class="fas fa-database"></i></div>
+              <div>
+                <div class="ghs-auto-title"><i class="fas fa-magic" style="margin-right:4px;font-size:10px"></i>ค้นหา GHS อัตโนมัติ</div>
+                <div class="ghs-auto-sub">ดึงข้อมูลจาก PubChem (NCBI) — ฟรี ไม่ต้องล็อกอิน</div>
+              </div>
+            </div>
+            <div class="ghs-auto-search">
+              <input type="text" id="ghsAutoQuery" class="ghs-auto-inp"
+                     value="${autoQ}"
+                     placeholder="CAS number หรือชื่อสาร...">
+              <button type="button" class="ghs-auto-btn" id="ghsAutoBtn" onclick="fetchGhsAuto()">
+                <i class="fas fa-search"></i> ค้นหา
+              </button>
+            </div>
+          </div>
+          <div id="ghsAutoResult"></div>
+        </div>
+
         <!-- GHS Pictograms -->
         <div style="margin-bottom:20px">
             <label style="font-size:13px;font-weight:600;color:#333;display:block;margin-bottom:8px">GHS Pictograms <span style="color:#aaa;font-weight:400">— คลิกเพื่อเลือก</span></label>
@@ -2791,8 +2890,8 @@ async function showGhsEditor(chemId) {
         <!-- Signal Word -->
         <div class="cm-field">
             <label>Signal Word <span class="req">*</span></label>
-            <select name="signal_word">
-                <option value="None" ${ghs.signal_word==='None'?'selected':''}>None</option>
+            <select name="signal_word" id="ghsSignalWord">
+                <option value="None" ${ghs.signal_word==='None'||!ghs.signal_word?'selected':''}>None</option>
                 <option value="Warning" ${ghs.signal_word==='Warning'?'selected':''}>⚠️ Warning</option>
                 <option value="Danger" ${ghs.signal_word==='Danger'?'selected':''}>🔴 Danger</option>
             </select>
@@ -2802,11 +2901,11 @@ async function showGhsEditor(chemId) {
         <div class="cm-field-row">
             <div class="cm-field">
                 <label>H-Statements (Hazard)</label>
-                <textarea name="h_statements_text" placeholder="เช่น H302: Harmful if swallowed">${esc(ghs.h_statements_text||'')}</textarea>
+                <textarea name="h_statements_text" id="ghsHText" placeholder="เช่น H302: Harmful if swallowed">${esc(ghs.h_statements_text||'')}</textarea>
             </div>
             <div class="cm-field">
                 <label>P-Statements (Precautionary)</label>
-                <textarea name="p_statements_text" placeholder="เช่น P264: Wash hands thoroughly">${esc(ghs.p_statements_text||'')}</textarea>
+                <textarea name="p_statements_text" id="ghsPText" placeholder="เช่น P264: Wash hands thoroughly">${esc(ghs.p_statements_text||'')}</textarea>
             </div>
         </div>
 
@@ -2857,7 +2956,7 @@ async function showGhsEditor(chemId) {
                 <div class="cm-field"><label>LC50</label><input type="text" name="lc50" value="${esc(ghs.lc50||'')}" placeholder="e.g. 3000 ppm (inhalation, rat)"></div>
             </div>
             <div class="cm-field"><label>Exposure Limits</label><textarea name="exposure_limits" rows="2">${esc(ghs.exposure_limits||'')}</textarea></div>
-            <div class="cm-field"><label>Source / แหล่งข้อมูล</label><input type="text" name="source" value="${esc(ghs.source||'')}" placeholder="เช่น PubChem, Merck SDS"></div>
+            <div class="cm-field"><label>Source / แหล่งข้อมูล</label><input type="text" name="source" id="ghsSource" value="${esc(ghs.source||'')}" placeholder="เช่น PubChem, Merck SDS"></div>
         </div>
 
         <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0">
@@ -2867,11 +2966,201 @@ async function showGhsEditor(chemId) {
         </form>`;
 
         document.getElementById('ghsBody').innerHTML = html;
+
+        // Auto-search if no existing GHS data and we have a query
+        if (!ghs.signal_word && !pics.length && (_ghsAutoMeta.cas || _ghsAutoMeta.name)) {
+            fetchGhsAuto();
+        }
     } catch(e) { document.getElementById('ghsBody').innerHTML = `<div style="padding:20px;color:red">${e.message}</div>`; }
 }
 
 function toggleGhsPic(el) {
     el.classList.toggle('active');
+}
+
+async function fetchGhsAuto() {
+    const resultEl = document.getElementById('ghsAutoResult');
+    const btn = document.getElementById('ghsAutoBtn');
+    const query = document.getElementById('ghsAutoQuery')?.value.trim();
+    if (!query) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังค้นหา...';
+    resultEl.innerHTML = `<div class="ghs-auto-fetching"><i class="fas fa-circle-notch fa-spin"></i> กำลังเชื่อมต่อ PubChem...</div>`;
+
+    try {
+        const isCas = /^\d{1,7}-\d{2}-\d$/.test(query);
+        const body = isCas ? { cas_number: query, chemical_name: '' } : { cas_number: '', chemical_name: query };
+        const d = await apiFetch('/v1/api/chemicals.php?action=fetch_ghs_data', { method: 'POST', body: JSON.stringify(body) });
+        if (!d.success) throw new Error(d.error || 'ไม่พบข้อมูล');
+        _ghsAutoFetched = d.data;
+        renderGhsAutoResult(d.data);
+    } catch(e) {
+        resultEl.innerHTML = `<div class="ghs-auto-err"><i class="fas fa-exclamation-circle"></i> ${esc(e.message)}</div>`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-search"></i> ค้นหา';
+    }
+}
+
+function renderGhsAutoResult(data) {
+    const el = document.getElementById('ghsAutoResult');
+    if (!el) return;
+    const ghs = data.ghs || {};
+    const exp = data.experimental || {};
+    const pics = ghs.pictograms || [];
+    const hstmts = ghs.h_statements || [];
+    const pstmts = ghs.p_statements || [];
+
+    // Pictogram chips
+    const picsHtml = pics.length
+        ? pics.map(code => {
+            const info = GHS_PICTOGRAMS[code];
+            return info ? `<div class="ghs-auto-pic-chip"><img src="${info.img}" alt="${code}"><span>${code}</span><span style="color:#94a3b8;font-size:9px">${info.desc}</span></div>` : '';
+          }).join('')
+        : `<span class="ghs-auto-no-data">ไม่พบข้อมูล Pictogram</span>`;
+
+    // Signal word
+    const sw = ghs.signal_word || '';
+    const swHtml = sw === 'Danger'
+        ? `<span class="ghs-sw-danger"><i class="fas fa-exclamation-circle"></i> Danger</span>`
+        : sw === 'Warning'
+            ? `<span class="ghs-sw-warning"><i class="fas fa-exclamation-triangle"></i> Warning</span>`
+            : `<span class="ghs-sw-none">None / ไม่พบ</span>`;
+
+    // Statements
+    const hHtml = hstmts.length
+        ? `<div class="ghs-stmts-preview">${hstmts.slice(0,6).map(s=>`<div class="ghs-stmt-chip">${esc(s)}</div>`).join('')}${hstmts.length>6?`<div class="ghs-stmt-chip" style="color:#94a3b8;font-style:italic">+${hstmts.length-6} รายการ...</div>`:''}</div>`
+        : `<span class="ghs-auto-no-data">ไม่พบข้อมูล</span>`;
+    const pHtml = pstmts.length
+        ? `<div class="ghs-stmts-preview">${pstmts.slice(0,5).map(s=>`<div class="ghs-stmt-chip">${esc(s)}</div>`).join('')}${pstmts.length>5?`<div class="ghs-stmt-chip" style="color:#94a3b8;font-style:italic">+${pstmts.length-5} รายการ...</div>`:''}</div>`
+        : `<span class="ghs-auto-no-data">ไม่พบข้อมูล</span>`;
+
+    // Experimental
+    const expKeys = {boiling_point:'Boiling Pt.',melting_point:'Melting Pt.',flash_point:'Flash Pt.',density:'Density',solubility:'Solubility',vapor_pressure:'Vapor P.'};
+    const expHtml = Object.keys(expKeys).filter(k=>exp[k]).map(k=>`<div class="ghs-exp-card"><div class="ghs-exp-lbl">${expKeys[k]}</div><div class="ghs-exp-val">${esc(exp[k])}</div></div>`).join('');
+
+    // Props
+    const propsHtml = [
+        data.molecular_formula ? `<span class="ghs-auto-prop">Formula: <b>${esc(data.molecular_formula)}</b></span>` : '',
+        data.molecular_weight  ? `<span class="ghs-auto-prop">MW: <b>${esc(data.molecular_weight)} g/mol</b></span>` : '',
+    ].filter(Boolean).join('');
+
+    el.innerHTML = `
+    <div class="ghs-auto-found">
+      <div class="ghs-auto-found-top">
+        <span class="ghs-cid-badge"><i class="fas fa-check-circle"></i> PubChem CID: ${data.cid}</span>
+        <a href="${esc(data.pubchem_url)}" target="_blank" class="ghs-pubchem-link"><i class="fas fa-external-link-alt" style="font-size:9px"></i> ดูใน PubChem</a>
+        ${propsHtml ? `<div class="ghs-auto-props">${propsHtml}</div>` : ''}
+      </div>
+
+      <div class="ghs-auto-sec">
+        <div class="ghs-auto-sec-hdr">
+          <span class="ghs-auto-sec-label"><i class="fas fa-image" style="color:#f59e0b;margin-right:4px"></i>GHS Pictograms</span>
+          ${pics.length ? `<span class="ghs-auto-cnt">${pics.length}</span>` : ''}
+        </div>
+        <div class="ghs-auto-pics">${picsHtml}</div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div class="ghs-auto-sec" style="flex:0 0 auto">
+          <div class="ghs-auto-sec-hdr"><span class="ghs-auto-sec-label"><i class="fas fa-volume-up" style="color:#ef4444;margin-right:4px"></i>Signal Word</span></div>
+          ${swHtml}
+        </div>
+        ${data.iupac_name ? `<div class="ghs-auto-sec" style="flex:1;min-width:180px">
+          <div class="ghs-auto-sec-hdr"><span class="ghs-auto-sec-label"><i class="fas fa-atom" style="color:#6366f1;margin-right:4px"></i>IUPAC Name</span></div>
+          <div style="font-size:12px;color:#334155;font-style:italic;word-break:break-word">${esc(data.iupac_name)}</div>
+        </div>` : ''}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="ghs-auto-sec">
+          <div class="ghs-auto-sec-hdr">
+            <span class="ghs-auto-sec-label"><i class="fas fa-biohazard" style="color:#dc2626;margin-right:4px"></i>H-Statements</span>
+            ${hstmts.length ? `<span class="ghs-auto-cnt">${hstmts.length}</span>` : ''}
+          </div>
+          ${hHtml}
+        </div>
+        <div class="ghs-auto-sec">
+          <div class="ghs-auto-sec-hdr">
+            <span class="ghs-auto-sec-label"><i class="fas fa-shield-alt" style="color:#3b82f6;margin-right:4px"></i>P-Statements</span>
+            ${pstmts.length ? `<span class="ghs-auto-cnt">${pstmts.length}</span>` : ''}
+          </div>
+          ${pHtml}
+        </div>
+      </div>
+
+      ${expHtml ? `<div class="ghs-auto-sec">
+        <div class="ghs-auto-sec-hdr"><span class="ghs-auto-sec-label"><i class="fas fa-thermometer-half" style="color:#0284c7;margin-right:4px"></i>Experimental Properties</span></div>
+        <div class="ghs-exp-grid">${expHtml}</div>
+      </div>` : ''}
+
+      <div class="ghs-auto-import-bar">
+        <div class="ghs-auto-import-note">
+          <i class="fas fa-info-circle"></i>
+          ข้อมูลจาก PubChem อาจต้องตรวจสอบก่อนใช้จริง
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <button type="button" class="ghs-import-all-btn" onclick="applyGhsData()">
+            <i class="fas fa-file-import"></i> นำเข้าข้อมูลทั้งหมด
+          </button>
+          <div class="ghs-source-attr">Source: PubChem / NCBI · CID ${data.cid}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function applyGhsData() {
+    const data = _ghsAutoFetched;
+    if (!data) return;
+    const ghs = data.ghs || {};
+    const exp = data.experimental || {};
+
+    // Pictograms
+    const pics = ghs.pictograms || [];
+    document.querySelectorAll('#ghsPicGrid .cm-ghs-sym').forEach(el => {
+        const active = pics.includes(el.dataset.code);
+        el.classList.toggle('active', active);
+    });
+
+    // Signal word
+    const swEl = document.getElementById('ghsSignalWord');
+    if (swEl && ghs.signal_word) swEl.value = ghs.signal_word;
+
+    // H-statements
+    const hEl = document.getElementById('ghsHText');
+    if (hEl && ghs.h_statements?.length) {
+        hEl.value = ghs.h_statements.join('\n');
+        flashApplied(hEl);
+    }
+
+    // P-statements
+    const pEl = document.getElementById('ghsPText');
+    if (pEl && ghs.p_statements?.length) {
+        pEl.value = ghs.p_statements.join('\n');
+        flashApplied(pEl);
+    }
+
+    // Source
+    const srcEl = document.getElementById('ghsSource');
+    if (srcEl && !srcEl.value) {
+        srcEl.value = `PubChem CID ${data.cid} (${new Date().getFullYear()})`;
+    }
+
+    // Flash the pictogram grid
+    const grid = document.getElementById('ghsPicGrid');
+    if (grid) flashApplied(grid);
+
+    showToast('นำเข้าข้อมูล GHS จาก PubChem เรียบร้อย', 'success');
+
+    // Scroll to pictograms
+    grid?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function flashApplied(el) {
+    el.classList.remove('ghs-applied');
+    void el.offsetWidth;
+    el.classList.add('ghs-applied');
 }
 
 async function saveGhs(e, chemId) {

@@ -171,31 +171,42 @@ function getCabinets(int $roomId): array {
     return Database::fetchAll("
         SELECT c.*, r.name as room_name, r.code as room_code,
                COUNT(DISTINCT s.id) as shelf_count,
-               (SELECT COUNT(*) FROM containers cn 
-                JOIN slots sl ON cn.location_slot_id = sl.id 
-                JOIN shelves sh ON sl.shelf_id = sh.id 
-                WHERE sh.cabinet_id = c.id AND cn.status='active') as container_count
+               (SELECT COUNT(*) FROM containers ct
+                WHERE ct.cabinet_id = c.id AND ct.is_active=1) as container_count,
+               (SELECT COUNT(*) FROM containers ct
+                WHERE ct.cabinet_id = c.id AND ct.is_active=1
+                  AND ct.expiry_date IS NOT NULL AND ct.expiry_date < NOW()) as expired_count,
+               (SELECT COUNT(*) FROM containers ct
+                WHERE ct.cabinet_id = c.id AND ct.is_active=1
+                  AND ct.expiry_date IS NOT NULL AND ct.expiry_date >= NOW()
+                  AND ct.expiry_date <= DATE_ADD(NOW(), INTERVAL 60 DAY)) as expiring_count
         FROM cabinets c
         JOIN rooms r ON c.room_id = r.id
         LEFT JOIN shelves s ON s.cabinet_id = c.id
         WHERE c.room_id = :rid
-        GROUP BY c.id ORDER BY c.name
+        GROUP BY c.id ORDER BY c.code, c.name
     ", [':rid' => $roomId]);
 }
 
 // ─── Shelves ───
 function getShelves(int $cabinetId): array {
     return Database::fetchAll("
-        SELECT s.*, c.name as cabinet_name,
+        SELECT s.*, c.name as cabinet_name, c.type as cabinet_type,
                COUNT(DISTINCT sl.id) as slot_count,
-               (SELECT COUNT(*) FROM containers cn 
-                JOIN slots sl2 ON cn.location_slot_id = sl2.id 
-                WHERE sl2.shelf_id = s.id AND cn.status='active') as container_count
+               (SELECT COUNT(*) FROM containers ct
+                WHERE ct.shelf_id = s.id AND ct.is_active=1) as container_count,
+               (SELECT COUNT(*) FROM containers ct
+                WHERE ct.shelf_id = s.id AND ct.is_active=1
+                  AND ct.expiry_date IS NOT NULL AND ct.expiry_date < NOW()) as expired_count,
+               (SELECT COUNT(*) FROM containers ct
+                WHERE ct.shelf_id = s.id AND ct.is_active=1
+                  AND ct.expiry_date IS NOT NULL AND ct.expiry_date >= NOW()
+                  AND ct.expiry_date <= DATE_ADD(NOW(), INTERVAL 60 DAY)) as expiring_count
         FROM shelves s
         JOIN cabinets c ON s.cabinet_id = c.id
         LEFT JOIN slots sl ON sl.shelf_id = s.id
         WHERE s.cabinet_id = :cid
-        GROUP BY s.id ORDER BY s.level
+        GROUP BY s.id ORDER BY s.level, s.name
     ", [':cid' => $cabinetId]);
 }
 
@@ -203,13 +214,20 @@ function getShelves(int $cabinetId): array {
 function getSlots(int $shelfId): array {
     return Database::fetchAll("
         SELECT sl.*, s.name as shelf_name,
-               cn.id as container_id, cn.container_number, cn.status as container_status,
-               ch.name as chemical_name, ch.cas_number
+               ct.id as container_id,
+               ct.bottle_code,
+               ct.current_quantity, ct.initial_quantity, ct.quantity_unit,
+               ct.expiry_date, ct.status as container_status,
+               ct.hazard_level,
+               ch.name as chemical_name, ch.cas_number,
+               ch.hazard_pictograms, ch.physical_state,
+               CONCAT(u.first_name, ' ', u.last_name) as owner_name
         FROM slots sl
         JOIN shelves s ON sl.shelf_id = s.id
-        LEFT JOIN containers cn ON cn.location_slot_id = sl.id AND cn.status='active'
-        LEFT JOIN chemicals ch ON cn.chemical_id = ch.id
-        WHERE sl.shelf_id = :sid ORDER BY sl.position
+        LEFT JOIN containers ct ON ct.slot_id = sl.id AND ct.is_active=1
+        LEFT JOIN chemicals ch ON ch.id = ct.chemical_id
+        LEFT JOIN users u ON u.id = ct.owner_id
+        WHERE sl.shelf_id = :sid ORDER BY sl.position, sl.name
     ", [':sid' => $shelfId]);
 }
 
@@ -258,12 +276,14 @@ function searchLocations(string $q): array {
 
     $rooms = Database::fetchAll(
         "SELECT 'room' as type, r.id, r.name, r.name_en, r.code, r.floor,
-                b.name as building_name, b.shortname as building_code
+                b.id as building_id, b.name as building_name, b.shortname as building_code
          FROM rooms r JOIN buildings b ON r.building_id = b.id
          WHERE r.name LIKE :q OR r.name_en LIKE :q OR r.code LIKE :q LIMIT 20", $params);
 
     $cabinets = Database::fetchAll(
-        "SELECT 'cabinet' as type, c.id, c.name, c.code, r.name as room_name, b.name as building_name
+        "SELECT 'cabinet' as type, c.id, c.name, c.code,
+                r.id as room_id, r.name as room_name, r.floor,
+                b.id as building_id, b.name as building_name, b.shortname as building_code
          FROM cabinets c JOIN rooms r ON c.room_id = r.id JOIN buildings b ON r.building_id = b.id
          WHERE c.name LIKE :q OR c.code LIKE :q LIMIT 10", $params);
 

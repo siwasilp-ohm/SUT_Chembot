@@ -40,7 +40,7 @@ return [
     'nav_dashboard' => 'แดชบอร์ด',
     'nav_chemicals' => 'ข้อมูลสารเคมี',
     'nav_containers' => 'ภาชนะ',
-    'nav_locations' => 'ตำแหน่ง',
+    'nav_locations' => 'สถานที่จัดเก็บ',
     'nav_borrow' => 'ยืม/คืน',
     'nav_qr_scanner' => 'สแกน QR',
     'nav_ai_assistant' => 'ผู้ช่วย AI',

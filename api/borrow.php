@@ -593,7 +593,8 @@ function listTransactions(array $filters, array $user): array {
                fu.first_name as from_first, fu.last_name as from_last, fu.department as from_dept,
                tu.first_name as to_first, tu.last_name as to_last, tu.department as to_dept,
                iu.first_name as init_first, iu.last_name as init_last,
-               fb.name as from_building_name, tb.name as to_building_name
+               fb.name as from_building_name, tb.name as to_building_name,
+               EXISTS(SELECT 1 FROM chemical_transactions r WHERE r.parent_txn_id = ct.id AND r.txn_type='return' AND r.status='completed') as has_return
         FROM chemical_transactions ct
         LEFT JOIN chemicals ch ON ch.id = ct.chemical_id
         LEFT JOIN users fu ON fu.id = ct.from_user_id

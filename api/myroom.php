@@ -94,6 +94,81 @@ function jsonErr(string $error, int $code = 400): void {
     exit;
 }
 
+// ── Helper: ensure room_access_requests table exists ──────────────
+function ensureRequestsTable(): void {
+    Database::query("CREATE TABLE IF NOT EXISTS room_access_requests (
+        id          INT AUTO_INCREMENT PRIMARY KEY,
+        user_id     INT NOT NULL,
+        room_id     INT NOT NULL,
+        message     TEXT,
+        status      ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+        reviewed_by INT NULL,
+        review_note TEXT,
+        created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        reviewed_at TIMESTAMP NULL,
+        UNIQUE KEY uq_user_room (user_id, room_id),
+        INDEX idx_room   (room_id),
+        INDEX idx_user   (user_id),
+        INDEX idx_status (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+}
+
+// ── Helper: check if current user can manage room requests ────────
+function canManageRequests(array $user): bool {
+    return in_array($user['role_name'] ?? '', ['admin', 'lab_manager'], true);
+}
+
+function ensureRoomAccessAlertType(): void {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+    try {
+        Database::query(
+            "ALTER TABLE alerts MODIFY COLUMN alert_type
+             ENUM('expiry','low_stock','overdue_borrow','safety_violation',
+                  'temperature_alert','compliance','custom','borrow_request','room_access_request')"
+        );
+    } catch (\Throwable $e) { /* already exists — ignore */ }
+}
+
+function notifyRoomManagers(int $roomId, int $requesterId, string $roomName, string $requestMsg): void {
+    ensureRoomAccessAlertType();
+
+    $requester = Database::fetch("SELECT first_name, last_name FROM users WHERE id = :id", [':id' => $requesterId]);
+    $requesterName = trim(($requester['first_name'] ?? '') . ' ' . ($requester['last_name'] ?? ''));
+
+    $title = 'คำขอสิทธิ์ใช้ห้อง';
+    $msg   = $requesterName . ' ขอสิทธิ์เข้าใช้ห้อง ' . $roomName;
+    if ($requestMsg) $msg .= ' — "' . mb_substr($requestMsg, 0, 120) . '"';
+
+    // Collect recipients: room managers + global admins (deduplicated)
+    $roomMgrs = Database::fetchAll(
+        "SELECT DISTINCT ura.user_id AS id FROM user_room_access ura WHERE ura.room_id = :rid",
+        [':rid' => $roomId]
+    );
+    $admins = Database::fetchAll(
+        "SELECT u.id FROM users u JOIN roles r ON r.id = u.role_id
+         WHERE r.name = 'admin' AND u.is_active = 1"
+    );
+
+    $recipients = [];
+    foreach (array_merge($roomMgrs, $admins) as $row) {
+        $id = (int)$row['id'];
+        if ($id !== $requesterId) $recipients[$id] = true;
+    }
+
+    foreach (array_keys($recipients) as $recipientId) {
+        Database::insert('alerts', [
+            'alert_type'      => 'room_access_request',
+            'severity'        => 'warning',
+            'title'           => $title,
+            'message'         => $msg,
+            'user_id'         => $recipientId,
+            'action_required' => 1,
+        ]);
+    }
+}
+
 // ── Router ────────────────────────────────────────────────────────
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
@@ -213,7 +288,8 @@ try {
             if (!userManagesRoom($uid, $roomId)) jsonErr('Access denied', 403);
 
             $admins = Database::fetchAll(
-                "SELECT u.id, u.first_name, u.last_name, u.email, u.avatar_url, ura.is_primary
+                "SELECT u.id, u.first_name, u.last_name, u.email, u.phone, u.avatar_url,
+                        u.position, u.department, ura.is_primary
                  FROM user_room_access ura
                  JOIN users u ON u.id = ura.user_id
                  WHERE ura.room_id = :rid
@@ -606,6 +682,308 @@ try {
             foreach ($chemicals as &$c) $c['qty_kg'] = round($c['qty_kg'], 3);
 
             jsonOk(['chemicals'=>$chemicals,'total_count'=>$totalCount,'total_kg'=>round($totalKg,3)]);
+        }
+
+        // ── GET: chem_detail ─────────────────────────────────────────
+        if ($action === 'chem_detail') {
+            $chemId = (int)($_GET['chemical_id'] ?? 0);
+            $roomId = (int)($_GET['room_id']     ?? 0);
+            if (!$chemId || !$roomId) jsonErr('chemical_id and room_id required');
+            if (!userManagesRoom($uid, $roomId)) jsonErr('Access denied', 403);
+
+            $ch = Database::fetch(
+                "SELECT ch.id, ch.name, ch.cas_number, ch.iupac_name, ch.molecular_formula,
+                        ch.molecular_weight, ch.physical_state, ch.appearance, ch.odor,
+                        ch.boiling_point, ch.melting_point, ch.flash_point, ch.density,
+                        ch.signal_word   AS chem_signal,
+                        ch.hazard_statements   AS chem_hstmt,
+                        ch.precautionary_statements AS chem_pstmt,
+                        ch.hazard_pictograms   AS chem_word_pics,
+                        ch.sds_last_updated,
+                        ch.first_aid_measures, ch.handling_procedures,
+                        ch.storage_requirements, ch.disposal_methods,
+                        ghs.ghs_pictograms,
+                        ghs.signal_word   AS ghs_signal,
+                        ghs.h_statements  AS h_stmt_json,
+                        ghs.h_statements_text,
+                        ghs.p_statements  AS p_stmt_json,
+                        ghs.p_statements_text,
+                        ghs.first_aid_inhalation, ghs.first_aid_skin,
+                        ghs.first_aid_eye, ghs.first_aid_ingestion,
+                        ghs.handling_precautions, ghs.storage_instructions,
+                        ghs.disposal_instructions,
+                        ghs.suitable_extinguishing, ghs.unsuitable_extinguishing,
+                        ghs.special_fire_hazards,
+                        ghs.ppe_required, ghs.ld50, ghs.lc50,
+                        ghs.un_number, ghs.un_proper_shipping_name,
+                        ghs.transport_hazard_class, ghs.packing_group,
+                        ghs.exposure_limits, ghs.source,
+                        SUM(ct.current_quantity) AS room_qty,
+                        MAX(ct.quantity_unit)    AS room_unit,
+                        COUNT(ct.id)             AS container_count
+                 FROM chemicals ch
+                 LEFT JOIN chemical_ghs_data ghs ON ghs.chemical_id = ch.id
+                 LEFT JOIN containers ct
+                        ON ct.chemical_id = ch.id
+                       AND ct.room_id     = :rid
+                       AND ct.is_active   = 1
+                       AND ct.current_quantity > 0
+                 WHERE ch.id = :cid
+                 GROUP BY ch.id",
+                [':cid' => $chemId, ':rid' => $roomId]
+            );
+            if (!$ch) jsonErr('Chemical not found', 404);
+
+            $wordToGhs = ['flammable'=>'GHS02','oxidizing'=>'GHS03','explosive'=>'GHS01',
+                          'corrosive'=>'GHS05','toxic'=>'GHS06','irritant'=>'GHS07',
+                          'health_hazard'=>'GHS08','gas_pressure'=>'GHS04','environmental'=>'GHS09'];
+
+            // ── H-codes from all sources ──────────────────────────────
+            $hCodes = [];
+            $hStmtFull = []; // H-code => full statement text
+
+            $hArr = json_decode($ch['h_stmt_json'] ?? 'null', true);
+            if (is_array($hArr)) foreach ($hArr as $v) if (is_string($v)) {
+                preg_match_all('/\bH\d{3}\b/i', $v, $m); foreach ($m[0] as $h) $hCodes[] = strtoupper($h);
+            }
+            if (!empty($ch['h_statements_text'])) {
+                preg_match_all('/\bH\d{3}\b/i', $ch['h_statements_text'], $m);
+                foreach ($m[0] as $h) $hCodes[] = strtoupper($h);
+            }
+            if (!empty($ch['chem_hstmt'])) {
+                $a = json_decode($ch['chem_hstmt'], true);
+                if (is_array($a)) foreach ($a as $v) if (is_string($v)) {
+                    preg_match_all('/\bH\d{3}\b/i', $v, $m); foreach ($m[0] as $h) $hCodes[] = strtoupper($h);
+                    if (preg_match('/\b(H\d{3})\b[:\s\-–]+(.+)/iu', $v, $sm))
+                        $hStmtFull[strtoupper($sm[1])] = trim($sm[2]);
+                }
+            }
+            $hCodes = array_values(array_unique($hCodes)); sort($hCodes);
+
+            // ── P-codes ──────────────────────────────────────────────
+            $pCodes = [];
+            $pArr = json_decode($ch['p_stmt_json'] ?? 'null', true);
+            if (is_array($pArr)) foreach ($pArr as $v) if (is_string($v)) {
+                preg_match_all('/\bP\d{3}\b/i', $v, $m); foreach ($m[0] as $p) $pCodes[] = strtoupper($p);
+            }
+            if (!empty($ch['p_statements_text'])) {
+                preg_match_all('/\bP\d{3}\b/i', $ch['p_statements_text'], $m);
+                foreach ($m[0] as $p) $pCodes[] = strtoupper($p);
+            }
+            if (!empty($ch['chem_pstmt'])) {
+                $b = json_decode($ch['chem_pstmt'], true);
+                if (is_array($b)) foreach ($b as $v) if (is_string($v)) {
+                    preg_match_all('/\bP\d{3}\b/i', $v, $m); foreach ($m[0] as $p) $pCodes[] = strtoupper($p);
+                }
+            }
+            $pCodes = array_values(array_unique($pCodes)); sort($pCodes);
+
+            // ── GHS pictograms ────────────────────────────────────────
+            $pics = [];
+            if (!empty($ch['ghs_pictograms'])) {
+                $p = json_decode($ch['ghs_pictograms'], true);
+                if (is_array($p)) foreach (array_filter($p, 'is_string') as $v) {
+                    $v = strtoupper(trim($v));
+                    if (preg_match('/^GHS\d{2}$/', $v)) $pics[] = $v;
+                }
+            }
+            if (empty($pics) && !empty($ch['chem_word_pics'])) {
+                $p2 = json_decode($ch['chem_word_pics'], true);
+                if (is_array($p2)) foreach (array_filter($p2, 'is_string') as $w) {
+                    $g = $wordToGhs[strtolower(trim($w))] ?? null;
+                    if ($g) $pics[] = $g;
+                }
+            }
+            $pics = array_values(array_unique($pics)); sort($pics);
+
+            $signalWord = null;
+            foreach ([$ch['ghs_signal'], $ch['chem_signal']] as $sw) {
+                if ($sw && $sw !== 'None' && $sw !== 'No signal word') { $signalWord = $sw; break; }
+            }
+
+            $roomQtyKg = srToKg((float)($ch['room_qty'] ?? 0), $ch['room_unit'] ?? '');
+
+            jsonOk([
+                'id'              => (int)$ch['id'],
+                'name'            => $ch['name'],
+                'cas'             => $ch['cas_number']       ?? '',
+                'iupac'           => $ch['iupac_name']       ?? '',
+                'formula'         => $ch['molecular_formula']?? '',
+                'weight'          => $ch['molecular_weight'] !== null ? (float)$ch['molecular_weight'] : null,
+                'state'           => $ch['physical_state']   ?? 'solid',
+                'appearance'      => $ch['appearance']       ?? '',
+                'odor'            => $ch['odor']             ?? '',
+                'boiling_point'   => $ch['boiling_point']  !== null ? (float)$ch['boiling_point']  : null,
+                'melting_point'   => $ch['melting_point']  !== null ? (float)$ch['melting_point']  : null,
+                'flash_point'     => $ch['flash_point']    !== null ? (float)$ch['flash_point']    : null,
+                'density'         => $ch['density']        !== null ? (float)$ch['density']        : null,
+                'signal_word'     => $signalWord,
+                'h_codes'         => $hCodes,
+                'h_stmt_full'     => $hStmtFull,
+                'p_codes'         => $pCodes,
+                'pictograms'      => $pics,
+                'first_aid'       => [
+                    'inhalation' => $ch['first_aid_inhalation'] ?: ($ch['first_aid_measures'] ?? ''),
+                    'skin'       => $ch['first_aid_skin']  ?? '',
+                    'eye'        => $ch['first_aid_eye']   ?? '',
+                    'ingestion'  => $ch['first_aid_ingestion'] ?? '',
+                ],
+                'storage'         => $ch['storage_instructions'] ?: ($ch['storage_requirements'] ?? ''),
+                'handling'        => $ch['handling_precautions'] ?: ($ch['handling_procedures'] ?? ''),
+                'disposal'        => $ch['disposal_instructions']?: ($ch['disposal_methods'] ?? ''),
+                'fire'            => [
+                    'suitable'   => $ch['suitable_extinguishing']   ?? '',
+                    'unsuitable' => $ch['unsuitable_extinguishing'] ?? '',
+                    'special'    => $ch['special_fire_hazards']     ?? '',
+                ],
+                'ppe'             => $ch['ppe_required']     ?? '',
+                'ld50'            => $ch['ld50']             ?? '',
+                'lc50'            => $ch['lc50']             ?? '',
+                'exposure_limits' => $ch['exposure_limits']  ?? '',
+                'transport'       => [
+                    'un_number'     => $ch['un_number']               ?? '',
+                    'proper_name'   => $ch['un_proper_shipping_name'] ?? '',
+                    'hazard_class'  => $ch['transport_hazard_class']  ?? '',
+                    'packing_group' => $ch['packing_group']           ?? '',
+                ],
+                'sds_last_updated'=> $ch['sds_last_updated'] ?? '',
+                'source'          => $ch['source']           ?? '',
+                'room_qty_kg'     => round($roomQtyKg, 3),
+                'container_count' => (int)($ch['container_count'] ?? 0),
+            ]);
+        }
+
+        // ── GET: all_rooms ────────────────────────────────────────
+        // Returns every room in the system, annotated with:
+        //   access_status: 'has_access'|'pending'|'rejected'|'none'
+        if ($action === 'all_rooms') {
+            ensureRequestsTable();
+
+            $rooms = Database::fetchAll(
+                "SELECT r.id, r.code, r.name, r.room_number, r.floor, r.room_type, r.safety_level,
+                        r.responsibility_person,
+                        b.code AS bld_code, b.name AS bld_name, b.shortname AS bld_short,
+                        (SELECT COUNT(*) FROM containers c WHERE c.room_id = r.id AND c.is_active=1) AS total,
+                        (SELECT COUNT(*) FROM user_room_access u2 WHERE u2.room_id = r.id) AS manager_count
+                 FROM rooms r
+                 JOIN buildings b ON b.id = r.building_id
+                 ORDER BY b.code, r.floor, r.code"
+            );
+
+            // Annotate with current user's status
+            $accessSet = array_column(
+                Database::fetchAll("SELECT room_id FROM user_room_access WHERE user_id = :uid", [':uid' => $uid]),
+                null, 'room_id'
+            );
+            $reqRows = Database::fetchAll(
+                "SELECT room_id, status FROM room_access_requests WHERE user_id = :uid",
+                [':uid' => $uid]
+            );
+            $reqMap = array_column($reqRows, 'status', 'room_id');
+
+            foreach ($rooms as &$r) {
+                $rid = (int)$r['id'];
+                if (isset($accessSet[$rid])) {
+                    $r['access_status'] = 'has_access';
+                } elseif (isset($reqMap[$rid])) {
+                    $r['access_status'] = $reqMap[$rid]; // 'pending' or 'rejected'
+                } else {
+                    $r['access_status'] = 'none';
+                }
+            }
+            unset($r);
+
+            // Fetch managers per room
+            $managers = Database::fetchAll(
+                "SELECT ura.room_id, u.id, u.first_name, u.last_name, u.avatar_url, ura.is_primary
+                 FROM user_room_access ura
+                 JOIN users u ON u.id = ura.user_id
+                 ORDER BY ura.is_primary DESC, u.first_name"
+            );
+            $mgrMap = [];
+            foreach ($managers as $m) {
+                $mgrMap[(int)$m['room_id']][] = $m;
+            }
+            foreach ($rooms as &$r) {
+                $r['managers'] = $mgrMap[(int)$r['id']] ?? [];
+            }
+            unset($r);
+
+            jsonOk($rooms);
+        }
+
+        // ── GET: my_requests ─────────────────────────────────────
+        if ($action === 'my_requests') {
+            ensureRequestsTable();
+            $rows = Database::fetchAll(
+                "SELECT rar.id, rar.room_id, rar.message, rar.status,
+                        rar.review_note, rar.created_at, rar.reviewed_at,
+                        r.code AS room_code, r.name AS room_name, r.floor,
+                        b.code AS bld_code, b.name AS bld_name, b.shortname AS bld_short,
+                        CONCAT(rv.first_name,' ',rv.last_name) AS reviewed_by_name
+                 FROM room_access_requests rar
+                 JOIN rooms r ON r.id = rar.room_id
+                 JOIN buildings b ON b.id = r.building_id
+                 LEFT JOIN users rv ON rv.id = rar.reviewed_by
+                 WHERE rar.user_id = :uid
+                 ORDER BY rar.created_at DESC",
+                [':uid' => $uid]
+            );
+            jsonOk($rows);
+        }
+
+        // ── GET: pending_requests ─────────────────────────────────
+        // Returns requests for rooms that the current user manages (or all if admin)
+        if ($action === 'pending_requests') {
+            ensureRequestsTable();
+            if (!canManageRequests($user)) jsonErr('Access denied', 403);
+
+            if (($user['role_name'] ?? '') === 'admin') {
+                $where = "1=1";
+                $bind  = [];
+            } else {
+                $where = "rar.room_id IN (SELECT room_id FROM user_room_access WHERE user_id = :uid)";
+                $bind  = [':uid' => $uid];
+            }
+
+            $rows = Database::fetchAll(
+                "SELECT rar.id, rar.room_id, rar.message, rar.status,
+                        rar.review_note, rar.created_at, rar.reviewed_at,
+                        r.code AS room_code, r.name AS room_name, r.floor,
+                        b.code AS bld_code, b.shortname AS bld_short,
+                        u.id AS requester_id, u.first_name, u.last_name,
+                        u.email, u.avatar_url,
+                        CONCAT(rv.first_name,' ',rv.last_name) AS reviewed_by_name
+                 FROM room_access_requests rar
+                 JOIN rooms r ON r.id = rar.room_id
+                 JOIN buildings b ON b.id = r.building_id
+                 JOIN users u ON u.id = rar.user_id
+                 LEFT JOIN users rv ON rv.id = rar.reviewed_by
+                 WHERE {$where}
+                 ORDER BY FIELD(rar.status,'pending','rejected','approved'), rar.created_at DESC",
+                $bind
+            );
+            jsonOk($rows);
+        }
+
+        // ── GET: room_users ───────────────────────────────────────
+        if ($action === 'room_users') {
+            $roomId = (int)($_GET['room_id'] ?? 0);
+            if (!$roomId) jsonErr('room_id required');
+            if (!canManageRequests($user) && !userManagesRoom($uid, $roomId)) jsonErr('Access denied', 403);
+
+            $users = Database::fetchAll(
+                "SELECT u.id, u.first_name, u.last_name, u.email, u.avatar_url,
+                        r.name AS role_name, r.display_name AS role_display,
+                        ura.is_primary, ura.created_at AS assigned_at
+                 FROM user_room_access ura
+                 JOIN users u ON u.id = ura.user_id
+                 JOIN roles r ON r.id = u.role_id
+                 WHERE ura.room_id = :rid
+                 ORDER BY ura.is_primary DESC, u.first_name",
+                [':rid' => $roomId]
+            );
+            jsonOk($users);
         }
 
         jsonErr('Unknown action');
@@ -1061,6 +1439,113 @@ try {
                 'id'             => (int)($newId['id'] ?? 0),
                 'request_number' => $requestNumber,
             ]);
+        }
+
+        // ── POST: request_access ─────────────────────────────────
+        if ($action === 'request_access') {
+            ensureRequestsTable();
+            $roomId  = (int)($body['room_id'] ?? 0);
+            $message = trim($body['message'] ?? '');
+            if (!$roomId) jsonErr('room_id required');
+
+            // Make sure room exists
+            $room = Database::fetch("SELECT id, name FROM rooms WHERE id = :rid", [':rid' => $roomId]);
+            if (!$room) jsonErr('Room not found', 404);
+
+            // Already has access?
+            if (userManagesRoom($uid, $roomId)) jsonErr('คุณมีสิทธิ์เข้าถึงห้องนี้อยู่แล้ว');
+
+            Database::query(
+                "INSERT INTO room_access_requests (user_id, room_id, message, status)
+                 VALUES (:uid, :rid, :msg, 'pending')
+                 ON DUPLICATE KEY UPDATE message = VALUES(message), status = 'pending', reviewed_by = NULL,
+                     review_note = NULL, reviewed_at = NULL, created_at = CURRENT_TIMESTAMP",
+                [':uid' => $uid, ':rid' => $roomId, ':msg' => $message ?: null]
+            );
+            notifyRoomManagers($roomId, $uid, $room['name'], $message);
+            jsonOk(['requested' => true, 'room_name' => $room['name']]);
+        }
+
+        // ── POST: review_request ──────────────────────────────────
+        if ($action === 'review_request') {
+            ensureRequestsTable();
+            if (!canManageRequests($user)) jsonErr('Access denied', 403);
+
+            $reqId  = (int)($body['request_id'] ?? 0);
+            $action2 = $body['action'] ?? '';   // 'approve' | 'reject'
+            $note   = trim($body['note'] ?? '');
+            if (!$reqId || !in_array($action2, ['approve','reject'])) jsonErr('Invalid parameters');
+
+            $req = Database::fetch(
+                "SELECT rar.*, r.name AS room_name, u.first_name, u.last_name
+                 FROM room_access_requests rar
+                 JOIN rooms r ON r.id = rar.room_id
+                 JOIN users u ON u.id = rar.user_id
+                 WHERE rar.id = :id",
+                [':id' => $reqId]
+            );
+            if (!$req) jsonErr('Request not found', 404);
+
+            // Non-admin can only manage rooms they manage
+            if (($user['role_name'] ?? '') !== 'admin' && !userManagesRoom($uid, (int)$req['room_id'])) {
+                jsonErr('Access denied', 403);
+            }
+
+            $newStatus = $action2 === 'approve' ? 'approved' : 'rejected';
+            Database::query(
+                "UPDATE room_access_requests SET status=:s, reviewed_by=:r, review_note=:n, reviewed_at=NOW()
+                 WHERE id=:id",
+                [':s' => $newStatus, ':r' => $uid, ':n' => $note ?: null, ':id' => $reqId]
+            );
+
+            // If approved, add to user_room_access
+            if ($action2 === 'approve') {
+                $userId = (int)$req['user_id'];
+                $roomId = (int)$req['room_id'];
+                // Check if already exists (avoid duplicate)
+                $exists = Database::fetch(
+                    "SELECT id FROM user_room_access WHERE user_id=:u AND room_id=:r",
+                    [':u' => $userId, ':r' => $roomId]
+                );
+                if (!$exists) {
+                    Database::query(
+                        "INSERT INTO user_room_access (user_id, room_id, is_primary) VALUES (:u, :r, 0)",
+                        [':u' => $userId, ':r' => $roomId]
+                    );
+                }
+            }
+
+            jsonOk([
+                'status' => $newStatus,
+                'user_name' => trim($req['first_name'] . ' ' . $req['last_name']),
+                'room_name' => $req['room_name'],
+            ]);
+        }
+
+        // ── POST: revoke_access ───────────────────────────────────
+        if ($action === 'revoke_access') {
+            if (!canManageRequests($user)) jsonErr('Access denied', 403);
+            $targetUid = (int)($body['user_id'] ?? 0);
+            $roomId    = (int)($body['room_id'] ?? 0);
+            if (!$targetUid || !$roomId) jsonErr('user_id and room_id required');
+
+            // Non-admin must manage the room
+            if (($user['role_name'] ?? '') !== 'admin' && !userManagesRoom($uid, $roomId)) {
+                jsonErr('Access denied', 403);
+            }
+            // Cannot revoke own access
+            if ($targetUid === $uid) jsonErr('ไม่สามารถลบสิทธิ์ตัวเองได้');
+
+            Database::query(
+                "DELETE FROM user_room_access WHERE user_id=:u AND room_id=:r",
+                [':u' => $targetUid, ':r' => $roomId]
+            );
+            // Reset their request so they can re-request
+            Database::query(
+                "DELETE FROM room_access_requests WHERE user_id=:u AND room_id=:r",
+                [':u' => $targetUid, ':r' => $roomId]
+            );
+            jsonOk(['revoked' => true]);
         }
 
         jsonErr('Unknown action');

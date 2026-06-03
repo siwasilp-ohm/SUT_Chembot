@@ -21,30 +21,31 @@ Layout::head('จัดการสถานที่จัดเก็บ');
         <div class="loc-hero-c"><div class="v" id="heroBuildings">—</div><div class="lb">อาคาร</div></div>
         <div class="loc-hero-c"><div class="v" id="heroRooms">—</div><div class="lb">ห้อง</div></div>
         <div class="loc-hero-c"><div class="v" id="heroContainers">—</div><div class="lb">ภาชนะ</div></div>
+        <div class="loc-hero-c" id="heroMyRoomsWrap" style="display:none"><div class="v" id="heroMyRooms" style="color:#a5b4fc">—</div><div class="lb" style="color:rgba(255,255,255,.55)">ห้องของฉัน</div></div>
     </div>
 </div>
 
 <!-- ═══════ Stats Row ═══════ -->
 <div class="loc-stats" id="statsRow">
-    <div class="loc-stat" style="--lc:#4338ca;--lb:#eef2ff">
+    <div class="loc-stat" onclick="showStatDetail('buildings')" style="--lc:#4338ca;--lb:#eef2ff">
         <div class="loc-si" style="background:#eef2ff;color:#4338ca"><i class="fas fa-building"></i></div>
         <div><div class="loc-sv" id="statBuildings">—</div><div class="loc-sl">อาคาร</div></div>
     </div>
-    <div class="loc-stat" style="--lc:#c2410c;--lb:#fff7ed">
-        <div class="loc-si" style="background:#fff7ed;color:#c2410c"><i class="fas fa-layer-group"></i></div>
-        <div><div class="loc-sv" id="statFloors">—</div><div class="loc-sl">ชั้น</div></div>
-    </div>
-    <div class="loc-stat" style="--lc:#0369a1;--lb:#e0f2fe">
+    <div class="loc-stat" onclick="showStatDetail('rooms')" style="--lc:#0369a1;--lb:#e0f2fe">
         <div class="loc-si" style="background:#e0f2fe;color:#0369a1"><i class="fas fa-door-open"></i></div>
         <div><div class="loc-sv" id="statRooms">—</div><div class="loc-sl">ห้อง</div></div>
     </div>
-    <div class="loc-stat" style="--lc:#7c3aed;--lb:#f3e8ff">
+    <div class="loc-stat" onclick="showStatDetail('cabinets')" style="--lc:#7c3aed;--lb:#f3e8ff">
         <div class="loc-si" style="background:#f3e8ff;color:#7c3aed"><i class="fas fa-archive"></i></div>
         <div><div class="loc-sv" id="statCabinets">—</div><div class="loc-sl">ตู้เก็บ</div></div>
     </div>
-    <div class="loc-stat" style="--lc:#16a34a;--lb:#dcfce7">
+    <div class="loc-stat" onclick="showStatDetail('containers')" style="--lc:#16a34a;--lb:#dcfce7">
         <div class="loc-si" style="background:#dcfce7;color:#16a34a"><i class="fas fa-flask"></i></div>
         <div><div class="loc-sv" id="statContainers">—</div><div class="loc-sl">ภาชนะ</div></div>
+    </div>
+    <div class="loc-stat" id="statMyRoomsCard" onclick="showStatDetail('myrooms')" style="display:none;--lc:#6366f1;--lb:#eef2ff">
+        <div class="loc-si" style="background:#eef2ff;color:#6366f1"><i class="fas fa-star"></i></div>
+        <div><div class="loc-sv" id="statMyRooms" style="color:#6366f1">—</div><div class="loc-sl">ห้องของฉัน</div></div>
     </div>
 </div>
 
@@ -84,6 +85,19 @@ Layout::head('จัดการสถานที่จัดเก็บ');
     </div>
 </div>
 
+<!-- ═══════ Stat Detail Sheet ═══════ -->
+<div id="statDetailOv" class="loc-sds-ov" onclick="if(event.target===this)closeStatDetail()">
+    <div class="loc-sds">
+        <div class="loc-sds-drag"></div>
+        <div class="loc-sds-hdr" id="sdsHdr"></div>
+        <div id="sdsSearchWrap" class="loc-sds-search" style="display:none">
+            <i class="fas fa-search"></i>
+            <input type="text" id="sdsSearchInp" placeholder="ค้นหาห้อง..." oninput="sdsFilterRooms(this.value)">
+        </div>
+        <div class="loc-sds-body" id="sdsBody"></div>
+    </div>
+</div>
+
 <style>
 :root{--loc-r:14px;--loc-rs:10px;--loc-sh:0 1px 6px rgba(0,0,0,.06);--loc-shm:0 4px 20px rgba(0,0,0,.09)}
 
@@ -101,7 +115,7 @@ Layout::head('จัดการสถานที่จัดเก็บ');
 
 /* ── Stats Row ── */
 .loc-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
-.loc-stat{background:#fff;border-radius:var(--loc-rs);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--loc-sh);border:1px solid var(--border);transition:all .15s}
+.loc-stat{background:#fff;border-radius:var(--loc-rs);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--loc-sh);border:1px solid var(--border);transition:all .15s;cursor:pointer;user-select:none}
 .loc-stat:hover{transform:translateY(-2px);box-shadow:var(--loc-shm)}
 .loc-si{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
 .loc-sv{font-size:20px;font-weight:800;color:var(--c1);line-height:1}
@@ -140,7 +154,7 @@ Layout::head('จัดการสถานที่จัดเก็บ');
 .loc-tree-list{padding:8px}
 .loc-tree-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;cursor:pointer;transition:background .15s,border-color .15s;margin-bottom:2px;border:1px solid transparent}
 .loc-tree-item:hover{background:#f5f7ff;border-color:#e0e7ff}
-.loc-tree-ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.loc-tree-ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;position:relative}
 .loc-tree-arr{color:#cbd5e1;font-size:10px;flex-shrink:0;transition:transform .2s}
 .loc-tree-item:hover .loc-tree-arr{color:#4338ca;transform:translateX(2px)}
 .loc-tree-name{font-size:13px;font-weight:500;color:var(--c1);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -279,6 +293,125 @@ Layout::head('จัดการสถานที่จัดเก็บ');
     .modal-type-card .type-desc{display:none}
     .modal-form-wrap{padding:16px}
 }
+
+/* ── Room Manage Banner (cabinet level) ── */
+.loc-room-mgmt{background:linear-gradient(135deg,#f0f4ff,#e8edff);border:1.5px solid #c7d2fe;border-radius:var(--loc-rs);padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.loc-room-mgmt-ic{width:36px;height:36px;border-radius:9px;background:#4338ca;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.loc-room-mgmt-body{flex:1;min-width:0}
+.loc-room-mgmt-title{font-size:12px;font-weight:700;color:#3730a3}
+.loc-room-mgmt-sub{font-size:10px;color:#6366f1;margin-top:1px;display:flex;gap:8px;flex-wrap:wrap}
+.loc-room-mgmt-stat{display:inline-flex;align-items:center;gap:3px}
+
+/* ── Enhanced Slot Cards ── */
+.loc-slot{border:2px solid #e2e8f0;border-radius:12px;padding:0;text-align:left;background:#fff;transition:all .18s;overflow:hidden;display:flex;flex-direction:column}
+.loc-slot.used{border-color:#22c55e}
+.loc-slot.expiring{border-color:#f59e0b}
+.loc-slot.expired{border-color:#ef4444}
+.loc-slot-hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 10px 0;gap:4px}
+.loc-slot-code{font-size:9px;color:var(--c3);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.loc-slot-exp-tag{font-size:8px;padding:1px 6px;border-radius:5px;font-weight:700;white-space:nowrap}
+.loc-slot-exp-tag.warn{background:#fef9c3;color:#a16207}
+.loc-slot-exp-tag.danger{background:#fee2e2;color:#dc2626}
+.loc-slot-body{padding:8px 10px 10px;flex:1}
+.loc-slot-ic{font-size:20px;margin-bottom:5px;display:block;line-height:1}
+.loc-slot-nm{font-size:11px;font-weight:700;color:var(--c1);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.loc-slot-bc{font-size:9px;color:var(--c3);margin-top:3px;font-family:monospace;letter-spacing:.2px}
+.loc-slot-qty-bar{height:3px;background:#e2e8f0;border-radius:2px;margin:6px 0 4px;overflow:hidden}
+.loc-slot-qty-fill{height:100%;border-radius:2px;background:#22c55e;transition:width .3s}
+.loc-slot-qty{font-size:9px;color:#4338ca;font-weight:600}
+.loc-slot-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:18px 10px;text-align:center;min-height:80px}
+.loc-slot-empty-ic{font-size:20px;color:#e2e8f0;margin-bottom:5px}
+.loc-slot-empty-lbl{font-size:10px;color:#cbd5e1;font-weight:500}
+
+/* ── Shelf Summary Strip ── */
+.loc-shelf-strip{display:flex;align-items:center;gap:6px;padding:6px 10px;background:#f8fafc;border-top:1px dashed #e2e8f0;font-size:10px;color:var(--c3);flex-wrap:wrap}
+
+/* ── Myroom Sync Enrichment ── */
+.loc-ctr-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:7px;font-weight:600;white-space:nowrap}
+.loc-ctr-badge i{font-size:8px;flex-shrink:0}
+.loc-ctr-badge.total{background:#e0f2fe;color:#0369a1}
+.loc-ctr-badge.warn{background:#fef9c3;color:#a16207}
+.loc-ctr-badge.danger{background:#fee2e2;color:#dc2626}
+.loc-my-room-tag{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 9px;border-radius:8px;background:linear-gradient(135deg,#4338ca,#818cf8);color:#fff;font-weight:700;white-space:nowrap;flex-shrink:0}
+.loc-goto-btn{display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:5px 11px;border-radius:8px;background:#4338ca;color:#fff;border:none;cursor:pointer;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;text-decoration:none;flex-shrink:0}
+.loc-goto-btn:hover{background:#3730a3;box-shadow:0 2px 8px rgba(67,56,202,.3)}
+.loc-goto-btn-light{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:7px 14px;border-radius:9px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;cursor:pointer;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;text-decoration:none;flex-shrink:0}
+.loc-goto-btn-light:hover{background:rgba(255,255,255,.28);border-color:rgba(255,255,255,.5)}
+
+/* Tree room enrichment */
+.loc-tree-enrich{display:flex;align-items:center;gap:5px;flex-shrink:0;flex-wrap:nowrap}
+.loc-tree-item-mine{background:#fafbff;border-color:#e0e7ff!important}
+.loc-tree-item-mine:hover{background:#f0f4ff!important}
+
+/* Card mine highlight */
+.loc-card-mine{border-color:#c7d2fe!important}
+.loc-card-mine:hover{border-color:#4338ca!important}
+.loc-card-ft{padding:8px 14px 10px;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+
+/* Manager avatars */
+.loc-mgr-row{display:flex;align-items:center}
+.loc-mgr-av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#4338ca,#818cf8);color:#fff;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.12);text-transform:uppercase;overflow:hidden}
+.loc-mgr-av img{width:100%;height:100%;object-fit:cover}
+.loc-mgr-av+.loc-mgr-av{margin-left:-6px}
+
+/* My Rooms band */
+.loc-myrooms-band{background:linear-gradient(135deg,#3730a3 0%,#4338ca 50%,#6366f1 100%);border-radius:var(--loc-rs);padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:#fff;box-shadow:0 4px 16px rgba(67,56,202,.28)}
+.loc-myrooms-label{flex-shrink:0}
+.loc-myrooms-label .lb{font-size:9px;opacity:.65;text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px}
+.loc-myrooms-label .ct{font-size:22px;font-weight:900;line-height:1}
+.loc-myrooms-chips{display:flex;gap:7px;flex-wrap:wrap;flex:1;min-width:0}
+.loc-myrooms-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.22);border-radius:9px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit;color:#fff}
+.loc-myrooms-chip:hover{background:rgba(255,255,255,.27);border-color:rgba(255,255,255,.45)}
+.loc-myrooms-chip .dot{width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0}
+.loc-myrooms-chip .dot.warn{background:#fbbf24}
+.loc-myrooms-chip .dot.danger{background:#f87171}
+
+@media(max-width:640px){
+    .loc-tree-enrich{display:none}
+    .loc-myrooms-band{padding:12px 14px;gap:10px}
+    .loc-myrooms-chips{gap:5px}
+}
+@media(max-width:480px){
+    .loc-card-ft{gap:6px}
+    .loc-myrooms-label{display:none}
+}
+
+/* ── Stat Detail Sheet ── */
+.loc-sds-ov{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:300;opacity:0;pointer-events:none;transition:opacity .22s;backdrop-filter:blur(3px)}
+.loc-sds-ov.open{opacity:1;pointer-events:all}
+.loc-sds{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;z-index:301;transform:translateY(100%);transition:transform .32s cubic-bezier(.32,1,.36,1);max-height:82vh;display:flex;flex-direction:column;box-shadow:0 -8px 40px rgba(0,0,0,.14)}
+.loc-sds-ov.open .loc-sds{transform:translateY(0)}
+.loc-sds-drag{width:40px;height:4px;border-radius:2px;background:#e2e8f0;margin:12px auto 4px;flex-shrink:0}
+.loc-sds-hdr{padding:12px 18px 14px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.loc-sds-hdr-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.loc-sds-hdr-title{font-size:15px;font-weight:800;color:var(--c1)}
+.loc-sds-hdr-cnt{font-size:10px;color:var(--c3);margin-top:2px}
+.loc-sds-search{padding:10px 16px;border-bottom:1px solid #f1f5f9;position:relative;flex-shrink:0}
+.loc-sds-search input{width:100%;padding:8px 12px 8px 34px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;background:#f8fafc;outline:none;box-sizing:border-box;color:var(--c1);font-family:inherit}
+.loc-sds-search input:focus{border-color:#4338ca;background:#fff;box-shadow:0 0 0 3px rgba(67,56,202,.1)}
+.loc-sds-search i{position:absolute;left:27px;top:50%;transform:translateY(-50%);color:var(--c3);font-size:12px;pointer-events:none}
+.loc-sds-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.loc-sds-section{padding:8px 18px 4px;font-size:9px;font-weight:700;color:var(--c3);text-transform:uppercase;letter-spacing:.7px;background:#f8fafc;border-bottom:1px solid #f1f5f9}
+.loc-sds-row{display:flex;align-items:center;gap:10px;padding:11px 18px;cursor:pointer;transition:background .12s;border-bottom:1px solid #f9fafb}
+.loc-sds-row:last-child{border-bottom:none}
+.loc-sds-row:hover{background:#f5f7ff}
+.loc-sds-row:active{background:#eef2ff}
+.loc-sds-row-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.loc-sds-row-nm{font-size:13px;font-weight:600;color:var(--c1);line-height:1.3}
+.loc-sds-row-sub{font-size:10px;color:var(--c3);margin-top:1px}
+.loc-sds-row-right{text-align:right;flex-shrink:0;min-width:50px}
+.loc-sds-row-val{font-size:17px;font-weight:900;line-height:1;color:#4338ca}
+.loc-sds-row-vl{font-size:9px;color:var(--c3);text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
+.loc-sds-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 18px;border-bottom:1px solid #f1f5f9}
+.loc-sds-stat-card{background:#f8fafc;border-radius:12px;padding:12px 8px;text-align:center}
+.loc-sds-stat-card .sv{font-size:22px;font-weight:900;line-height:1;color:#4338ca}
+.loc-sds-stat-card .sl{font-size:9px;color:var(--c3);text-transform:uppercase;letter-spacing:.3px;margin-top:4px}
+.loc-sds-empty{display:flex;flex-direction:column;align-items:center;padding:48px 24px;color:var(--c3)}
+.loc-sds-empty i{font-size:36px;opacity:.18;margin-bottom:12px;display:block}
+.loc-sds-empty p{font-size:13px;margin:0}
+.loc-sds-close{background:none;border:none;cursor:pointer;color:var(--c3);font-size:15px;padding:6px;border-radius:8px;transition:all .12s;line-height:1;flex-shrink:0}
+.loc-sds-close:hover{color:var(--c1);background:#f1f5f9}
+.loc-sds-footer{padding:14px 18px;border-top:1px solid #f1f5f9;text-align:center;flex-shrink:0;padding-bottom:max(14px,env(safe-area-inset-bottom))}
 </style>
 
 <?php Layout::endContent(); ?>
@@ -289,11 +422,14 @@ const IS_MANAGER = <?php echo $isManager ? 'true' : 'false'; ?>;
 let currentView = localStorage.getItem('locView') || 'tree';
 let navStack = [];
 let buildingsData = [];
+let mrAllRoomsMap = {};
+let mrMyRoomsMap  = {};
 
 // ═══════ Init ═══════
 async function init() {
     loadStats();
     loadBuildings();
+    loadMyroomData();
     setView(currentView, true);
     setupSearch();
 }
@@ -310,11 +446,38 @@ async function loadStats() {
             document.getElementById('heroBuildings').textContent = d.data.buildings;
             document.getElementById('heroRooms').textContent = d.data.rooms;
             document.getElementById('heroContainers').textContent = d.data.containers;
-            // floors stat (may not exist in API yet)
-            const flEl = document.getElementById('statFloors');
-            if (flEl) flEl.textContent = d.data.floors ?? '—';
         }
     } catch(e) { console.error(e); }
+}
+
+// ═══════ Myroom Data Sync ═══════
+async function loadMyroomData() {
+    try {
+        const [allRes, myRes] = await Promise.all([
+            apiFetch('/v1/api/myroom.php?action=all_rooms'),
+            apiFetch('/v1/api/myroom.php?action=my_rooms')
+        ]);
+        if (allRes.success) {
+            mrAllRoomsMap = {};
+            (allRes.data || []).forEach(r => { mrAllRoomsMap[r.id] = r; });
+        }
+        if (myRes.success) {
+            mrMyRoomsMap = {};
+            (myRes.data || []).forEach(r => { mrMyRoomsMap[r.room_id] = r; });
+            const cnt = Object.keys(mrMyRoomsMap).length;
+            if (cnt) {
+                const hw = document.getElementById('heroMyRoomsWrap');
+                const hv = document.getElementById('heroMyRooms');
+                const sc = document.getElementById('statMyRoomsCard');
+                const sv = document.getElementById('statMyRooms');
+                if (hw) { hw.style.display = ''; if (hv) hv.textContent = cnt; }
+                if (sc) { sc.style.display = ''; if (sv) sv.textContent = cnt; }
+            }
+        }
+        // Re-render rooms if already at floor level so enrichment shows
+        const level = navStack.length > 0 ? navStack[navStack.length - 1] : null;
+        if (level && level.type === 'floor') renderCurrentLevel();
+    } catch(e) { console.error('myroom sync:', e); }
 }
 
 // ═══════ View Toggle ═══════
@@ -515,56 +678,69 @@ async function loadAndRenderRooms(el, buildingId, floor) {
         const d = await apiFetch(`/v1/api/locations.php?action=rooms&building_id=${buildingId}&floor=${floor}`);
         if (!d.success || !d.data.length) { el.innerHTML = emptyState('fas fa-door-open','ไม่พบห้องในชั้นนี้'); return; }
         const rooms = d.data;
+        const myInView = rooms.filter(r => mrAllRoomsMap[r.id]?.access_status === 'has_access');
+        const band = myRoomsBand(myInView);
 
         if (currentView === 'tree') {
-            el.innerHTML = `<div class="loc-panel">
+            el.innerHTML = band + `<div class="loc-panel">
                 <div class="loc-panel-hd">
                     <div class="loc-panel-hd-title"><i class="fas fa-door-open"></i> ห้องในชั้นนี้</div>
                     <span style="font-size:11px;color:var(--c3)">${rooms.length} ห้อง</span>
                 </div>
                 <div class="loc-tree-list">
-                    ${rooms.map(r => `
-                        <div class="loc-tree-item" onclick="navigateTo('room',${r.id},'${esc(r.name)}')">
-                            <div class="loc-tree-ic" style="background:#e0f2fe;color:#0369a1"><i class="fas fa-door-open"></i></div>
+                    ${rooms.map(r => {
+                        const mr = mrAllRoomsMap[r.id];
+                        const my = mrMyRoomsMap[r.id];
+                        const isMine = mr?.access_status === 'has_access';
+                        return `<div class="loc-tree-item${isMine ? ' loc-tree-item-mine' : ''}" onclick="navigateTo('room',${r.id},'${esc(r.name)}')">
+                            <div class="loc-tree-ic" style="background:${isMine?'#eef2ff':'#e0f2fe'};color:${isMine?'#4338ca':'#0369a1'}"><i class="fas fa-door-open"></i></div>
                             <div class="loc-tree-name">${esc(r.name)}</div>
                             ${r.code ? `<span class="loc-tree-badge">${esc(r.code)}</span>` : ''}
                             ${statusDot(r.status_text)}
                             ${r.cabinet_count > 0 ? `<span class="loc-tree-badge">${r.cabinet_count} ตู้</span>` : ''}
+                            ${enrichTreeRoom(mr, my, isMine)}
                             <i class="fas fa-chevron-right loc-tree-arr"></i>
-                        </div>
-                    `).join('')}
+                        </div>`;
+                    }).join('')}
                 </div>
             </div>`;
         } else if (currentView === 'grid') {
-            el.innerHTML = `<div class="loc-grid">${rooms.map(r => `
-                <div class="loc-card" onclick="navigateTo('room',${r.id},'${esc(r.name)}')">
+            el.innerHTML = band + `<div class="loc-grid">${rooms.map(r => {
+                const mr = mrAllRoomsMap[r.id];
+                const my = mrMyRoomsMap[r.id];
+                const isMine = mr?.access_status === 'has_access';
+                return `<div class="loc-card${isMine ? ' loc-card-mine' : ''}" onclick="navigateTo('room',${r.id},'${esc(r.name)}')">
                     <div class="loc-card-hd">
-                        <div class="loc-card-ic" style="background:#e0f2fe;color:#0369a1"><i class="fas fa-door-open"></i></div>
+                        <div class="loc-card-ic" style="background:${isMine?'#eef2ff':'#e0f2fe'};color:${isMine?'#4338ca':'#0369a1'}"><i class="fas fa-door-open"></i></div>
                         <div style="flex:1;min-width:0">
                             <div class="loc-card-nm" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.name)}</div>
                             <div class="loc-card-sub">${esc(r.code||'')}${r.area_sqm?' · '+r.area_sqm+' ตร.ม.':''}</div>
                         </div>
-                        ${statusBadge(r.status_text)}
+                        ${isMine ? '<span class="loc-my-room-tag"><i class="fas fa-star" style="font-size:8px"></i>ของฉัน</span>' : statusBadge(r.status_text)}
                     </div>
                     <div class="loc-card-bd">
-                        <div class="loc-card-stats">
-                            <div class="loc-card-stat"><div class="v">${r.cabinet_count}</div><div class="l">ตู้เก็บ</div></div>
-                            <div class="loc-card-stat"><div class="v">${r.capacity_persons||'—'}</div><div class="l">ความจุ(คน)</div></div>
-                        </div>
+                        ${enrichCardStats(mr, my, r)}
                     </div>
-                </div>`).join('')}</div>`;
+                    ${enrichCardFooter(mr, my, isMine)}
+                </div>`;
+            }).join('')}</div>`;
         } else {
-            el.innerHTML = `<div class="loc-panel"><div class="loc-tw"><table class="loc-t">
-                <thead><tr><th>รหัส</th><th>ชื่อห้อง</th><th>สถานะ</th><th style="text-align:center">พื้นที่</th><th style="text-align:center">ความจุ</th><th style="text-align:center">ตู้</th></tr></thead>
-                <tbody>${rooms.map(r => `
-                    <tr onclick="navigateTo('room',${r.id},'${esc(r.name)}')">
-                        <td><span style="font-size:10px;padding:2px 8px;border-radius:6px;background:#e0f2fe;color:#0369a1;font-weight:700">${esc(r.code||'—')}</span></td>
-                        <td style="font-weight:600;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.name)}</td>
+            el.innerHTML = band + `<div class="loc-panel"><div class="loc-tw"><table class="loc-t">
+                <thead><tr><th>รหัส</th><th>ชื่อห้อง</th><th>สถานะ</th><th style="text-align:center">ตู้</th><th style="text-align:center">ภาชนะ</th><th>ผู้ดูแล</th><th></th></tr></thead>
+                <tbody>${rooms.map(r => {
+                    const mr = mrAllRoomsMap[r.id];
+                    const my = mrMyRoomsMap[r.id];
+                    const isMine = mr?.access_status === 'has_access';
+                    return `<tr onclick="navigateTo('room',${r.id},'${esc(r.name)}')" style="${isMine?'background:#fafbff':''}">
+                        <td><span style="font-size:10px;padding:2px 8px;border-radius:6px;background:${isMine?'#eef2ff':'#e0f2fe'};color:${isMine?'#4338ca':'#0369a1'};font-weight:700">${esc(r.code||'—')}</span></td>
+                        <td style="font-weight:600;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${isMine?'<i class="fas fa-star" style="color:#6366f1;font-size:9px;margin-right:5px"></i>':''}${esc(r.name)}</td>
                         <td>${statusBadge(r.status_text)}</td>
-                        <td style="text-align:center">${r.area_sqm ? r.area_sqm+' ตร.ม.' : '—'}</td>
-                        <td style="text-align:center">${r.capacity_persons||'—'}</td>
-                        <td style="text-align:center;font-weight:700">${r.cabinet_count}</td>
-                    </tr>`).join('')}
+                        <td style="text-align:center">${r.cabinet_count}</td>
+                        <td style="text-align:center">${enrichTableCtr(mr, my)}</td>
+                        <td style="max-width:160px">${enrichTableMgrs(mr)}</td>
+                        <td style="text-align:center;white-space:nowrap">${isMine ? `<a href="/v1/pages/myroom.php" class="loc-goto-btn" onclick="event.stopPropagation()"><i class="fas fa-arrow-right" style="font-size:9px"></i>จัดการ</a>` : ''}</td>
+                    </tr>`;
+                }).join('')}
                 </tbody></table></div></div>`;
         }
     } catch(e) { el.innerHTML = emptyState('fas fa-exclamation-triangle', e.message); }
@@ -575,57 +751,79 @@ async function loadAndRenderCabinets(el, roomId) {
     el.innerHTML = loading();
     try {
         const d = await apiFetch(`/v1/api/locations.php?action=cabinets&room_id=${roomId}`);
+        const mr = mrAllRoomsMap[roomId];
+        const my = mrMyRoomsMap[roomId];
+        const isMine = mr?.access_status === 'has_access';
+        const band = isMine ? roomManageBand(mr, my) : '';
+
         if (!d.success || !d.data.length) {
-            el.innerHTML = emptyState('fas fa-archive', 'ยังไม่มีตู้เก็บในห้องนี้') +
+            el.innerHTML = band + emptyState('fas fa-archive', 'ยังไม่มีตู้เก็บในห้องนี้') +
                 (IS_MANAGER ? `<div style="text-align:center;margin-top:12px"><button onclick="showAddModal('cabinet',{room_id:${roomId}})" class="loc-btn loc-btn-p"><i class="fas fa-plus"></i> เพิ่มตู้เก็บ</button></div>` : '');
             return;
         }
         const cabs = d.data;
 
         if (currentView === 'tree') {
-            el.innerHTML = `<div class="loc-panel">
+            el.innerHTML = band + `<div class="loc-panel">
                 <div class="loc-panel-hd">
-                    <div class="loc-panel-hd-title"><i class="fas fa-archive"></i> ตู้เก็บ</div>
+                    <div class="loc-panel-hd-title"><i class="fas fa-archive"></i> ตู้เก็บในห้องนี้</div>
                     <span style="font-size:11px;color:var(--c3)">${cabs.length} ตู้</span>
                 </div>
                 <div class="loc-tree-list">
-                    ${cabs.map(c => `
-                        <div class="loc-tree-item" onclick="navigateTo('cabinet',${c.id},'${esc(c.name)}')">
-                            <div class="loc-tree-ic" style="background:#f3e8ff;color:#7c3aed"><i class="fas fa-archive"></i></div>
+                    ${cabs.map(c => {
+                        const hasDanger = c.expired_count > 0;
+                        const hasWarn = !hasDanger && c.expiring_count > 0;
+                        return `<div class="loc-tree-item" onclick="navigateTo('cabinet',${c.id},'${esc(c.name)}')">
+                            <div class="loc-tree-ic" style="background:${cabinetTypeBg(c.type)};color:${cabinetTypeColor(c.type)}">${cabinetTypeIconEl(c.type)}</div>
                             <div class="loc-tree-name">${esc(c.name)}</div>
+                            ${c.code ? `<span class="loc-tree-badge">${esc(c.code)}</span>` : ''}
                             <span class="loc-tree-badge">${cabinetTypeLabel(c.type)}</span>
                             <span class="loc-tree-badge">${c.shelf_count} ชั้นวาง</span>
-                            ${c.container_count > 0 ? `<span class="loc-tree-badge" style="background:#dcfce7;color:#15803d">${c.container_count} ภาชนะ</span>` : ''}
+                            ${c.container_count > 0 ? `<span class="loc-tree-badge" style="background:#dcfce7;color:#15803d"><i class="fas fa-flask" style="font-size:8px"></i> ${c.container_count}</span>` : ''}
+                            ${hasDanger ? `<span class="loc-ctr-badge danger"><i class="fas fa-exclamation-triangle"></i>${c.expired_count} หมดอายุ</span>` : ''}
+                            ${hasWarn ? `<span class="loc-ctr-badge warn"><i class="fas fa-clock"></i>${c.expiring_count} ใกล้หมด</span>` : ''}
                             <i class="fas fa-chevron-right loc-tree-arr"></i>
-                        </div>
-                    `).join('')}
+                        </div>`;
+                    }).join('')}
                 </div>
                 ${IS_MANAGER ? `<div class="loc-add-row"><button onclick="showAddModal('cabinet',{room_id:${roomId}})" class="loc-btn loc-btn-g" style="width:100%;justify-content:center"><i class="fas fa-plus"></i> เพิ่มตู้เก็บ</button></div>` : ''}
             </div>`;
         } else if (currentView === 'grid') {
-            el.innerHTML = `<div class="loc-grid">${cabs.map(c => `
-                <div class="loc-card" onclick="navigateTo('cabinet',${c.id},'${esc(c.name)}')">
+            el.innerHTML = band + `<div class="loc-grid">${cabs.map(c => {
+                const hasDanger = c.expired_count > 0;
+                const hasWarn = !hasDanger && c.expiring_count > 0;
+                const ctrColor = hasDanger ? '#dc2626' : hasWarn ? '#a16207' : '#15803d';
+                return `<div class="loc-card" onclick="navigateTo('cabinet',${c.id},'${esc(c.name)}')">
                     <div class="loc-card-hd">
-                        <div class="loc-card-ic" style="background:#f3e8ff;color:#7c3aed"><i class="fas fa-archive"></i></div>
-                        <div><div class="loc-card-nm">${esc(c.name)}</div><div class="loc-card-sub">${cabinetTypeLabel(c.type)}</div></div>
-                    </div>
-                    <div class="loc-card-bd">
-                        <div class="loc-card-stats">
-                            <div class="loc-card-stat"><div class="v">${c.shelf_count}</div><div class="l">ชั้นวาง</div></div>
-                            <div class="loc-card-stat"><div class="v">${c.container_count}</div><div class="l">ภาชนะ</div></div>
+                        <div class="loc-card-ic" style="background:${cabinetTypeBg(c.type)};color:${cabinetTypeColor(c.type)}">${cabinetTypeIconEl(c.type)}</div>
+                        <div style="flex:1;min-width:0">
+                            <div class="loc-card-nm">${esc(c.name)}</div>
+                            <div class="loc-card-sub">${cabinetTypeLabel(c.type)}${c.code?' · '+esc(c.code):''}</div>
                         </div>
                     </div>
-                </div>`).join('')}</div>`;
+                    <div class="loc-card-bd">
+                        <div class="loc-card-stats" style="grid-template-columns:1fr 1fr 1fr">
+                            <div class="loc-card-stat"><div class="v">${c.shelf_count}</div><div class="l">ชั้นวาง</div></div>
+                            <div class="loc-card-stat"><div class="v" style="color:${ctrColor}">${c.container_count}</div><div class="l">ภาชนะ</div></div>
+                            <div class="loc-card-stat"><div class="v" style="color:${hasDanger?'#dc2626':hasWarn?'#a16207':'#64748b'}">${hasDanger?c.expired_count:hasWarn?c.expiring_count:0}</div><div class="l">${hasDanger?'หมดอายุ':hasWarn?'ใกล้หมด':'ปกติ'}</div></div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('')}</div>`;
         } else {
-            el.innerHTML = `<div class="loc-panel"><div class="loc-tw"><table class="loc-t">
-                <thead><tr><th>ชื่อตู้</th><th>ประเภท</th><th style="text-align:center">ชั้นวาง</th><th style="text-align:center">ภาชนะ</th></tr></thead>
-                <tbody>${cabs.map(c => `
-                    <tr onclick="navigateTo('cabinet',${c.id},'${esc(c.name)}')">
-                        <td style="font-weight:600"><i class="fas fa-archive" style="color:#7c3aed;margin-right:7px"></i>${esc(c.name)}</td>
+            el.innerHTML = band + `<div class="loc-panel"><div class="loc-tw"><table class="loc-t">
+                <thead><tr><th>ตู้เก็บ</th><th>ประเภท</th><th style="text-align:center">ชั้นวาง</th><th style="text-align:center">ภาชนะ</th><th style="text-align:center">สถานะ</th></tr></thead>
+                <tbody>${cabs.map(c => {
+                    const hasDanger = c.expired_count > 0;
+                    const hasWarn = !hasDanger && c.expiring_count > 0;
+                    return `<tr onclick="navigateTo('cabinet',${c.id},'${esc(c.name)}')">
+                        <td style="font-weight:600"><span style="display:inline-flex;align-items:center;gap:7px"><span style="width:26px;height:26px;border-radius:7px;background:${cabinetTypeBg(c.type)};color:${cabinetTypeColor(c.type)};display:inline-flex;align-items:center;justify-content:center;font-size:11px">${cabinetTypeIconEl(c.type)}</span>${esc(c.name)}</span></td>
                         <td style="color:var(--c3)">${cabinetTypeLabel(c.type)}</td>
                         <td style="text-align:center">${c.shelf_count}</td>
-                        <td style="text-align:center;font-weight:700">${c.container_count}</td>
-                    </tr>`).join('')}
+                        <td style="text-align:center;font-weight:700;color:${c.container_count>0?'#15803d':'var(--c3)'}">${c.container_count}</td>
+                        <td style="text-align:center">${hasDanger?`<span class="loc-ctr-badge danger">${c.expired_count} หมดอายุ</span>`:hasWarn?`<span class="loc-ctr-badge warn">${c.expiring_count} ใกล้หมด</span>`:c.container_count>0?'<span class="loc-ctr-badge total">ปกติ</span>':'—'}</td>
+                    </tr>`;
+                }).join('')}
                 </tbody></table></div></div>`;
         }
     } catch(e) { el.innerHTML = emptyState('fas fa-exclamation-triangle', e.message); }
@@ -637,26 +835,47 @@ async function loadAndRenderShelves(el, cabinetId) {
     try {
         const d = await apiFetch(`/v1/api/locations.php?action=shelves&cabinet_id=${cabinetId}`);
         if (!d.success || !d.data.length) {
-            el.innerHTML = emptyState('fas fa-layer-group', 'ยังไม่มีชั้นวาง') +
+            el.innerHTML = roomManageBandFromStack() + emptyState('fas fa-layer-group', 'ยังไม่มีชั้นวาง') +
                 (IS_MANAGER ? `<div style="text-align:center;margin-top:12px"><button onclick="showAddModal('shelf',{cabinet_id:${cabinetId}})" class="loc-btn loc-btn-p"><i class="fas fa-plus"></i> เพิ่มชั้นวาง</button></div>` : '');
             return;
         }
         const shelves = d.data;
-        el.innerHTML = `<div class="loc-panel">
+        const cabinetType = shelves[0]?.cabinet_type || 'storage';
+        const totalCtrs = shelves.reduce((s, sh) => s + (+sh.container_count||0), 0);
+        const totalExp = shelves.reduce((s, sh) => s + (+sh.expired_count||0), 0);
+        const totalWarn = shelves.reduce((s, sh) => s + (+sh.expiring_count||0), 0);
+
+        el.innerHTML = roomManageBandFromStack() + `<div class="loc-panel">
             <div class="loc-panel-hd">
-                <div class="loc-panel-hd-title"><i class="fas fa-layer-group"></i> ชั้นวาง</div>
-                <span style="font-size:11px;color:var(--c3)">${shelves.length} ชั้น</span>
+                <div class="loc-panel-hd-title" style="gap:8px">
+                    <span style="width:26px;height:26px;border-radius:7px;background:${cabinetTypeBg(cabinetType)};color:${cabinetTypeColor(cabinetType)};display:inline-flex;align-items:center;justify-content:center;font-size:11px">${cabinetTypeIconEl(cabinetType)}</span>
+                    ชั้นวาง
+                </div>
+                <div style="display:flex;gap:6px;align-items:center">
+                    ${totalCtrs > 0 ? `<span class="loc-ctr-badge total"><i class="fas fa-flask"></i>${totalCtrs} ภาชนะ</span>` : ''}
+                    ${totalExp > 0 ? `<span class="loc-ctr-badge danger"><i class="fas fa-exclamation-triangle"></i>${totalExp}</span>` : ''}
+                    ${totalWarn > 0 ? `<span class="loc-ctr-badge warn"><i class="fas fa-clock"></i>${totalWarn}</span>` : ''}
+                    <span style="font-size:11px;color:var(--c3)">${shelves.length} ชั้น</span>
+                </div>
             </div>
             <div class="loc-tree-list">
-                ${shelves.map(s => `
-                    <div class="loc-tree-item" onclick="navigateTo('shelf',${s.id},'${esc(s.name)}')">
-                        <div class="loc-tree-ic" style="background:#ccfbf1;color:#0d9488"><i class="fas fa-layer-group"></i></div>
-                        <div class="loc-tree-name">${esc(s.name)} <span style="color:var(--c3);font-size:11px;font-weight:400">(ระดับ ${s.level})</span></div>
-                        <span class="loc-tree-badge">${s.slot_count} ช่อง</span>
-                        ${s.container_count > 0 ? `<span class="loc-tree-badge" style="background:#dcfce7;color:#15803d">${s.container_count} ภาชนะ</span>` : ''}
+                ${shelves.map(s => {
+                    const hasDanger = s.expired_count > 0;
+                    const hasWarn = !hasDanger && s.expiring_count > 0;
+                    const fillPct = s.slot_count > 0 ? Math.round((s.container_count / s.slot_count) * 100) : 0;
+                    return `<div class="loc-tree-item" onclick="navigateTo('shelf',${s.id},'${esc(s.name)}')">
+                        <div class="loc-tree-ic" style="background:#ccfbf1;color:#0d9488">
+                            <i class="fas fa-layer-group"></i>
+                            <span style="position:absolute;bottom:-1px;right:-1px;font-size:7px;background:#0d9488;color:#fff;border-radius:3px;padding:0 2px;font-weight:700">${s.level}</span>
+                        </div>
+                        <div class="loc-tree-name">${esc(s.name)}</div>
+                        <span class="loc-tree-badge">${s.container_count}/${s.slot_count} ช่อง</span>
+                        ${hasDanger ? `<span class="loc-ctr-badge danger"><i class="fas fa-exclamation-triangle"></i>${s.expired_count}</span>` : ''}
+                        ${hasWarn ? `<span class="loc-ctr-badge warn"><i class="fas fa-clock"></i>${s.expiring_count}</span>` : ''}
+                        ${s.container_count > 0 && !hasDanger && !hasWarn ? `<span class="loc-ctr-badge total"><i class="fas fa-flask"></i>${s.container_count}</span>` : ''}
                         <i class="fas fa-chevron-right loc-tree-arr"></i>
-                    </div>
-                `).join('')}
+                    </div>`;
+                }).join('')}
             </div>
             ${IS_MANAGER ? `<div class="loc-add-row"><button onclick="showAddModal('shelf',{cabinet_id:${cabinetId}})" class="loc-btn loc-btn-g" style="width:100%;justify-content:center"><i class="fas fa-plus"></i> เพิ่มชั้นวาง</button></div>` : ''}
         </div>`;
@@ -669,84 +888,185 @@ async function loadAndRenderSlots(el, shelfId) {
     try {
         const d = await apiFetch(`/v1/api/locations.php?action=slots&shelf_id=${shelfId}`);
         if (!d.success || !d.data.length) {
-            el.innerHTML = emptyState('fas fa-th', 'ยังไม่มีช่องเก็บ') +
+            el.innerHTML = roomManageBandFromStack() + emptyState('fas fa-th', 'ยังไม่มีช่องเก็บ') +
                 (IS_MANAGER ? `<div style="text-align:center;margin-top:12px"><button onclick="showAddModal('slot',{shelf_id:${shelfId}})" class="loc-btn loc-btn-p"><i class="fas fa-plus"></i> เพิ่มช่อง</button></div>` : '');
             return;
         }
         const slots = d.data;
         const used = slots.filter(s => s.container_id).length;
-        el.innerHTML = `<div class="loc-panel">
+        const expired = slots.filter(s => s.container_id && slotExpiryState(s) === 'expired').length;
+        const expiring = slots.filter(s => s.container_id && slotExpiryState(s) === 'expiring').length;
+
+        el.innerHTML = roomManageBandFromStack() + `<div class="loc-panel">
             <div class="loc-panel-hd">
-                <div class="loc-panel-hd-title"><i class="fas fa-th"></i> ช่องเก็บ</div>
-                <span style="font-size:11px;color:var(--c3)">${used}/${slots.length} ใช้งาน</span>
+                <div class="loc-panel-hd-title"><i class="fas fa-th-large"></i> ช่องเก็บสาร</div>
+                <div style="display:flex;gap:6px;align-items:center">
+                    <span style="font-size:11px;color:var(--c3)">${used}/${slots.length} ช่อง</span>
+                    ${expired > 0 ? `<span class="loc-ctr-badge danger"><i class="fas fa-exclamation-triangle"></i>${expired} หมดอายุ</span>` : ''}
+                    ${expiring > 0 ? `<span class="loc-ctr-badge warn"><i class="fas fa-clock"></i>${expiring} ใกล้หมด</span>` : ''}
+                </div>
             </div>
-            <div class="loc-slots">
-                ${slots.map(s => `
-                    <div class="loc-slot${s.container_id?' used':''}">
-                        <div class="loc-slot-code">${esc(s.code||s.name)}</div>
-                        <div class="loc-slot-ic">${s.container_id ? '<i class="fas fa-flask" style="color:#16a34a"></i>' : '<i class="fas fa-square" style="color:#e2e8f0"></i>'}</div>
-                        ${s.container_id
-                            ? `<div class="loc-slot-nm">${esc(s.chemical_name||'')}</div><div class="loc-slot-sub">${esc(s.container_number||'')}</div>`
-                            : `<div class="loc-slot-empty">ว่าง</div>`}
-                    </div>
-                `).join('')}
+            <div class="loc-slots" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
+                ${slots.map(s => renderSlotCard(s)).join('')}
             </div>
             ${IS_MANAGER ? `<div class="loc-add-row"><button onclick="showAddModal('slot',{shelf_id:${shelfId}})" class="loc-btn loc-btn-g" style="width:100%;justify-content:center"><i class="fas fa-plus"></i> เพิ่มช่อง</button></div>` : ''}
         </div>`;
     } catch(e) { el.innerHTML = emptyState('fas fa-exclamation-triangle', e.message); }
 }
 
+function slotExpiryState(s) {
+    if (!s.expiry_date) return 'ok';
+    const exp = new Date(s.expiry_date);
+    const now = new Date();
+    if (exp < now) return 'expired';
+    const diff = (exp - now) / (1000 * 86400);
+    if (diff <= 60) return 'expiring';
+    return 'ok';
+}
+
+function renderSlotCard(s) {
+    if (!s.container_id) {
+        return `<div class="loc-slot">
+            <div class="loc-slot-hdr">
+                <span class="loc-slot-code">${esc(s.code || s.name)}</span>
+            </div>
+            <div class="loc-slot-empty">
+                <div class="loc-slot-empty-ic"><i class="fas fa-box-open"></i></div>
+                <div class="loc-slot-empty-lbl">ว่าง</div>
+            </div>
+        </div>`;
+    }
+
+    const expState = slotExpiryState(s);
+    const expTag = expState === 'expired'
+        ? `<span class="loc-slot-exp-tag danger">หมดอายุ</span>`
+        : expState === 'expiring'
+            ? `<span class="loc-slot-exp-tag warn">ใกล้หมด</span>`
+            : '';
+
+    const stateClass = expState === 'expired' ? ' expired' : expState === 'expiring' ? ' expiring' : ' used';
+    const physState = s.physical_state;
+    const stateIc = physState === 'liquid' ? '🧪' : physState === 'solid' ? '🧂' : physState === 'gas' ? '💨' : '⚗️';
+
+    const cur = parseFloat(s.current_quantity) || 0;
+    const ini = parseFloat(s.initial_quantity) || cur;
+    const fillPct = ini > 0 ? Math.min(100, Math.round((cur / ini) * 100)) : 100;
+    const fillColor = fillPct > 50 ? '#22c55e' : fillPct > 20 ? '#f59e0b' : '#ef4444';
+
+    const expiryFmt = s.expiry_date ? new Date(s.expiry_date).toLocaleDateString('th-TH', {year:'2-digit',month:'short',day:'numeric'}) : '';
+
+    return `<div class="loc-slot${stateClass}">
+        <div class="loc-slot-hdr">
+            <span class="loc-slot-code">${esc(s.code || s.name)}</span>
+            ${expTag}
+        </div>
+        <div class="loc-slot-body">
+            <span class="loc-slot-ic">${stateIc}</span>
+            <div class="loc-slot-nm" title="${esc(s.chemical_name||'')}">${esc(s.chemical_name || '—')}</div>
+            ${s.bottle_code ? `<div class="loc-slot-bc">${esc(s.bottle_code)}</div>` : ''}
+            ${ini > 0 ? `
+                <div class="loc-slot-qty-bar"><div class="loc-slot-qty-fill" style="width:${fillPct}%;background:${fillColor}"></div></div>
+                <div class="loc-slot-qty">${cur} / ${ini} ${esc(s.quantity_unit||'')}</div>
+            ` : ''}
+            ${expiryFmt && expState !== 'ok' ? `<div style="font-size:9px;color:${expState==='expired'?'#dc2626':'#a16207'};margin-top:3px"><i class="fas fa-calendar-times" style="font-size:8px"></i> ${expiryFmt}</div>` : ''}
+        </div>
+    </div>`;
+}
+
 // ═══════ Search ═══════
 function setupSearch() {
     let timer;
-    document.getElementById('searchInput').addEventListener('input', function() {
+    const inp = document.getElementById('searchInput');
+    inp.addEventListener('input', function() {
         clearTimeout(timer);
         const q = this.value.trim();
-        if (q.length < 2) { document.getElementById('searchResults').style.display = 'none'; return; }
+        if (q.length < 2) { document.getElementById('searchResults').style.display = 'none'; _srItems = []; return; }
         timer = setTimeout(() => doSearch(q), 300);
     });
+    inp.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { inp.value = ''; document.getElementById('searchResults').style.display = 'none'; _srItems = []; }
+    });
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#searchResults') && !e.target.closest('.loc-search')) {
+            document.getElementById('searchResults').style.display = 'none';
+        }
+    });
 }
+
+let _srItems = [];
 
 async function doSearch(q) {
     try {
         const d = await apiFetch(`/v1/api/locations.php?action=search&q=${encodeURIComponent(q)}`);
         const sr = document.getElementById('searchResults');
         if (!d.success || !d.data.length) {
+            _srItems = [];
             sr.innerHTML = `<div class="loc-sr"><div class="loc-sr-hd">ผลการค้นหา</div><div style="padding:20px;text-align:center;color:var(--c3);font-size:13px">ไม่พบผลลัพธ์</div></div>`;
             sr.style.display = 'block';
             return;
         }
-        const typeIcon = {building:'fa-building',room:'fa-door-open',cabinet:'fa-archive'};
-        const typeBg   = {building:'#eef2ff',room:'#e0f2fe',cabinet:'#f3e8ff'};
-        const typeClr  = {building:'#4338ca',room:'#0369a1',cabinet:'#7c3aed'};
-        const typeLabel= {building:'อาคาร',room:'ห้อง',cabinet:'ตู้'};
+        _srItems = d.data;
+        const typeIcon  = {building:'fa-building', room:'fa-door-open', cabinet:'fa-archive'};
+        const typeBg    = {building:'#eef2ff',     room:'#e0f2fe',      cabinet:'#f3e8ff'};
+        const typeClr   = {building:'#4338ca',     room:'#0369a1',      cabinet:'#7c3aed'};
+        const typeLabel = {building:'อาคาร',        room:'ห้อง',          cabinet:'ตู้เก็บ'};
+
         sr.style.display = 'block';
         sr.innerHTML = `<div class="loc-sr">
-            <div class="loc-sr-hd">ผลการค้นหา (${d.data.length})</div>
-            ${d.data.map(item => `
-                <div class="loc-sr-item" onclick="searchNavigate('${item.type}',${item.id},'${esc(item.name)}',${JSON.stringify(item).replace(/'/g,"\\'")})">
-                    <div class="loc-sr-ic" style="background:${typeBg[item.type]||'#f1f5f9'};color:${typeClr[item.type]||'#64748b'}"><i class="fas ${typeIcon[item.type]||'fa-map-marker-alt'}"></i></div>
+            <div class="loc-sr-hd">ผลการค้นหา (${d.data.length} รายการ)</div>
+            ${d.data.map((item, i) => {
+                const path = srPath(item);
+                const mr = mrAllRoomsMap[item.id];
+                const isMine = item.type === 'room' && mr?.access_status === 'has_access';
+                return `<div class="loc-sr-item" onclick="searchNavigate(${i})">
+                    <div class="loc-sr-ic" style="background:${isMine?'#eef2ff':typeBg[item.type]||'#f1f5f9'};color:${isMine?'#4338ca':typeClr[item.type]||'#64748b'}">
+                        <i class="fas ${typeIcon[item.type]||'fa-map-marker-alt'}"></i>
+                    </div>
                     <div style="flex:1;min-width:0">
-                        <div class="loc-sr-nm">${esc(item.name)}</div>
-                        <div class="loc-sr-sub">${esc(item.building_name||'')}${item.floor?' · ชั้น '+item.floor:''}${item.code?' · '+item.code:''}</div>
+                        <div class="loc-sr-nm" style="display:flex;align-items:center;gap:5px">
+                            ${esc(item.name)}
+                            ${item.code ? `<span style="font-size:9px;padding:1px 5px;border-radius:5px;background:${typeBg[item.type]||'#f1f5f9'};color:${typeClr[item.type]||'#64748b'};font-weight:700">${esc(item.code)}</span>` : ''}
+                            ${isMine ? '<span class="loc-my-room-tag" style="font-size:9px;padding:1px 7px"><i class="fas fa-star" style="font-size:7px"></i>ของฉัน</span>' : ''}
+                        </div>
+                        <div class="loc-sr-sub">${path}</div>
                     </div>
                     <span class="loc-sr-tag">${typeLabel[item.type]||item.type}</span>
-                </div>
-            `).join('')}
+                </div>`;
+            }).join('')}
         </div>`;
     } catch(e) { console.error(e); }
 }
 
-function searchNavigate(type, id, name, item) {
+function srPath(item) {
+    const parts = [];
+    if (item.building_name || item.building_code) parts.push(esc(item.building_code || item.building_name));
+    if (item.floor) parts.push('ชั้น ' + item.floor);
+    if (item.room_name) parts.push(esc(item.room_name));
+    return parts.join(' <i class="fas fa-chevron-right" style="font-size:7px;opacity:.5"></i> ');
+}
+
+function searchNavigate(index) {
+    const item = _srItems[index];
+    if (!item) return;
     document.getElementById('searchResults').style.display = 'none';
     document.getElementById('searchInput').value = '';
     navStack = [];
-    if (type === 'building') {
-        navigateTo('building', id, name);
-    } else if (type === 'room') {
-        if (item.building_name) navigateTo('building', null, item.building_code || item.building_name);
-        navigateTo('room', id, name);
+
+    if (item.type === 'building') {
+        navStack.push({type:'building', id:+item.id, name:item.name});
+    } else if (item.type === 'room') {
+        if (item.building_id) navStack.push({type:'building', id:+item.building_id, name:item.building_name||item.building_code||'อาคาร'});
+        if (item.floor)       navStack.push({type:'floor', buildingId:+item.building_id, floor:+item.floor, name:'ชั้น '+item.floor});
+        navStack.push({type:'room', id:+item.id, name:item.name});
+    } else if (item.type === 'cabinet') {
+        if (item.building_id) navStack.push({type:'building', id:+item.building_id, name:item.building_name||item.building_code||'อาคาร'});
+        if (item.floor)       navStack.push({type:'floor', buildingId:+item.building_id, floor:+item.floor, name:'ชั้น '+item.floor});
+        if (item.room_id)     navStack.push({type:'room', id:+item.room_id, name:item.room_name||'ห้อง'});
+        navStack.push({type:'cabinet', id:+item.id, name:item.name});
     }
+
+    renderCurrentLevel();
+    updateBreadcrumb();
 }
 
 // ═══════ Add Modal ═══════
@@ -986,10 +1306,7 @@ function statusDot(s) {
     return '';
 }
 
-function cabinetTypeLabel(t) {
-    const m = {storage:'ตู้เก็บ',fume_hood:'ตู้ดูดควัน',refrigerator:'ตู้เย็น',freezer:'ตู้แช่แข็ง',safety_cabinet:'ตู้นิรภัย',other:'อื่นๆ'};
-    return m[t] || t || 'ตู้เก็บ';
-}
+function cabinetTypeLabel(t) { return (CAB_TYPE[t]||CAB_TYPE.other).label; }
 
 function loading() {
     return '<div class="loc-ld"><div class="ci-spinner"></div></div>';
@@ -1004,6 +1321,410 @@ function esc(s) {
     const d = document.createElement('div');
     d.textContent = String(s);
     return d.innerHTML;
+}
+
+// ═══════ Cabinet Type Helpers ═══════
+const CAB_TYPE = {
+    storage:        {label:'ตู้เก็บ',     icon:'fa-archive',        bg:'#f3e8ff',color:'#7c3aed'},
+    fume_hood:      {label:'ตู้ดูดควัน',   icon:'fa-wind',           bg:'#ccfbf1',color:'#0d9488'},
+    refrigerator:   {label:'ตู้เย็น',      icon:'fa-temperature-low',bg:'#e0f2fe',color:'#0369a1'},
+    freezer:        {label:'ตู้แช่แข็ง',   icon:'fa-snowflake',      bg:'#dbeafe',color:'#1d4ed8'},
+    safety_cabinet: {label:'ตู้นิรภัย',   icon:'fa-shield-alt',     bg:'#fee2e2',color:'#dc2626'},
+    other:          {label:'อื่นๆ',         icon:'fa-ellipsis-h',    bg:'#f1f5f9',color:'#64748b'},
+};
+function cabinetTypeBg(t)    { return (CAB_TYPE[t]||CAB_TYPE.other).bg; }
+function cabinetTypeColor(t) { return (CAB_TYPE[t]||CAB_TYPE.other).color; }
+function cabinetTypeIconEl(t){ const c = CAB_TYPE[t]||CAB_TYPE.other; return `<i class="fas ${c.icon}"></i>`; }
+
+// ═══════ Room Management Band Helpers ═══════
+function roomManageBand(mr, my) {
+    if (!mr || mr.access_status !== 'has_access') return '';
+    const stats = [];
+    if (my) {
+        if (my.total > 0) stats.push(`<span class="loc-room-mgmt-stat"><i class="fas fa-flask" style="color:#4338ca;font-size:9px"></i> ${my.total} ภาชนะ</span>`);
+        if (my.expired > 0) stats.push(`<span class="loc-room-mgmt-stat" style="color:#dc2626"><i class="fas fa-exclamation-triangle" style="font-size:9px"></i> ${my.expired} หมดอายุ</span>`);
+        else if (my.expiring_soon > 0) stats.push(`<span class="loc-room-mgmt-stat" style="color:#a16207"><i class="fas fa-clock" style="font-size:9px"></i> ${my.expiring_soon} ใกล้หมดอายุ</span>`);
+        if (my.unplaced > 0) stats.push(`<span class="loc-room-mgmt-stat" style="color:#6366f1"><i class="fas fa-inbox" style="font-size:9px"></i> ${my.unplaced} ยังไม่จัดวาง</span>`);
+    }
+    return `<div class="loc-room-mgmt">
+        <div class="loc-room-mgmt-ic"><i class="fas fa-star"></i></div>
+        <div class="loc-room-mgmt-body">
+            <div class="loc-room-mgmt-title">ห้องที่คุณดูแล</div>
+            ${stats.length ? `<div class="loc-room-mgmt-sub">${stats.join('')}</div>` : ''}
+        </div>
+        <a href="/v1/pages/myroom.php" class="loc-goto-btn" onclick="event.stopPropagation()">
+            <i class="fas fa-arrow-right" style="font-size:9px"></i>จัดการ My Room
+        </a>
+    </div>`;
+}
+
+function roomManageBandFromStack() {
+    const roomEntry = navStack.find(n => n.type === 'room');
+    if (!roomEntry) return '';
+    return roomManageBand(mrAllRoomsMap[roomEntry.id], mrMyRoomsMap[roomEntry.id]);
+}
+
+// ═══════ Myroom Enrichment Helpers ═══════
+
+function myRoomsBand(myRooms) {
+    if (!myRooms.length) return '';
+    return `<div class="loc-myrooms-band">
+        <div class="loc-myrooms-label">
+            <div class="lb">ห้องที่ดูแล</div>
+            <div class="ct">${myRooms.length}</div>
+        </div>
+        <div class="loc-myrooms-chips">
+            ${myRooms.map(r => {
+                const my = mrMyRoomsMap[r.id];
+                const hasDanger = my && my.expired > 0;
+                const hasWarn = my && !hasDanger && my.expiring_soon > 0;
+                const ctrLabel = my ? ` · ${my.total}` : '';
+                return `<button class="loc-myrooms-chip" onclick="event.stopPropagation();window.location='/v1/pages/myroom.php'">
+                    <div class="dot${hasDanger ? ' danger' : hasWarn ? ' warn' : ''}"></div>
+                    ${esc(r.code || r.name)}${ctrLabel}
+                </button>`;
+            }).join('')}
+        </div>
+        <a href="/v1/pages/myroom.php" class="loc-goto-btn-light" onclick="event.stopPropagation()">
+            <i class="fas fa-external-link-alt" style="font-size:9px"></i>จัดการ My Room
+        </a>
+    </div>`;
+}
+
+function enrichTreeRoom(mr, my, isMine) {
+    if (!mr) return '';
+    const parts = [];
+    if (my) {
+        if (my.expired > 0) parts.push(`<span class="loc-ctr-badge danger"><i class="fas fa-exclamation-triangle"></i>${my.expired} หมดอายุ</span>`);
+        else if (my.expiring_soon > 0) parts.push(`<span class="loc-ctr-badge warn"><i class="fas fa-clock"></i>${my.expiring_soon} ใกล้หมด</span>`);
+        if (my.total > 0) parts.push(`<span class="loc-ctr-badge total"><i class="fas fa-flask"></i>${my.total}</span>`);
+    } else if (mr.total > 0) {
+        parts.push(`<span class="loc-ctr-badge total"><i class="fas fa-flask"></i>${mr.total}</span>`);
+    }
+    if (isMine) {
+        parts.push(`<a href="/v1/pages/myroom.php" class="loc-goto-btn" style="padding:3px 9px;font-size:9px" onclick="event.stopPropagation()"><i class="fas fa-cog" style="font-size:8px"></i>จัดการ</a>`);
+    } else {
+        const mgrs = (mr.managers || []).slice(0, 3);
+        if (mgrs.length) parts.push(renderMgrAvatars(mgrs));
+    }
+    return `<div class="loc-tree-enrich">${parts.join('')}</div>`;
+}
+
+function enrichCardStats(mr, my, r) {
+    if (my) {
+        const warnV = my.expired > 0 ? my.expired : my.expiring_soon;
+        const warnL = my.expired > 0 ? 'หมดอายุ' : my.expiring_soon > 0 ? 'ใกล้หมด' : 'ปกติ';
+        const warnC = my.expired > 0 ? '#dc2626' : my.expiring_soon > 0 ? '#a16207' : '#64748b';
+        return `<div class="loc-card-stats" style="grid-template-columns:1fr 1fr 1fr">
+            <div class="loc-card-stat"><div class="v" style="color:#15803d">${my.total}</div><div class="l">ภาชนะ</div></div>
+            <div class="loc-card-stat"><div class="v" style="color:${warnC}">${warnV}</div><div class="l">${warnL}</div></div>
+            <div class="loc-card-stat"><div class="v">${r.cabinet_count}</div><div class="l">ตู้เก็บ</div></div>
+        </div>`;
+    }
+    if (mr && mr.total > 0) {
+        return `<div class="loc-card-stats">
+            <div class="loc-card-stat"><div class="v">${r.cabinet_count}</div><div class="l">ตู้เก็บ</div></div>
+            <div class="loc-card-stat"><div class="v" style="color:#0369a1">${mr.total}</div><div class="l">ภาชนะ</div></div>
+        </div>`;
+    }
+    return `<div class="loc-card-stats">
+        <div class="loc-card-stat"><div class="v">${r.cabinet_count}</div><div class="l">ตู้เก็บ</div></div>
+        <div class="loc-card-stat"><div class="v">${r.capacity_persons||'—'}</div><div class="l">ความจุ(คน)</div></div>
+    </div>`;
+}
+
+function enrichCardFooter(mr, my, isMine) {
+    if (!mr) return '';
+    let left = '', right = '';
+    if (isMine) {
+        const badges = [];
+        if (my && my.unplaced > 0) badges.push(`<span class="loc-ctr-badge warn" title="ยังไม่ได้จัดวาง"><i class="fas fa-inbox"></i>${my.unplaced} ยังไม่จัด</span>`);
+        left = `<div style="display:flex;gap:4px;align-items:center">${badges.join('')}</div>`;
+        right = `<a href="/v1/pages/myroom.php" class="loc-goto-btn" onclick="event.stopPropagation()"><i class="fas fa-arrow-right" style="font-size:9px"></i>จัดการ</a>`;
+    } else {
+        const mgrs = mr.managers || [];
+        left = mgrs.length
+            ? `<div style="display:flex;align-items:center;gap:6px">${renderMgrAvatars(mgrs)}${mgrs.length === 1 ? `<span style="font-size:10px;color:var(--c2);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(mgrs[0].first_name+' '+mgrs[0].last_name)}</span>` : ''}</div>`
+            : `<span style="font-size:10px;color:var(--c3)">ยังไม่มีผู้ดูแล</span>`;
+        right = '';
+    }
+    return `<div class="loc-card-ft">${left}${right}</div>`;
+}
+
+function enrichTableCtr(mr, my) {
+    if (my) {
+        let s = `<strong style="color:#15803d">${my.total}</strong>`;
+        if (my.expired > 0) s += ` <span class="loc-ctr-badge danger" style="padding:1px 5px">${my.expired}</span>`;
+        else if (my.expiring_soon > 0) s += ` <span class="loc-ctr-badge warn" style="padding:1px 5px">${my.expiring_soon}</span>`;
+        return s;
+    }
+    if (mr && mr.total > 0) return `<span style="color:#0369a1;font-weight:700">${mr.total}</span>`;
+    return '—';
+}
+
+function enrichTableMgrs(mr) {
+    if (!mr || !mr.managers || !mr.managers.length) return '<span style="color:var(--c3);font-size:11px">—</span>';
+    const primary = mr.managers.find(m => m.is_primary == 1) || mr.managers[0];
+    return `<div style="display:flex;align-items:center;gap:6px">
+        ${renderMgrAvatars(mr.managers)}
+        <span style="font-size:11px;color:var(--c1);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(primary.first_name+' '+primary.last_name)}</span>
+    </div>`;
+}
+
+function renderMgrAvatars(managers) {
+    const shown = managers.slice(0, 3);
+    const extra = managers.length - shown.length;
+    return `<div class="loc-mgr-row">${shown.map(m =>
+        `<div class="loc-mgr-av" title="${esc(m.first_name+' '+m.last_name)}">${m.avatar_url ? `<img src="${esc(m.avatar_url)}" alt="">` : esc((m.first_name||'?')[0])}</div>`
+    ).join('')}${extra > 0 ? `<div class="loc-mgr-av" style="background:#94a3b8;font-size:8px;width:22px;height:22px">+${extra}</div>` : ''}</div>`;
+}
+
+// ═══════ Stat Detail Sheet ═══════
+let _sdsType = null;
+
+function showStatDetail(type) {
+    _sdsType = type;
+    const ov = document.getElementById('statDetailOv');
+    ov.classList.add('open');
+    const inp = document.getElementById('sdsSearchInp');
+    if (inp) inp.value = '';
+    renderStatDetail(type);
+}
+
+function closeStatDetail() {
+    document.getElementById('statDetailOv').classList.remove('open');
+    _sdsType = null;
+}
+
+function renderStatDetail(type) {
+    if (type === 'buildings')  renderSdsBuildings();
+    else if (type === 'rooms')      renderSdsRooms('');
+    else if (type === 'cabinets')   renderSdsCabinets();
+    else if (type === 'containers') renderSdsContainers();
+    else if (type === 'myrooms')    renderSdsMyRooms();
+}
+
+function sdsHdrHtml(icBg, icColor, icon, title, cnt) {
+    return `<div class="loc-sds-hdr-ic" style="background:${icBg};color:${icColor}"><i class="fas ${icon}"></i></div>
+        <div style="flex:1;min-width:0">
+            <div class="loc-sds-hdr-title">${title}</div>
+            <div class="loc-sds-hdr-cnt">${cnt}</div>
+        </div>
+        <button class="loc-sds-close" onclick="closeStatDetail()"><i class="fas fa-times"></i></button>`;
+}
+
+function renderSdsBuildings() {
+    document.getElementById('sdsHdr').innerHTML = sdsHdrHtml('#eef2ff','#4338ca','fa-building','อาคารทั้งหมด',buildingsData.length+' อาคาร');
+    document.getElementById('sdsSearchWrap').style.display = 'none';
+    const body = document.getElementById('sdsBody');
+    if (!buildingsData.length) { body.innerHTML = `<div class="loc-sds-empty"><i class="fas fa-building"></i><p>ยังไม่มีข้อมูลอาคาร</p></div>`; return; }
+    body.innerHTML = buildingsData.map(b => `
+        <div class="loc-sds-row" onclick="closeStatDetail();navigateHome();navigateTo('building',${b.id},'${esc(b.shortname||b.name)}')">
+            <div class="loc-sds-row-ic" style="background:#eef2ff;color:#4338ca"><i class="fas fa-building"></i></div>
+            <div style="flex:1;min-width:0">
+                <div class="loc-sds-row-nm">${esc(b.name)}${b.shortname?`<span style="font-size:10px;padding:1px 6px;border-radius:5px;background:#eef2ff;color:#4338ca;font-weight:700;margin-left:6px">${esc(b.shortname)}</span>`:''}</div>
+                <div class="loc-sds-row-sub">${b.floor_count} ชั้น · ${b.room_count} ห้อง</div>
+            </div>
+            <div class="loc-sds-row-right">
+                <div class="loc-sds-row-val">${b.cabinet_count}</div>
+                <div class="loc-sds-row-vl">ตู้เก็บ</div>
+            </div>
+        </div>`).join('');
+}
+
+function sdsFilterRooms(q) {
+    renderSdsRooms(q.trim());
+}
+
+function renderSdsRooms(q) {
+    const allRooms = Object.values(mrAllRoomsMap);
+    const myRoomIds = new Set(Object.keys(mrMyRoomsMap).map(Number));
+    const ql = q ? q.toLowerCase() : '';
+    const filtered = ql
+        ? allRooms.filter(r => (r.name||'').toLowerCase().includes(ql) || (r.code||'').toLowerCase().includes(ql) || (r.bld_short||'').toLowerCase().includes(ql))
+        : allRooms;
+
+    const myRooms = filtered.filter(r => myRoomIds.has(+r.id));
+    const otherRooms = filtered.filter(r => !myRoomIds.has(+r.id));
+
+    document.getElementById('sdsHdr').innerHTML = sdsHdrHtml('#e0f2fe','#0369a1','fa-door-open','ห้องทั้งหมด',allRooms.length+' ห้อง');
+    document.getElementById('sdsSearchWrap').style.display = '';
+    const body = document.getElementById('sdsBody');
+
+    if (!filtered.length) {
+        body.innerHTML = `<div class="loc-sds-empty"><i class="fas fa-search"></i><p>ไม่พบห้องที่ค้นหา</p></div>`;
+        return;
+    }
+
+    let html = '';
+    if (myRooms.length) {
+        html += `<div class="loc-sds-section"><i class="fas fa-star" style="color:#6366f1;margin-right:4px"></i>ห้องของฉัน (${myRooms.length})</div>`;
+        html += myRooms.map(r => sdsRoomRow(r, true)).join('');
+    }
+    if (otherRooms.length) {
+        if (myRooms.length) html += `<div class="loc-sds-section">ห้องอื่นๆ (${otherRooms.length})</div>`;
+        html += otherRooms.map(r => sdsRoomRow(r, false)).join('');
+    }
+    body.innerHTML = html;
+}
+
+function sdsRoomRow(r, isMine) {
+    const my = mrMyRoomsMap[r.id];
+    const hasDanger = my && +my.expired > 0;
+    const hasWarn = my && !hasDanger && +my.expiring_soon > 0;
+    const ctrCount = my ? +my.total : +r.total||0;
+    const bld = r.bld_short || r.bld_code || '';
+    const sub = [bld ? 'อาคาร '+bld : '', r.floor ? 'ชั้น '+r.floor : ''].filter(Boolean).join(' · ') + (r.code ? (bld||r.floor ? ' · '+esc(r.code) : esc(r.code)) : '');
+    return `<div class="loc-sds-row" onclick="closeStatDetail();sdsGoRoom(${r.id},'${esc(r.name)}','${esc(r.bld_code||'')}',${+r.floor||0})">
+        <div class="loc-sds-row-ic" style="background:${isMine?'#eef2ff':'#e0f2fe'};color:${isMine?'#4338ca':'#0369a1'}"><i class="fas fa-door-open"></i></div>
+        <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+                <span class="loc-sds-row-nm">${esc(r.name)}</span>
+                ${isMine?'<span class="loc-my-room-tag" style="font-size:9px;padding:1px 7px;flex-shrink:0"><i class="fas fa-star" style="font-size:7px"></i>ของฉัน</span>':''}
+            </div>
+            <div class="loc-sds-row-sub">${sub}</div>
+        </div>
+        <div class="loc-sds-row-right">
+            ${hasDanger?`<div class="loc-sds-row-val" style="color:#dc2626">${my.expired}</div><div class="loc-sds-row-vl" style="color:#dc2626">หมดอายุ</div>`:
+              hasWarn?`<div class="loc-sds-row-val" style="color:#a16207">${my.expiring_soon}</div><div class="loc-sds-row-vl" style="color:#a16207">ใกล้หมด</div>`:
+              ctrCount>0?`<div class="loc-sds-row-val">${ctrCount}</div><div class="loc-sds-row-vl">ภาชนะ</div>`:''}
+        </div>
+    </div>`;
+}
+
+function renderSdsCabinets() {
+    const total = buildingsData.reduce((s,b)=>s+(+b.cabinet_count||0),0);
+    document.getElementById('sdsHdr').innerHTML = sdsHdrHtml('#f3e8ff','#7c3aed','fa-archive','ตู้เก็บทั้งหมด',total+' ตู้เก็บ');
+    document.getElementById('sdsSearchWrap').style.display = 'none';
+    const body = document.getElementById('sdsBody');
+    if (!buildingsData.length) { body.innerHTML = `<div class="loc-sds-empty"><i class="fas fa-archive"></i><p>ยังไม่มีข้อมูลตู้เก็บ</p></div>`; return; }
+    const rooms = buildingsData.reduce((s,b)=>s+(+b.room_count||0),0);
+    body.innerHTML = `
+        <div class="loc-sds-stat-row">
+            <div class="loc-sds-stat-card"><div class="sv" style="color:#7c3aed">${total}</div><div class="sl">ตู้เก็บ</div></div>
+            <div class="loc-sds-stat-card"><div class="sv" style="color:#0369a1">${rooms}</div><div class="sl">ห้อง</div></div>
+            <div class="loc-sds-stat-card"><div class="sv" style="color:#4338ca">${buildingsData.length}</div><div class="sl">อาคาร</div></div>
+        </div>
+        <div class="loc-sds-section">แยกตามอาคาร</div>
+        ${buildingsData.map(b=>`
+            <div class="loc-sds-row" onclick="closeStatDetail();navigateHome();navigateTo('building',${b.id},'${esc(b.shortname||b.name)}')">
+                <div class="loc-sds-row-ic" style="background:#eef2ff;color:#4338ca"><i class="fas fa-building"></i></div>
+                <div style="flex:1;min-width:0">
+                    <div class="loc-sds-row-nm">${esc(b.name)}</div>
+                    <div class="loc-sds-row-sub">${b.room_count} ห้อง · ${b.floor_count} ชั้น</div>
+                </div>
+                <div class="loc-sds-row-right">
+                    <div class="loc-sds-row-val" style="color:#7c3aed">${b.cabinet_count}</div>
+                    <div class="loc-sds-row-vl">ตู้เก็บ</div>
+                </div>
+            </div>`).join('')}`;
+}
+
+function renderSdsContainers() {
+    const myRooms = Object.values(mrMyRoomsMap);
+    const totalExp  = myRooms.reduce((s,r)=>s+(+r.expired||0),0);
+    const totalWarn = myRooms.reduce((s,r)=>s+(+r.expiring_soon||0),0);
+    const globalEl  = document.getElementById('statContainers');
+    const globalTotal = globalEl ? (+globalEl.textContent||0) : 0;
+
+    document.getElementById('sdsHdr').innerHTML = sdsHdrHtml('#dcfce7','#16a34a','fa-flask','ภาชนะสารเคมี',globalTotal+' รายการ');
+    document.getElementById('sdsSearchWrap').style.display = 'none';
+    const body = document.getElementById('sdsBody');
+
+    let html = `
+        <div class="loc-sds-stat-row">
+            <div class="loc-sds-stat-card"><div class="sv" style="color:#15803d">${globalTotal}</div><div class="sl">ทั้งหมด</div></div>
+            <div class="loc-sds-stat-card"><div class="sv" style="color:#dc2626">${totalExp}</div><div class="sl">หมดอายุ</div></div>
+            <div class="loc-sds-stat-card"><div class="sv" style="color:#a16207">${totalWarn}</div><div class="sl">ใกล้หมด</div></div>
+        </div>`;
+
+    if (myRooms.length) {
+        html += `<div class="loc-sds-section"><i class="fas fa-star" style="color:#6366f1;margin-right:4px"></i>ห้องที่ฉันดูแล</div>`;
+        html += myRooms.map(my => {
+            const rd = mrAllRoomsMap[my.room_id]||{};
+            const hasDanger = +my.expired>0;
+            const hasWarn = !hasDanger && +my.expiring_soon>0;
+            return `<div class="loc-sds-row" onclick="closeStatDetail();sdsGoRoomFromMyRoom(${my.room_id})">
+                <div class="loc-sds-row-ic" style="background:${hasDanger?'#fee2e2':hasWarn?'#fef9c3':'#dcfce7'};color:${hasDanger?'#dc2626':hasWarn?'#a16207':'#15803d'}"><i class="fas fa-flask"></i></div>
+                <div style="flex:1;min-width:0">
+                    <div class="loc-sds-row-nm">${esc(rd.name||'ห้อง #'+my.room_id)}</div>
+                    <div class="loc-sds-row-sub">${+my.organized} จัดวาง · ${+my.unplaced||0} ยังไม่จัด</div>
+                </div>
+                <div class="loc-sds-row-right">
+                    ${hasDanger?`<div class="loc-sds-row-val" style="color:#dc2626">${my.expired}</div><div class="loc-sds-row-vl" style="color:#dc2626">หมดอายุ</div>`:
+                      hasWarn?`<div class="loc-sds-row-val" style="color:#a16207">${my.expiring_soon}</div><div class="loc-sds-row-vl" style="color:#a16207">ใกล้หมด</div>`:
+                      `<div class="loc-sds-row-val" style="color:#15803d">${my.total}</div><div class="loc-sds-row-vl">ภาชนะ</div>`}
+                </div>
+            </div>`;
+        }).join('');
+        html += `<div class="loc-sds-footer"><a href="/v1/pages/myroom.php" class="loc-btn loc-btn-p" style="display:inline-flex"><i class="fas fa-arrow-right"></i>จัดการ My Room</a></div>`;
+    } else {
+        html += `<div class="loc-sds-empty" style="padding:32px 24px"><i class="fas fa-info-circle"></i><p style="font-size:12px">เข้าถึงสถิติภาชนะรายห้องได้<br>เมื่อคุณเป็นผู้ดูแลห้อง</p></div>`;
+    }
+    body.innerHTML = html;
+}
+
+function renderSdsMyRooms() {
+    const myRooms = Object.values(mrMyRoomsMap);
+    const totalMine = myRooms.reduce((s,r)=>s+(+r.total||0),0);
+    const totalExp  = myRooms.reduce((s,r)=>s+(+r.expired||0),0);
+    const totalWarn = myRooms.reduce((s,r)=>s+(+r.expiring_soon||0),0);
+
+    document.getElementById('sdsHdr').innerHTML = sdsHdrHtml('#eef2ff','#6366f1','fa-star','ห้องของฉัน',myRooms.length+' ห้อง · '+totalMine+' ภาชนะ');
+    document.getElementById('sdsSearchWrap').style.display = 'none';
+    const body = document.getElementById('sdsBody');
+
+    if (!myRooms.length) {
+        body.innerHTML = `<div class="loc-sds-empty"><i class="fas fa-star"></i><p>ยังไม่มีห้องที่คุณดูแล</p></div>`;
+        return;
+    }
+
+    let html = `
+        <div class="loc-sds-stat-row">
+            <div class="loc-sds-stat-card"><div class="sv" style="color:#6366f1">${totalMine}</div><div class="sl">ภาชนะ</div></div>
+            <div class="loc-sds-stat-card"><div class="sv" style="color:#dc2626">${totalExp}</div><div class="sl">หมดอายุ</div></div>
+            <div class="loc-sds-stat-card"><div class="sv" style="color:#a16207">${totalWarn}</div><div class="sl">ใกล้หมด</div></div>
+        </div>`;
+
+    html += myRooms.map(my => {
+        const rd = mrAllRoomsMap[my.room_id]||{};
+        const hasDanger = +my.expired>0;
+        const hasWarn = !hasDanger && +my.expiring_soon>0;
+        return `<div class="loc-sds-row" onclick="closeStatDetail();sdsGoRoomFromMyRoom(${my.room_id})">
+            <div class="loc-sds-row-ic" style="background:${hasDanger?'#fee2e2':hasWarn?'#fef9c3':'#eef2ff'};color:${hasDanger?'#dc2626':hasWarn?'#a16207':'#4338ca'}"><i class="fas fa-door-open"></i></div>
+            <div style="flex:1;min-width:0">
+                <div class="loc-sds-row-nm">${esc(rd.name||'ห้อง #'+my.room_id)}</div>
+                <div class="loc-sds-row-sub">${+my.total} ภาชนะ · ${+my.organized} จัดวาง · ${+my.unplaced||0} ยังไม่จัด</div>
+            </div>
+            <div class="loc-sds-row-right">
+                ${hasDanger?`<div class="loc-sds-row-val" style="color:#dc2626">${my.expired}</div><div class="loc-sds-row-vl" style="color:#dc2626">หมดอายุ</div>`:
+                  hasWarn?`<div class="loc-sds-row-val" style="color:#a16207">${my.expiring_soon}</div><div class="loc-sds-row-vl" style="color:#a16207">ใกล้หมด</div>`:
+                  `<div class="loc-sds-row-val" style="color:#6366f1">${my.total}</div><div class="loc-sds-row-vl">ภาชนะ</div>`}
+            </div>
+        </div>`;
+    }).join('');
+
+    html += `<div class="loc-sds-footer"><a href="/v1/pages/myroom.php" class="loc-btn loc-btn-p" style="display:inline-flex"><i class="fas fa-arrow-right"></i>ไปที่ My Room</a></div>`;
+    body.innerHTML = html;
+}
+
+function sdsGoRoom(roomId, roomName, bldCode, floor) {
+    navStack = [];
+    if (bldCode) {
+        const bld = buildingsData.find(b => b.code === bldCode || b.shortname === bldCode);
+        if (bld) {
+            navStack.push({type:'building', id:+bld.id, name:bld.shortname||bld.name});
+            if (floor) navStack.push({type:'floor', buildingId:+bld.id, floor:+floor, name:'ชั้น '+floor});
+        }
+    }
+    navStack.push({type:'room', id:+roomId, name:roomName});
+    renderCurrentLevel();
+    updateBreadcrumb();
+}
+
+function sdsGoRoomFromMyRoom(roomId) {
+    const rd = mrAllRoomsMap[roomId]||{};
+    sdsGoRoom(roomId, rd.name||'ห้อง #'+roomId, rd.bld_code||'', +rd.floor||0);
 }
 
 init();

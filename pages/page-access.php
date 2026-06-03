@@ -17,7 +17,7 @@ $PAGE_CATALOG = [
         'pages'   => [
             ['key' => 'dashboard',  'label' => 'แดชบอร์ด',        'icon' => 'fas fa-atom',      'desc' => 'หน้าแรกและ ChemBot AI'],
             ['key' => 'stock',      'label' => 'คลังสารเคมี',      'icon' => 'fas fa-flask',        'desc' => 'จัดการสต็อกสารเคมีทั้งหมด'],
-            ['key' => 'myroom',     'label' => 'ห้องของฉัน',        'icon' => 'fas fa-door-open',    'desc' => 'จัดการสารเคมีในห้องที่รับผิดชอบ'],
+            ['key' => 'myroom',     'label' => 'ห้องของฉัน',        'icon' => 'fas fa-door-open',    'desc' => 'จัดการสารเคมีในห้องที่รับผิดชอบ', 'required' => true],
             ['key' => 'chemicals',  'label' => 'ข้อมูลสารเคมี',    'icon' => 'fas fa-search',       'desc' => 'ค้นหาและดูข้อมูลสารเคมี'],
             ['key' => 'locations',  'label' => 'สถานที่จัดเก็บ',   'icon' => 'fas fa-sitemap',   'desc' => 'อาคาร ห้อง ตู้ ชั้น สล็อต'],
             ['key' => 'lab-stores', 'label' => 'ฝ่ายปฏิบัติการ',  'icon' => 'fas fa-store',     'desc' => 'ร้านค้าและฝ่ายปฏิบัติการ'],
@@ -69,7 +69,7 @@ $ROLE_DEFAULTS = [
         'icon'  => 'fas fa-eye',
         'color' => '#64748b',
         'bg'    => '#f1f5f9',
-        'pages' => ['dashboard','chemicals','profile'],
+        'pages' => ['dashboard','myroom','chemicals','profile'],
     ],
     'user' => [
         'label' => 'User — ผู้ใช้ทั่วไป',
@@ -95,7 +95,7 @@ $ROLE_DEFAULTS = [
         'icon'  => 'fas fa-star',
         'color' => '#2563eb',
         'bg'    => '#dbeafe',
-        'pages' => ['dashboard','stock','chemicals','locations','reports','profile',
+        'pages' => ['dashboard','stock','myroom','chemicals','locations','reports','profile',
                     'activity',
                     'alerts','system-monitor','ai-assistant'],
     ],
@@ -200,6 +200,13 @@ Layout::beginContent();
 .pa-switch input:checked+.pa-track:hover{background:var(--pa-d)}
 .pa-switch input:checked+.pa-track .pa-thumb{transform:translateX(16px)}
 .pa-lock-ic{font-size:14px;color:#94a3b8;flex-shrink:0}
+/* ── Required (always-on) page ── */
+.pa-page-item.pa-required{background:#f0fdf4;cursor:default}
+.pa-page-item.pa-required:hover{background:#f0fdf4}
+.pa-req-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;white-space:nowrap;flex-shrink:0;letter-spacing:.2px}
+/* ── Required notice banner ── */
+.pa-req-notice{display:flex;align-items:center;gap:10px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:9px 14px;font-size:11px;color:#15803d;margin-bottom:0}
+.pa-req-notice i{flex-shrink:0;font-size:13px}
 /* ── Admin notice ── */
 .pa-admin-notice{background:#fff;border-radius:var(--pa-r);border:1.5px solid var(--border);box-shadow:var(--pa-sh);padding:20px;display:flex;align-items:center;gap:16px}
 .pa-admin-notice-ic{width:48px;height:48px;border-radius:12px;background:#ffe4e6;color:#e11d48;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
@@ -555,7 +562,7 @@ function renderRoleList(){
 /* ── Select role ───────────────────────────────── */
 async function selectRole(roleId){
     // Warn if any section has unsaved changes
-    const hasDirty=CATALOG.some(sec=>sec.pages.some(pg=>currentPerms[pg.key]!==savedPerms[pg.key]));
+    const hasDirty=CATALOG.some(sec=>sec.pages.some(pg=>!pg.required&&currentPerms[pg.key]!==savedPerms[pg.key]));
     if(hasDirty && selectedRoleId && !confirm('มีส่วนที่ยังไม่ได้บันทึก\nต้องการเปลี่ยน Role โดยไม่บันทึกหรือไม่?')) return;
 
     selectedRoleId=roleId;
@@ -575,7 +582,7 @@ async function selectRole(roleId){
         const d=await apiFetch(PA_API+'?action=get_role&role_id='+roleId);
         if(!d.success) throw new Error(d.error);
         CATALOG.forEach(sec=>sec.pages.forEach(pg=>{
-            currentPerms[pg.key]=d.has_custom ? !!(d.data[pg.key]) : true;
+            currentPerms[pg.key]=pg.required ? true : (d.has_custom ? !!(d.data[pg.key]) : true);
         }));
         savedPerms={...currentPerms};
         renderPagePanel(panel,role);
@@ -615,8 +622,10 @@ function renderAdminView(panel,role){
 /* ── Page panel ────────────────────────────────── */
 function renderPagePanel(panel,role){
     const c=RC[role.level]||RC[1];
-    const totalOn=Object.values(currentPerms).filter(Boolean).length;
-    const totalAll=Object.keys(currentPerms).length;
+    const reqPages=CATALOG.flatMap(s=>s.pages).filter(pg=>pg.required).map(pg=>pg.key);
+    const allTogglePgs=CATALOG.flatMap(s=>s.pages).filter(pg=>!pg.required);
+    const totalOn=allTogglePgs.filter(pg=>currentPerms[pg.key]).length;
+    const totalAll=allTogglePgs.length;
 
     const hasDef=!!ROLE_DEFAULTS[role.name];
     let html=`<div class="pa-role-row">
@@ -632,13 +641,21 @@ function renderPagePanel(panel,role){
         </div>
     </div>`;
 
+    if(reqPages.length){
+        html+=`<div class="pa-req-notice">
+            <i class="fas fa-lock"></i>
+            <span>หน้าที่มีป้าย <strong>จำเป็น</strong> จะเปิดให้ผู้ใช้ทุก Role เสมอ ไม่สามารถปิดได้ — ทุกคนในระบบสามารถจัดการห้องของตัวเองได้</span>
+        </div>`;
+    }
+
     CATALOG.forEach(sec=>{
-        const onCount=sec.pages.filter(pg=>currentPerms[pg.key]).length;
+        const togglePages=sec.pages.filter(pg=>!pg.required);
+        const onCount=togglePages.filter(pg=>currentPerms[pg.key]).length;
         html+=`<div class="pa-section" id="sec_${sec.section}">
             <div class="pa-section-hdr">
                 <div class="pa-section-ic" style="background:${sec.bg};color:${sec.color}"><i class="${sec.icon}"></i></div>
                 <div class="pa-section-title">${sec.label}</div>
-                <div class="pa-section-count" id="scnt_${sec.section}">${onCount}/${sec.pages.length}</div>
+                <div class="pa-section-count" id="scnt_${sec.section}">${onCount}/${togglePages.length}${togglePages.length<sec.pages.length?`<span style="color:#15803d;margin-left:4px;font-size:9px"><i class="fas fa-lock"></i></span>`:''}</div>
                 <!-- Per-section dirty indicator + actions -->
                 <div class="pa-sec-actions">
                     <span class="pa-chg-pill" id="schg_${sec.section}">
@@ -666,6 +683,16 @@ function renderPagePanel(panel,role){
 
 function pageHTML(pg,sec){
     const on=currentPerms[pg.key];
+    if(pg.required){
+        return `<div class="pa-page-item pa-required" title="หน้านี้เปิดให้ผู้ใช้ทุกคนเสมอ ไม่สามารถปิดได้">
+            <div class="pa-page-ic" style="background:${sec.bg};color:${sec.color}"><i class="${pg.icon}"></i></div>
+            <div class="pa-page-info">
+                <div class="pa-page-name">${esc(pg.label)}</div>
+                <div class="pa-page-desc">${esc(pg.desc)}</div>
+            </div>
+            <span class="pa-req-badge"><i class="fas fa-lock" style="margin-right:3px;font-size:8px"></i>จำเป็น</span>
+        </div>`;
+    }
     return `<div class="pa-page-item" onclick="togglePage('${pg.key}','${sec.section}')">
         <div class="pa-page-ic" id="ic_${pg.key}" style="background:${on?sec.bg:'#f1f5f9'};color:${on?sec.color:'#94a3b8'}">
             <i class="${pg.icon}"></i>
@@ -705,12 +732,15 @@ function onSwitch(key,section,sw){
 function updateCounts(section){
     const sec=CATALOG.find(s=>s.section===section);
     if(!sec) return;
-    const on=sec.pages.filter(pg=>currentPerms[pg.key]).length;
+    const togglePages=sec.pages.filter(pg=>!pg.required);
+    const on=togglePages.filter(pg=>currentPerms[pg.key]).length;
     const el=document.getElementById('scnt_'+section);
-    if(el) el.textContent=on+'/'+sec.pages.length;
-    // Overall row sub
-    const totalOn=Object.values(currentPerms).filter(Boolean).length;
-    const totalAll=Object.keys(currentPerms).length;
+    const lockBadge=togglePages.length<sec.pages.length?`<span style="color:#15803d;margin-left:4px;font-size:9px"><i class="fas fa-lock"></i></span>`:'';
+    if(el) el.innerHTML=on+'/'+togglePages.length+lockBadge;
+    // Overall row sub — exclude required pages from denominator
+    const allToggle=CATALOG.flatMap(s=>s.pages).filter(pg=>!pg.required);
+    const totalOn=allToggle.filter(pg=>currentPerms[pg.key]).length;
+    const totalAll=allToggle.length;
     const sub=document.getElementById('paRoleRowSub');
     if(sub) sub.textContent=totalOn+'/'+totalAll+' หน้าที่เปิดใช้งาน';
 }
@@ -719,7 +749,7 @@ function updateCounts(section){
 function updateDirty(section){
     const sec=CATALOG.find(s=>s.section===section);
     if(!sec) return;
-    const changes=sec.pages.filter(pg=>currentPerms[pg.key]!==savedPerms[pg.key]).length;
+    const changes=sec.pages.filter(pg=>!pg.required&&currentPerms[pg.key]!==savedPerms[pg.key]).length;
     const pill=document.getElementById('schg_'+section);
     const cnt=document.getElementById('schgCount_'+section);
     const btn=document.getElementById('secSaveBtn_'+section);
@@ -740,6 +770,7 @@ function bulkToggle(section,val){
     const sec=CATALOG.find(s=>s.section===section);
     if(!sec) return;
     sec.pages.forEach(pg=>{
+        if(pg.required) return; // never toggle required pages
         currentPerms[pg.key]=val;
         const sw=document.getElementById('sw_'+pg.key);
         const ic=document.getElementById('ic_'+pg.key);
@@ -758,6 +789,7 @@ function resetSection(section){
     const sec=CATALOG.find(s=>s.section===section);
     if(!sec) return;
     sec.pages.forEach(pg=>{
+        if(pg.required) return;
         currentPerms[pg.key]=savedPerms[pg.key];
         const sw=document.getElementById('sw_'+pg.key);
         const ic=document.getElementById('ic_'+pg.key);
@@ -776,10 +808,10 @@ function requestSave(section){
     if(!sec) return;
     const role=allRoles.find(r=>r.id==selectedRoleId);
 
-    // Build change lists
-    const added  =sec.pages.filter(pg=>!savedPerms[pg.key]&&currentPerms[pg.key]);
-    const removed=sec.pages.filter(pg=>savedPerms[pg.key]&&!currentPerms[pg.key]);
-    const same   =sec.pages.filter(pg=>savedPerms[pg.key]===currentPerms[pg.key]);
+    // Build change lists (required pages are excluded — they can't change)
+    const added  =sec.pages.filter(pg=>!pg.required&&!savedPerms[pg.key]&&currentPerms[pg.key]);
+    const removed=sec.pages.filter(pg=>!pg.required&&savedPerms[pg.key]&&!currentPerms[pg.key]);
+    const same   =sec.pages.filter(pg=>!pg.required&&savedPerms[pg.key]===currentPerms[pg.key]);
 
     if(!added.length&&!removed.length){
         showToast('ไม่มีการเปลี่ยนแปลงในส่วนนี้'); return;
@@ -847,9 +879,11 @@ async function doSave(){
     // Build full allowed list:
     //   - for THIS section: use currentPerms (what user just changed)
     //   - for OTHER sections: use savedPerms (don't disturb their committed state)
+    //   - required pages are always included regardless
     const pages=[];
     CATALOG.forEach(s=>{
         s.pages.forEach(pg=>{
+            if(pg.required){ pages.push(pg.key); return; }
             const allowed=s.section===section?currentPerms[pg.key]:savedPerms[pg.key];
             if(allowed) pages.push(pg.key);
         });
@@ -1005,9 +1039,11 @@ async function doSaveDefault(){
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
 
     try{
+        const reqKeys = CATALOG.flatMap(s=>s.pages).filter(pg=>pg.required).map(pg=>pg.key);
+        const mergedPages = [...new Set([...def.pages, ...reqKeys])];
         const d = await apiFetch(PA_API+'?action=save',{
             method:'POST',
-            body:JSON.stringify({role_id:role.id, pages:def.pages})
+            body:JSON.stringify({role_id:role.id, pages:mergedPages})
         });
         if(!d.success) throw new Error(d.error||'บันทึกล้มเหลว');
 
@@ -1015,11 +1051,11 @@ async function doSaveDefault(){
 
         // Sync state
         const roleId = parseInt(role.id);
-        if(def.pages.length < TOTAL_P) customRoles.add(roleId);
+        if(mergedPages.length < TOTAL_P) customRoles.add(roleId);
         else customRoles.delete(roleId);
 
         const permMap = {};
-        def.pages.forEach(k=>{ permMap[k]=true; });
+        mergedPages.forEach(k=>{ permMap[k]=true; });
         const idx = allPermsData.findIndex(x=>x.role.id==role.id);
         if(idx>=0) allPermsData[idx].permissions = permMap;
 
@@ -1030,7 +1066,7 @@ async function doSaveDefault(){
         // If this role is open, refresh the panel live
         if(selectedRoleId==role.id){
             CATALOG.forEach(sec=>sec.pages.forEach(pg=>{
-                const val = def.pages.includes(pg.key);
+                const val = pg.required || mergedPages.includes(pg.key);
                 currentPerms[pg.key] = val;
                 savedPerms[pg.key]   = val;
             }));
@@ -1038,7 +1074,7 @@ async function doSaveDefault(){
             renderPagePanel(panel, role);
         }
 
-        showToast(`ตั้งค่าเริ่มต้น "${role.display_name}" สำเร็จ — ${def.pages.length} หน้าเปิด`);
+        showToast(`ตั้งค่าเริ่มต้น "${role.display_name}" สำเร็จ — ${mergedPages.length} หน้าเปิด`);
     }catch(e){
         showToast(e.message,'err');
     }finally{

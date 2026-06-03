@@ -40,7 +40,7 @@ return [
     'nav_dashboard' => 'Dashboard',
     'nav_chemicals' => 'Chemicals',
     'nav_containers' => 'Containers',
-    'nav_locations' => 'Locations',
+    'nav_locations' => 'Storage Locations',
     'nav_borrow' => 'Borrow/Return',
     'nav_qr_scanner' => 'QR Scanner',
     'nav_ai_assistant' => 'AI Assistant',

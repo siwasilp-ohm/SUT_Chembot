@@ -503,35 +503,109 @@ Layout::head($lang==='th'?'ธุรกรรมของฉัน':'My Transact
 </div>
 </div>
 
-<!-- ===== RETURN MODAL (quick) ===== -->
+<!-- ===== RETURN MODAL — Step 1: Form ===== -->
 <div class="ci-modal-bg" id="returnModal">
-<div class="ci-modal" style="max-width:480px">
-    <div class="ci-modal-hdr">
-        <h3><i class="fas fa-undo"></i> <?php echo $lang==='th'?'คืนสารเคมี':'Return Chemical'; ?></h3>
-        <button class="ci-modal-close" onclick="closeReturnModal()">&times;</button>
+<div class="ci-modal ret-form-modal">
+    <div class="ret-form-hdr">
+        <div class="ret-form-hdr-ic"><i class="fas fa-undo"></i></div>
+        <div class="ret-form-hdr-body">
+            <div class="ret-form-hdr-title"><?php echo $lang==='th'?'คืนสารเคมี':'Return Chemical'; ?></div>
+            <div class="ret-form-hdr-sub"><?php echo $lang==='th'?'ขั้นตอนที่ 1 จาก 2 — กรอกข้อมูล':'Step 1 of 2 — Fill in details'; ?></div>
+        </div>
+        <div class="ret-form-steps"><span class="ret-step active">1</span><span class="ret-step-line"></span><span class="ret-step">2</span></div>
+        <button class="ret-form-hdr-close" onclick="closeReturnModal()">&times;</button>
     </div>
-    <div class="ci-modal-body">
-        <div id="returnInfo" style="margin-bottom:12px"></div>
+    <div class="ret-form-chem-bar" id="returnInfo"></div>
+    <div class="ci-modal-body" style="gap:12px;display:flex;flex-direction:column">
         <div class="ci-fg">
             <label class="ci-label"><?php echo $lang==='th'?'ปริมาณที่คืน':'Return Quantity'; ?></label>
-            <input type="number" id="returnQty" class="ci-input" step="0.01" min="0.01">
+            <div class="ret-qty-wrap">
+                <input type="number" id="returnQty" class="ci-input ret-qty-inp" step="0.01" min="0.01">
+                <span class="ret-qty-unit" id="returnQtyUnit"></span>
+            </div>
+            <div class="ret-qty-hint" id="returnQtyHint"></div>
         </div>
         <div class="ci-fg">
-            <label class="ci-label"><?php echo $lang==='th'?'สภาพ':'Condition'; ?></label>
-            <select id="returnCondition" class="ci-select">
-                <option value="good"><?php echo $lang==='th'?'ดี':'Good'; ?></option>
-                <option value="partially_used"><?php echo $lang==='th'?'ใช้ไปบางส่วน':'Partially Used'; ?></option>
-                <option value="contaminated"><?php echo $lang==='th'?'ปนเปื้อน':'Contaminated'; ?></option>
-                <option value="damaged"><?php echo $lang==='th'?'ชำรุด':'Damaged'; ?></option>
-            </select>
+            <label class="ci-label"><?php echo $lang==='th'?'สภาพสาร':'Condition'; ?></label>
+            <div class="ret-cond-grid" id="returnConditionGrid">
+                <label class="ret-cond-opt" data-val="good"><input type="radio" name="retCond" value="good" checked><span class="ret-cond-ic" style="color:#16a34a"><i class="fas fa-check-circle"></i></span><span><?php echo $lang==='th'?'ดี':'Good'; ?></span></label>
+                <label class="ret-cond-opt" data-val="partially_used"><input type="radio" name="retCond" value="partially_used"><span class="ret-cond-ic" style="color:#d97706"><i class="fas fa-adjust"></i></span><span><?php echo $lang==='th'?'ใช้บางส่วน':'Partial'; ?></span></label>
+                <label class="ret-cond-opt" data-val="contaminated"><input type="radio" name="retCond" value="contaminated"><span class="ret-cond-ic" style="color:#dc2626"><i class="fas fa-biohazard"></i></span><span><?php echo $lang==='th'?'ปนเปื้อน':'Contaminated'; ?></span></label>
+                <label class="ret-cond-opt" data-val="damaged"><input type="radio" name="retCond" value="damaged"><span class="ret-cond-ic" style="color:#7c3aed"><i class="fas fa-exclamation-triangle"></i></span><span><?php echo $lang==='th'?'ชำรุด':'Damaged'; ?></span></label>
+            </div>
         </div>
         <div class="ci-fg">
-            <label class="ci-label"><?php echo $lang==='th'?'หมายเหตุ':'Notes'; ?></label>
-            <input type="text" id="returnNotes" class="ci-input" placeholder="<?php echo $lang==='th'?'หมายเหตุ (ถ้ามี)':'Notes (optional)'; ?>">
+            <label class="ci-label"><?php echo $lang==='th'?'หมายเหตุ':'Notes'; ?> <span style="font-weight:400;opacity:.6">(<?php echo $lang==='th'?'ไม่บังคับ':'optional'; ?>)</span></label>
+            <input type="text" id="returnNotes" class="ci-input" placeholder="<?php echo $lang==='th'?'เช่น คืนก่อนกำหนด / ปริมาณลดลงจากการทดลอง...':'e.g. returned early / reduced from experiment...'; ?>">
         </div>
         <input type="hidden" id="returnTxnId">
-        <button onclick="submitReturn()" class="ci-btn ci-btn-primary ci-btn-block" style="margin-top:8px">
-            <i class="fas fa-undo"></i> <?php echo $lang==='th'?'ยืนยันคืน':'Confirm Return'; ?>
+        <select id="returnCondition" style="display:none"></select>
+    </div>
+    <div class="ret-form-footer">
+        <button class="ret-form-cancel" onclick="closeReturnModal()"><i class="fas fa-times" style="font-size:11px"></i> <?php echo $lang==='th'?'ยกเลิก':'Cancel'; ?></button>
+        <button class="ret-form-next" onclick="showReturnSummary()"><i class="fas fa-arrow-right"></i> <?php echo $lang==='th'?'ดำเนินการต่อ':'Continue'; ?></button>
+    </div>
+</div>
+</div>
+
+<!-- ===== RETURN MODAL — Step 2: Summary Confirm ===== -->
+<div class="ci-modal-bg" id="retSumModal">
+<div class="ci-modal ret-sum-modal">
+    <div class="ret-sum-hdr">
+        <div class="ret-sum-hdr-ic"><i class="fas fa-clipboard-check"></i></div>
+        <div class="ret-sum-hdr-body">
+            <div class="ret-sum-hdr-title"><?php echo $lang==='th'?'สรุปการคืนสาร':'Return Summary'; ?></div>
+            <div class="ret-sum-hdr-sub"><?php echo $lang==='th'?'ขั้นตอนที่ 2 จาก 2 — ยืนยันข้อมูล':'Step 2 of 2 — Review & confirm'; ?></div>
+        </div>
+        <div class="ret-form-steps"><span class="ret-step">1</span><span class="ret-step-line active"></span><span class="ret-step active">2</span></div>
+        <button class="ret-sum-hdr-close" onclick="closeReturnModal()">&times;</button>
+    </div>
+    <div class="ci-modal-body" style="gap:14px;display:flex;flex-direction:column">
+        <!-- Chemical card -->
+        <div class="ret-sum-chem-card">
+            <div class="ret-sum-chem-ic"><i class="fas fa-flask"></i></div>
+            <div style="flex:1;min-width:0">
+                <div class="ret-sum-chem-nm" id="sumChemName">—</div>
+                <div class="ret-sum-chem-txn" id="sumTxnNum">—</div>
+            </div>
+        </div>
+        <!-- Returner card -->
+        <div class="ret-sum-user-card">
+            <div class="ret-sum-user-av" id="sumUserAv"></div>
+            <div style="flex:1;min-width:0">
+                <div class="ret-sum-user-label"><?php echo $lang==='th'?'ผู้คืนสาร':'Returned by'; ?></div>
+                <div class="ret-sum-user-nm" id="sumUserNm">—</div>
+            </div>
+            <span class="ret-sum-user-badge"><i class="fas fa-undo" style="font-size:9px"></i> <?php echo $lang==='th'?'คืนสาร':'Return'; ?></span>
+        </div>
+        <!-- Summary rows -->
+        <div class="ret-sum-rows">
+            <div class="ret-sum-row">
+                <span class="ret-sum-row-label"><i class="fas fa-flask"></i> <?php echo $lang==='th'?'ยืมไปทั้งหมด':'Borrowed amount'; ?></span>
+                <span class="ret-sum-row-val" id="sumBorrowedQty">—</span>
+            </div>
+            <div class="ret-sum-row ret-sum-row-hi">
+                <span class="ret-sum-row-label"><i class="fas fa-undo"></i> <?php echo $lang==='th'?'ปริมาณที่คืน':'Returning'; ?></span>
+                <span class="ret-sum-row-val" id="sumReturnQty" style="color:#059669;font-weight:800;font-size:16px">—</span>
+            </div>
+            <div class="ret-sum-row">
+                <span class="ret-sum-row-label"><i class="fas fa-clipboard"></i> <?php echo $lang==='th'?'สภาพสาร':'Condition'; ?></span>
+                <span class="ret-sum-row-val" id="sumCondition">—</span>
+            </div>
+            <div class="ret-sum-row" id="sumNotesRow" style="display:none">
+                <span class="ret-sum-row-label"><i class="fas fa-comment-alt"></i> <?php echo $lang==='th'?'หมายเหตุ':'Notes'; ?></span>
+                <span class="ret-sum-row-val" id="sumNotes" style="font-style:italic;color:var(--c2)">—</span>
+            </div>
+            <div class="ret-sum-row" id="sumBorrowDateRow">
+                <span class="ret-sum-row-label"><i class="fas fa-calendar-alt"></i> <?php echo $lang==='th'?'วันที่ยืม':'Borrowed on'; ?></span>
+                <span class="ret-sum-row-val" id="sumBorrowDate">—</span>
+            </div>
+        </div>
+    </div>
+    <div class="ret-sum-footer">
+        <button class="ret-sum-edit-btn" onclick="editReturn()"><i class="fas fa-pen" style="font-size:11px"></i> <?php echo $lang==='th'?'แก้ไข':'Edit'; ?></button>
+        <button class="ret-sum-confirm-btn" id="btnConfirmReturn" onclick="submitReturn()">
+            <i class="fas fa-check-circle"></i> <?php echo $lang==='th'?'ยืนยันการคืน':'Confirm Return'; ?>
         </button>
     </div>
 </div>
@@ -1343,6 +1417,74 @@ Layout::head($lang==='th'?'ธุรกรรมของฉัน':'My Transact
 .dispose-preview-row .dp-val{font-weight:600;color:var(--c1)}
 
 /* (responsive rules moved to unified responsive section above) */
+
+/* ── Return Modal Step 1: Form ── */
+.ret-form-modal{max-width:500px;overflow:hidden}
+.ret-form-hdr{background:linear-gradient(135deg,#065f46,#059669);border-radius:var(--br,6px) var(--br,6px) 0 0;padding:18px 20px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden}
+.ret-form-hdr::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.04'%3E%3Cpath d='M20 20h20v20H20zM0 0h20v20H0z'/%3E%3C/g%3E%3C/svg%3E") repeat}
+.ret-form-hdr-ic{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0;position:relative;border:1px solid rgba(255,255,255,.2)}
+.ret-form-hdr-body{flex:1;position:relative;min-width:0}
+.ret-form-hdr-title{font-size:16px;font-weight:800;color:#fff;margin:0}
+.ret-form-hdr-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px}
+.ret-form-hdr-close{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.2);font-size:16px;color:rgba(255,255,255,.85);cursor:pointer;padding:5px 8px;border-radius:7px;line-height:1;position:relative;transition:all .15s}
+.ret-form-hdr-close:hover{background:rgba(255,255,255,.32);color:#fff}
+.ret-form-steps{display:flex;align-items:center;gap:4px;flex-shrink:0;position:relative}
+.ret-step{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(255,255,255,.3);transition:all .2s}
+.ret-step.active{background:#fff;color:#065f46;border-color:#fff}
+.ret-step-line{width:16px;height:2px;background:rgba(255,255,255,.3);border-radius:1px;transition:all .2s}
+.ret-step-line.active{background:#fff}
+.ret-form-chem-bar{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-bottom:1px solid #a7f3d0;padding:10px 20px;font-size:13px;font-weight:700;color:#065f46;display:none}
+.ret-form-chem-bar.show{display:block}
+.ret-qty-wrap{display:flex;align-items:center;gap:0;border:1.5px solid var(--input-bd,#d1d5db);border-radius:8px;overflow:hidden;transition:border .15s}
+.ret-qty-wrap:focus-within{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.12)}
+.ret-qty-inp{border:none!important;box-shadow:none!important;border-radius:0!important;flex:1;min-width:0}
+.ret-qty-unit{padding:0 12px;background:#f0fdf4;border-left:1.5px solid #a7f3d0;color:#059669;font-size:12px;font-weight:700;white-space:nowrap;height:100%;display:flex;align-items:center;min-height:36px}
+.ret-qty-hint{font-size:11px;color:#059669;margin-top:5px;font-weight:600}
+.ret-cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ret-cond-opt{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border,#e5e7eb);border-radius:10px;cursor:pointer;transition:all .15s;font-size:12px;font-weight:600;color:var(--c2,#64748b)}
+.ret-cond-opt input{display:none}
+.ret-cond-opt:hover{border-color:#059669;background:#f0fdf4;color:#065f46}
+.ret-cond-opt:has(input:checked){border-color:#059669;background:#ecfdf5;color:#065f46}
+.ret-cond-ic{font-size:16px;line-height:1}
+.ret-form-footer{padding:14px 20px;background:#f0fdf4;border-top:1px solid #a7f3d0;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ret-form-cancel{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:#fff;color:var(--c2,#64748b);border:1.5px solid #d1d5db;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.ret-form-cancel:hover{border-color:#9ca3af;background:#f9fafb}
+.ret-form-next{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;background:linear-gradient(135deg,#059669,#047857);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;box-shadow:0 2px 10px rgba(5,150,105,.3)}
+.ret-form-next:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 4px 16px rgba(5,150,105,.45)}
+
+/* ── Return Modal Step 2: Summary Confirm ── */
+.ret-sum-modal{max-width:480px;overflow:hidden}
+.ret-sum-hdr{background:linear-gradient(135deg,#065f46,#10b981);border-radius:var(--br,6px) var(--br,6px) 0 0;padding:18px 20px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden}
+.ret-sum-hdr::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.04'%3E%3Cpath d='M20 20h20v20H20zM0 0h20v20H0z'/%3E%3C/g%3E%3C/svg%3E") repeat}
+.ret-sum-hdr-ic{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0;position:relative;border:1px solid rgba(255,255,255,.2)}
+.ret-sum-hdr-body{flex:1;position:relative;min-width:0}
+.ret-sum-hdr-title{font-size:16px;font-weight:800;color:#fff;margin:0}
+.ret-sum-hdr-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px}
+.ret-sum-hdr-close{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.2);font-size:16px;color:rgba(255,255,255,.85);cursor:pointer;padding:5px 8px;border-radius:7px;line-height:1;position:relative;transition:all .15s}
+.ret-sum-hdr-close:hover{background:rgba(255,255,255,.32);color:#fff}
+.ret-sum-chem-card{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#ecfdf5,#f0fdf4);border:1.5px solid #a7f3d0;border-radius:13px;padding:14px 16px}
+.ret-sum-chem-ic{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#059669,#10b981);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 2px 10px rgba(5,150,105,.25)}
+.ret-sum-chem-nm{font-size:15px;font-weight:800;color:#065f46}
+.ret-sum-chem-txn{font-size:11px;color:#6b7280;margin-top:3px}
+.ret-sum-user-card{display:flex;align-items:center;gap:12px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:13px;padding:12px 16px}
+.ret-sum-user-av{width:42px;height:42px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;overflow:hidden;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(5,150,105,.2)}
+.ret-sum-user-av img{width:100%;height:100%;object-fit:cover}
+.ret-sum-user-label{font-size:10px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.ret-sum-user-nm{font-size:14px;font-weight:800;color:#1e293b;margin-top:2px}
+.ret-sum-user-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#ecfdf5;border:1.5px solid #a7f3d0;color:#059669;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.ret-sum-rows{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:13px;overflow:hidden}
+.ret-sum-row{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid #f1f5f9;gap:12px}
+.ret-sum-row:last-child{border-bottom:none}
+.ret-sum-row-hi{background:linear-gradient(135deg,#ecfdf5,#f0fdf4)}
+.ret-sum-row-label{font-size:12px;color:#94a3b8;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.ret-sum-row-label i{width:14px;text-align:center;color:#059669}
+.ret-sum-row-val{font-size:13px;font-weight:700;color:#1e293b;text-align:right}
+.ret-sum-footer{padding:14px 20px;background:#f0fdf4;border-top:1px solid #a7f3d0;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ret-sum-edit-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:#fff;color:#64748b;border:1.5px solid #d1d5db;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.ret-sum-edit-btn:hover{border-color:#9ca3af;background:#f9fafb}
+.ret-sum-confirm-btn{display:inline-flex;align-items:center;gap:7px;padding:11px 26px;background:linear-gradient(135deg,#059669,#047857);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .18s;box-shadow:0 2px 12px rgba(5,150,105,.32)}
+.ret-sum-confirm-btn:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 4px 18px rgba(5,150,105,.48)}
+.ret-sum-confirm-btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;box-shadow:none}
 </style>
 
 <script>
@@ -1351,6 +1493,8 @@ const UID = <?php echo $userId; ?>;
 const IS_ADMIN = <?php echo $isAdmin?'true':'false'; ?>;
 const IS_MANAGER = <?php echo $isManager?'true':'false'; ?>;
 const TH = L==='th';
+const RETURNER_NAME = '<?php echo addslashes(trim(!empty($user['full_name_th']) ? $user['full_name_th'] : (($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')))); ?>';
+const RETURNER_AVATAR = '<?php echo addslashes($user['avatar_url'] ?? ''); ?>';
 
 const TXN_LABELS = {borrow:TH?'ยืม':'Borrow', use:TH?'ใช้':'Use', return:TH?'คืน':'Return', transfer:TH?'โอน':'Transfer', dispose:TH?'จำหน่าย':'Dispose', adjust:TH?'ปรับ':'Adjust', receive:TH?'รับเข้า':'Receive'};
 const TXN_ICONS  = {borrow:'fa-hand-holding-medical', use:'fa-eye-dropper', return:'fa-undo', transfer:'fa-people-arrows', dispose:'fa-trash-alt', adjust:'fa-sliders-h', receive:'fa-box-open'};
@@ -1599,12 +1743,13 @@ function renderTxnCard(t) {
     const isOverdue = type === 'borrow' && t.status === 'completed' && t.expected_return_date && new Date(t.expected_return_date) < new Date();
 
     // ── Status classification ──
+    const hasReturn      = !!parseInt(t.has_return);
     const isClosed = (t.status === 'completed' && type !== 'borrow') || t.status === 'rejected' || t.status === 'cancelled';
-    const isReturned = type === 'return' && t.status === 'completed';
+    const isReturned = (type === 'return' && t.status === 'completed') || (type === 'borrow' && hasReturn);
     const isTransferred = type === 'transfer' && t.status === 'completed';
     const isUsed = type === 'use' && t.status === 'completed';
     const isDisposed = type === 'dispose' && t.status === 'completed';
-    const isBorrowActive = type === 'borrow' && t.status === 'completed' && !isOverdue;
+    const isBorrowActive = type === 'borrow' && t.status === 'completed' && !isOverdue && !hasReturn;
     const isPending = t.status === 'pending';
     const isApproved = t.status === 'approved';
     const isRejected = t.status === 'rejected';
@@ -1690,9 +1835,17 @@ function renderTxnCard(t) {
             <button onclick="event.stopPropagation();cancelBorrowRequest(${t.id})" class="ci-btn ci-btn-sm" style="border:1.5px solid #f59e0b;background:#fffbeb;color:#92400e;font-weight:700;gap:5px"><i class="fas fa-ban"></i> ${TH?'ยกเลิกคำขอยืม':'Cancel Request'}</button>
         </div>`;
     }
-    if (type === 'borrow' && t.status === 'completed' && t.to_user_id == UID) {
+    if (type === 'borrow' && t.status === 'completed' && !parseInt(t.has_return) && t.to_user_id == UID) {
+        window._returnCache = window._returnCache || {};
+        window._returnCache[t.id] = {
+            chemName, quantity: t.quantity, unit: t.unit || '',
+            txnNumber: t.txn_number || ('#' + t.id),
+            borrowDate: t.created_at || '',
+            expectedReturn: t.expected_return_date || '',
+            approverName: [t.from_first, t.from_last].filter(Boolean).join(' ') || '-'
+        };
         actions = `<div class="txn-card-actions">
-            <button onclick="event.stopPropagation();openReturnModal(${t.id}, '${esc(chemName)}', ${t.quantity}, '${t.unit}')" class="ci-btn ci-btn-outline ci-btn-sm"><i class="fas fa-undo"></i> ${TH?'คืน':'Return'}</button>
+            <button onclick="event.stopPropagation();openReturnModal(${t.id})" class="ci-btn ci-btn-outline ci-btn-sm"><i class="fas fa-undo"></i> ${TH?'คืน':'Return'}</button>
         </div>`;
     }
 
@@ -2556,20 +2709,99 @@ async function _submitActConfirm() {
 }
 
 // ========== RETURN MODAL ==========
-function openReturnModal(txnId, chemName, qty, unit) {
+const COND_LABELS = {
+    good:           {th:'ดี',              en:'Good',           color:'#16a34a', ic:'fa-check-circle'},
+    partially_used: {th:'ใช้ไปบางส่วน',  en:'Partially Used', color:'#d97706', ic:'fa-adjust'},
+    contaminated:   {th:'ปนเปื้อน',       en:'Contaminated',   color:'#dc2626', ic:'fa-biohazard'},
+    damaged:        {th:'ชำรุด',           en:'Damaged',        color:'#7c3aed', ic:'fa-exclamation-triangle'}
+};
+
+function openReturnModal(txnId) {
+    const d = (window._returnCache || {})[txnId] || {};
+    const chemName = d.chemName || '';
+    const qty = d.quantity || 0;
+    const unit = d.unit || '';
+
     document.getElementById('returnTxnId').value = txnId;
     document.getElementById('returnQty').value = qty;
     document.getElementById('returnQty').max = qty;
+    document.getElementById('returnQtyUnit').textContent = unit;
+    document.getElementById('returnQtyHint').textContent = TH ? `คืนได้สูงสุด ${Number(qty).toLocaleString()} ${unit}` : `Max returnable: ${Number(qty).toLocaleString()} ${unit}`;
     document.getElementById('returnNotes').value = '';
+
+    // Reset condition to "good"
+    document.querySelectorAll('input[name="retCond"]').forEach(r => { r.checked = r.value === 'good'; });
     document.getElementById('returnCondition').value = 'good';
-    document.getElementById('returnInfo').innerHTML = `
-        <div style="font-weight:600;font-size:14px">${chemName}</div>
-        <div style="font-size:12px;color:var(--c3);margin-top:4px">${TH?'ยืมไป':'Borrowed'}: ${Number(qty).toLocaleString()} ${unit}</div>`;
+
+    // Chem bar
+    const bar = document.getElementById('returnInfo');
+    bar.textContent = chemName;
+    bar.classList.toggle('show', !!chemName);
+
     document.getElementById('returnModal').classList.add('show');
 }
 
 function closeReturnModal() {
     document.getElementById('returnModal').classList.remove('show');
+    document.getElementById('retSumModal').classList.remove('show');
+}
+
+function showReturnSummary() {
+    const qty = parseFloat(document.getElementById('returnQty').value);
+    const maxQty = parseFloat(document.getElementById('returnQty').max);
+    if (!qty || qty <= 0) { showToast(TH?'กรุณาระบุปริมาณที่ต้องการคืน':'Please enter quantity to return', 'warning'); return; }
+    if (qty > maxQty) { showToast((TH?'คืนได้สูงสุด: ':'Maximum: ') + maxQty, 'warning'); return; }
+
+    const txnId = parseInt(document.getElementById('returnTxnId').value);
+    const d = (window._returnCache || {})[txnId] || {};
+    const unit = d.unit || document.getElementById('returnQtyUnit').textContent;
+    const notes = document.getElementById('returnNotes').value.trim();
+
+    // Get selected condition
+    const condVal = document.querySelector('input[name="retCond"]:checked')?.value || 'good';
+    document.getElementById('returnCondition').value = condVal;
+    const cond = COND_LABELS[condVal] || COND_LABELS.good;
+
+    // Populate summary
+    document.getElementById('sumChemName').textContent = d.chemName || '—';
+    document.getElementById('sumTxnNum').textContent = d.txnNumber || '—';
+    document.getElementById('sumBorrowedQty').textContent = `${Number(maxQty).toLocaleString()} ${unit}`;
+    document.getElementById('sumReturnQty').textContent = `${Number(qty).toLocaleString()} ${unit}`;
+    document.getElementById('sumCondition').innerHTML = `<span style="color:${cond.color};font-weight:700"><i class="fas ${cond.ic}" style="margin-right:4px"></i>${TH ? cond.th : cond.en}</span>`;
+
+    const notesRow = document.getElementById('sumNotesRow');
+    if (notes) { document.getElementById('sumNotes').textContent = notes; notesRow.style.display = ''; }
+    else { notesRow.style.display = 'none'; }
+
+    if (d.borrowDate) {
+        document.getElementById('sumBorrowDate').textContent = fmtDateTime(d.borrowDate);
+        document.getElementById('sumBorrowDateRow').style.display = '';
+    } else {
+        document.getElementById('sumBorrowDateRow').style.display = 'none';
+    }
+
+    // Returner avatar
+    const avEl = document.getElementById('sumUserAv');
+    const name = RETURNER_NAME || '—';
+    const init = name.split(' ').map(w => w[0] || '').slice(0, 2).join('').toUpperCase() || '?';
+    if (RETURNER_AVATAR) {
+        avEl.innerHTML = `<img src="${RETURNER_AVATAR}" alt="${init}" style="width:100%;height:100%;object-fit:cover">`;
+    } else {
+        avEl.textContent = init;
+    }
+    document.getElementById('sumUserNm').textContent = name;
+
+    const btn = document.getElementById('btnConfirmReturn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check-circle"></i> ' + (TH ? 'ยืนยันการคืน' : 'Confirm Return');
+
+    document.getElementById('returnModal').classList.remove('show');
+    document.getElementById('retSumModal').classList.add('show');
+}
+
+function editReturn() {
+    document.getElementById('retSumModal').classList.remove('show');
+    document.getElementById('returnModal').classList.add('show');
 }
 
 async function submitReturn() {
@@ -2578,14 +2810,9 @@ async function submitReturn() {
     const condition = document.getElementById('returnCondition').value;
     const notes = document.getElementById('returnNotes').value;
 
-    // Validate quantity
-    if (!qty || qty <= 0) {
-        return alert(TH?'กรุณาระบุปริมาณที่ต้องการคืน':'Please enter quantity to return');
-    }
-    const maxQty = parseFloat(document.getElementById('returnQty').max);
-    if (qty > maxQty) {
-        return alert(TH?'ปริมาณคืนเกินกว่าที่ยืมไป สามารถคืนได้สูงสุด: ' + maxQty : 'Return quantity exceeds borrowed amount. Maximum: ' + maxQty);
-    }
+    const btn = document.getElementById('btnConfirmReturn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (TH ? 'กำลังดำเนินการ...' : 'Processing...');
 
     try {
         const d = await apiFetch('/v1/api/borrow.php?action=return', {
@@ -2596,7 +2823,11 @@ async function submitReturn() {
         closeReturnModal();
         loadDashboard(); loadList();
         showToast(TH?'คืนสารเคมีเรียบร้อย':'Chemical returned successfully', 'success');
-    } catch(e) { alert(e.message); }
+    } catch(e) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> ' + (TH ? 'ยืนยันการคืน' : 'Confirm Return');
+        showToast(e.message, 'danger');
+    }
 }
 
 // ========== DETAIL MODAL ==========
@@ -3117,8 +3348,16 @@ function scanActionDispose() {
 function scanActionReturn() {
     if (!scannedItemData || !scannedItemData.active_borrow) return;
     const ab = scannedItemData.active_borrow;
+    window._returnCache = window._returnCache || {};
+    window._returnCache[ab.id] = {
+        chemName: scannedItemData.item.chemical_name || '', quantity: ab.quantity, unit: ab.unit || '',
+        txnNumber: ab.txn_number || ('#' + ab.id),
+        borrowDate: ab.created_at || '',
+        expectedReturn: ab.expected_return_date || '',
+        approverName: '-'
+    };
     closeScanModal();
-    openReturnModal(ab.id, scannedItemData.item.chemical_name, ab.quantity, ab.unit);
+    openReturnModal(ab.id);
 }
 
 // Auto-select a scanned item in the txn modal (skip step 1 search)
