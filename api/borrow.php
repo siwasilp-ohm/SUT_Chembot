@@ -71,6 +71,9 @@ try {
             case 'approve':          echo json_encode(['success'=>true,'data'=>approveTxn($data, $user)]); break;
             case 'reject':           echo json_encode(['success'=>true,'data'=>rejectTxn($data, $user)]); break;
             case 'cancel_borrow':    echo json_encode(['success'=>true,'data'=>cancelBorrow($data, $user)]); break;
+            case 'donate':           echo json_encode(['success'=>true,'data'=>donateItem($data, $user)]); break;
+            case 'undonate':         echo json_encode(['success'=>true,'data'=>undonateItem($data, $user)]); break;
+            case 'request_donation': echo json_encode(['success'=>true,'data'=>requestDonation($data, $user)]); break;
             case 'disposal_complete':
                 if (!$isAdmin) throw new Exception('Permission denied', 403);
                 echo json_encode(['success'=>true,'data'=>disposalComplete($data, $user)]);
@@ -148,7 +151,14 @@ function updateSourceQty(string $type, int $id, float $newQty): void {
     if ($type === 'container') {
         Database::update('containers', ['current_quantity'=>$newQty], 'id = :id', [':id'=>$id]);
     } else {
-        Database::update('chemical_stock', ['remaining_qty'=>$newQty], 'id = :id', [':id'=>$id]);
+        Database::query(
+            "UPDATE `chemical_stock` SET `remaining_qty` = :qty,
+             `remaining_pct` = CASE WHEN `package_size` > 0
+                               THEN ROUND((:qty2 / `package_size`) * 100, 1)
+                               ELSE `remaining_pct` END
+             WHERE `id` = :id",
+            [':qty' => $newQty, ':qty2' => $newQty, ':id' => $id]
+        );
     }
 }
 
@@ -881,12 +891,16 @@ function createBorrow(array $data, array $user): array {
     $roleLevel = (int)($user['role_level'] ?? $user['level'] ?? 0);
     $isAdmin = $roleLevel >= 5;
     $isManager = $roleLevel >= 3;
-    
+
+    if ($ownerId !== 0 && $ownerId === $currentUserId) {
+        throw new Exception('ไม่สามารถยืมสารของตนเองได้ — กรุณาใช้ฟังก์ชัน "เบิกใช้" แทน');
+    }
+
     $newBalance = (float)$src['remaining_qty'] - $qty;
     $txnNum = genTxnNumber();
-    
+
     // Borrowing logic:
-    // - If borrowing from self: no approval needed
+    // - If borrowing from self: no approval needed (unreachable — blocked above)
     // - If borrowing from others: requires approval from owner
     // - If owner_id is null/0 (shared/unassigned stock): no approval needed for managers+, require approval for regular users borrowing from pool
     // - Admin/Manager can borrow without approval from anyone
@@ -1205,11 +1219,16 @@ function approveTxn(array $data, array $user): array {
     $ownerId     = (int)$txn['from_user_id'];
     $recipientId = (int)$txn['to_user_id'];
     $isTransfer  = ($txn['txn_type'] === 'transfer');
+    $isDonation  = ($txn['txn_type'] === 'donation');
 
-    // Transfer: RECIPIENT accepts; Borrow: OWNER or admin approves
+    // Transfer: RECIPIENT accepts; Donation: OWNER approves; Borrow: OWNER or admin approves
     if ($isTransfer) {
         if ($roleLevel < 3 && $recipientId !== $currentUserId) {
             throw new Exception('เฉพาะผู้รับโอนหรือผู้ดูแลระบบเท่านั้นที่สามารถยืนยันรับโอนได้');
+        }
+    } elseif ($isDonation) {
+        if ($roleLevel < 3 && $ownerId !== $currentUserId) {
+            throw new Exception('เฉพาะเจ้าของสารหรือผู้ดูแลระบบเท่านั้นที่สามารถอนุมัติคำขอรับบริจาคได้');
         }
     } else {
         if ($roleLevel < 3 && $ownerId !== $currentUserId) {
@@ -1251,42 +1270,92 @@ function approveTxn(array $data, array $user): array {
         ];
     }
 
-    $newBalance = (float)$src['remaining_qty'] - $qty;
-    $approveData = [
-        'status'=>'completed', 'approved_by'=>$currentUserId,
-        'approved_at'=>date('Y-m-d H:i:s'), 'balance_after'=>$newBalance
-    ];
-    Database::update('chemical_transactions', $approveData, 'id = :id', [':id'=>$txnId]);
-    // Store reviewer notes separately (tolerates DB schemas without approval_notes column)
-    if (!empty($data['notes'])) {
-        try {
-            Database::query(
-                "UPDATE chemical_transactions SET approval_notes = :n WHERE id = :id",
-                [':n'=>$data['notes'], ':id'=>$txnId]
-            );
-        } catch (\Exception $e) { /* column may not exist */ }
-    }
+    if ($isTransfer || $isDonation) {
+        // Whole-bottle transfer / donation acceptance: quantity stays, only ownership changes.
+        $approveData = [
+            'status'        => 'completed',
+            'approved_by'   => $currentUserId,
+            'approved_at'   => date('Y-m-d H:i:s'),
+            'balance_after' => (float)$src['remaining_qty'],  // unchanged
+        ];
+        Database::update('chemical_transactions', $approveData, 'id = :id', [':id'=>$txnId]);
 
-    updateSourceQty($txn['source_type'], (int)$txn['source_id'], $newBalance);
-
-    // Handle ownership transfer — only when whole_bottle flag was set at create time
-    if ($txn['txn_type'] === 'transfer' && ($txn['approval_notes'] ?? '') === 'whole_bottle') {
+        // Change ownership to recipient
         $toUserId = (int)$txn['to_user_id'];
+        $tu = Database::fetch("SELECT first_name, last_name, lab_id FROM users WHERE id = :id", [':id' => $toUserId]);
         if ($txn['source_type'] === 'container') {
-            Database::update('containers', ['owner_id'=>$toUserId], 'id = :id', [':id'=>$txn['source_id']]);
+            $updateFields = ['owner_id' => $toUserId];
+            if ($isDonation) { $updateFields['is_donated'] = 0; $updateFields['donated_at'] = null; $updateFields['donation_note'] = null; }
+            // Move the container into the recipient's lab so lab-based filters work correctly
+            if ($tu && !empty($tu['lab_id'])) $updateFields['lab_id'] = (int)$tu['lab_id'];
+            Database::update('containers', $updateFields, 'id = :id', [':id' => $txn['source_id']]);
+            // Log ownership transfer to container_history
+            if ($isDonation) {
+                try {
+                    $recipientName = $tu ? trim(($tu['first_name'] ?? '') . ' ' . ($tu['last_name'] ?? '')) : '';
+                    Database::insert('container_history', [
+                        'container_id'   => (int)$txn['source_id'],
+                        'action_type'    => 'received',
+                        'user_id'        => $currentUserId,
+                        'quantity_after' => (float)$src['remaining_qty'],
+                        'notes'          => 'โอนกรรมสิทธิ์ให้ ' . ($recipientName ?: ('uid:'.$toUserId)) . ' · txn#' . ($txn['txn_number'] ?? $txnId),
+                    ]);
+                } catch (\Throwable $e) { /* non-fatal */ }
+            }
         } else {
-            $tu = Database::fetch("SELECT first_name, last_name FROM users WHERE id = :id", [':id'=>$toUserId]);
-            Database::update('chemical_stock', [
-                'owner_user_id' => $toUserId,
-                'owner_name'    => $tu ? "{$tu['first_name']} {$tu['last_name']}" : ''
-            ], 'id = :id', [':id'=>$txn['source_id']]);
+            $updateFields = ['owner_user_id' => $toUserId, 'owner_name' => $tu ? trim(($tu['first_name'] ?? '') . ' ' . ($tu['last_name'] ?? '')) : ''];
+            if ($isDonation) { $updateFields['is_donated'] = 0; $updateFields['donated_at'] = null; $updateFields['donation_note'] = null; }
+            Database::update('chemical_stock', $updateFields, 'id = :id', [':id' => $txn['source_id']]);
         }
+
+        // Cancel other pending donation requests for this item (only one can be accepted)
+        if ($isDonation) {
+            Database::query(
+                "UPDATE chemical_transactions SET status='cancelled', approved_at=NOW(), approved_by=:uid
+                 WHERE txn_type='donation' AND source_type=:st AND source_id=:sid AND status='pending' AND id != :tid",
+                [':uid'=>$currentUserId, ':st'=>$txn['source_type'], ':sid'=>$txn['source_id'], ':tid'=>$txnId]
+            );
+        }
+    } else {
+        // Borrow approval: deduct quantity from source
+        $newBalance = (float)$src['remaining_qty'] - $qty;
+        $approveData = [
+            'status'        => 'completed',
+            'approved_by'   => $currentUserId,
+            'approved_at'   => date('Y-m-d H:i:s'),
+            'balance_after' => $newBalance,
+        ];
+        Database::update('chemical_transactions', $approveData, 'id = :id', [':id'=>$txnId]);
+        if (!empty($data['notes'])) {
+            try {
+                Database::query(
+                    "UPDATE chemical_transactions SET approval_notes = :n WHERE id = :id",
+                    [':n'=>$data['notes'], ':id'=>$txnId]
+                );
+            } catch (\Exception $e) { /* column may not exist */ }
+        }
+        updateSourceQty($txn['source_type'], (int)$txn['source_id'], $newBalance);
     }
 
     $chemName    = $src['chemical_name'] ?? 'สารเคมี';
     $actorName   = trim(($user['full_name_th'] ?? '') ?: (($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''))) ?: 'ผู้ดูแล';
 
-    if ($isTransfer) {
+    if ($isDonation) {
+        // Notify requester that donation was approved
+        $requesterId = (int)$txn['to_user_id'];
+        if ($requesterId && $requesterId !== $currentUserId) {
+            notifyAlert([
+                'alert_type'        => 'borrow_request',
+                'severity'          => 'info',
+                'title'             => 'คำขอรับบริจาคได้รับการอนุมัติ',
+                'message'           => "{$chemName} {$txn['quantity']} {$txn['unit']} — โอนกรรมสิทธิ์ให้คุณแล้ว อนุมัติโดย {$actorName}",
+                'user_id'           => $requesterId,
+                'chemical_id'       => (int)$txn['chemical_id'],
+                'borrow_request_id' => $txnId,
+                'action_required'   => 0,
+            ]);
+        }
+    } elseif ($isTransfer) {
         // Notify INITIATOR that recipient accepted ownership
         $notifyUserId = (int)($txn['initiated_by'] ?: $txn['from_user_id']);
         if ($notifyUserId && $notifyUserId !== $currentUserId) {
@@ -1375,6 +1444,7 @@ function rejectTxn(array $data, array $user): array {
     $roleLevel     = (int)($user['role_level'] ?? $user['level'] ?? 0);
     $currentUserId = (int)$user['id'];
     $isTransfer    = ($txn['txn_type'] === 'transfer');
+    $isDonation    = ($txn['txn_type'] === 'donation');
     $ownerId       = (int)$txn['from_user_id'];
     $recipientId   = (int)$txn['to_user_id'];
 
@@ -1385,14 +1455,19 @@ function rejectTxn(array $data, array $user): array {
         if ($roleLevel < 3 && $recipientId !== $currentUserId && !$isInitiator) {
             throw new Exception('เฉพาะผู้รับโอน เจ้าของสาร หรือผู้ดูแลระบบเท่านั้นที่สามารถดำเนินการได้');
         }
+    } elseif ($isDonation) {
+        // Owner rejects, or requester cancels their own request
+        if ($roleLevel < 3 && $ownerId !== $currentUserId && $initiatorId !== $currentUserId) {
+            throw new Exception('Permission denied');
+        }
     } else {
         if ($roleLevel < 3 && $ownerId !== $currentUserId) {
             throw new Exception('Permission denied');
         }
     }
 
-    // Initiator cancelling = 'cancelled'; recipient/admin rejecting = 'rejected'
-    $newStatus = ($isTransfer && $isInitiator && $roleLevel < 3) ? 'cancelled' : 'rejected';
+    // Initiator cancelling own request = 'cancelled'; recipient/admin rejecting = 'rejected'
+    $newStatus = (($isTransfer || $isDonation) && $isInitiator && $roleLevel < 3) ? 'cancelled' : 'rejected';
 
     Database::update('chemical_transactions', [
         'status'=>$newStatus, 'approved_by'=>$user['id'],
@@ -1412,7 +1487,22 @@ function rejectTxn(array $data, array $user): array {
     $actorName    = trim(($user['full_name_th'] ?? '') ?: (($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''))) ?: 'ผู้ดูแล';
     $reasonSuffix = !empty($data['reason']) ? " — {$data['reason']}" : '';
 
-    if ($isTransfer) {
+    if ($isDonation) {
+        // Notify requester that their donation request was rejected/cancelled
+        $notifyId = $initiatorId ?: $recipientId;
+        if ($notifyId && $notifyId !== $currentUserId) {
+            notifyAlert([
+                'alert_type'        => 'borrow_request',
+                'severity'          => 'warning',
+                'title'             => 'คำขอรับบริจาคถูกปฏิเสธ',
+                'message'           => "{$chemName} {$txn['quantity']} {$txn['unit']}{$reasonSuffix}",
+                'user_id'           => $notifyId,
+                'chemical_id'       => (int)$txn['chemical_id'],
+                'borrow_request_id' => $txnId,
+                'action_required'   => 0,
+            ]);
+        }
+    } elseif ($isTransfer) {
         if ($isInitiator && $roleLevel < 3) {
             // Initiator cancelled — notify RECIPIENT
             if ($recipientId && $recipientId !== $currentUserId) {
@@ -1459,6 +1549,139 @@ function rejectTxn(array $data, array $user): array {
         }
     }
     return ['txn_id'=>$txnId, 'status'=>'rejected'];
+}
+
+// ========== DONATION ==========
+
+function donateItem(array $data, array $user): array {
+    $sourceType = $data['source_type'] ?? '';
+    $sourceId   = abs((int)($data['source_id'] ?? 0));
+    $note       = trim($data['note'] ?? '');
+    if (!$sourceType || !$sourceId) throw new Exception('source_type and source_id required');
+
+    $src = getSourceInfo($sourceType, $sourceId);
+    if ((int)($src['owner_id'] ?? 0) !== (int)$user['id'] && (int)($user['role_level'] ?? 0) < 5) {
+        throw new Exception('คุณไม่ใช่เจ้าของสารนี้');
+    }
+    if ((float)$src['remaining_qty'] <= 0) throw new Exception('ปริมาณสารเป็นศูนย์ ไม่สามารถบริจาคได้');
+
+    $now = date('Y-m-d H:i:s');
+    if ($sourceType === 'container') {
+        Database::update('containers', ['is_donated'=>1,'donated_at'=>$now,'donation_note'=>$note], 'id = :id', [':id'=>$sourceId]);
+        try {
+            Database::insert('container_history', [
+                'container_id'   => $sourceId,
+                'action_type'    => 'donated',
+                'user_id'        => (int)$user['id'],
+                'quantity_after' => (float)$src['remaining_qty'],
+                'notes'          => 'ตั้งเป็นบริจาค' . ($note ? ' — ' . $note : ''),
+            ]);
+        } catch (\Throwable $e) { /* non-fatal */ }
+    } else {
+        Database::update('chemical_stock', ['is_donated'=>1,'donated_at'=>$now,'donation_note'=>$note], 'id = :id', [':id'=>$sourceId]);
+    }
+    return ['source_type'=>$sourceType, 'source_id'=>$sourceId, 'is_donated'=>true];
+}
+
+function undonateItem(array $data, array $user): array {
+    $sourceType = $data['source_type'] ?? '';
+    $sourceId   = abs((int)($data['source_id'] ?? 0));
+    if (!$sourceType || !$sourceId) throw new Exception('source_type and source_id required');
+
+    $src = getSourceInfo($sourceType, $sourceId);
+    if ((int)($src['owner_id'] ?? 0) !== (int)$user['id'] && (int)($user['role_level'] ?? 0) < 5) {
+        throw new Exception('คุณไม่ใช่เจ้าของสารนี้');
+    }
+    // Cancel any pending donation requests for this item
+    Database::query(
+        "UPDATE chemical_transactions SET status='cancelled', approved_at=NOW(), approved_by=:uid
+         WHERE txn_type='donation' AND source_type=:st AND source_id=:sid AND status='pending'",
+        [':uid'=>$user['id'], ':st'=>$sourceType, ':sid'=>$sourceId]
+    );
+    if ($sourceType === 'container') {
+        Database::update('containers', ['is_donated'=>0,'donated_at'=>null,'donation_note'=>null], 'id = :id', [':id'=>$sourceId]);
+        try {
+            Database::insert('container_history', [
+                'container_id'   => $sourceId,
+                'action_type'    => 'undonate',
+                'user_id'        => (int)$user['id'],
+                'quantity_after' => (float)$src['remaining_qty'],
+                'notes'          => 'ยกเลิกการบริจาค',
+            ]);
+        } catch (\Throwable $e) { /* non-fatal */ }
+    } else {
+        Database::update('chemical_stock', ['is_donated'=>0,'donated_at'=>null,'donation_note'=>null], 'id = :id', [':id'=>$sourceId]);
+    }
+    return ['source_type'=>$sourceType, 'source_id'=>$sourceId, 'is_donated'=>false];
+}
+
+function requestDonation(array $data, array $user): array {
+    $sourceType = $data['source_type'] ?? '';
+    $sourceId   = abs((int)($data['source_id'] ?? 0));
+    $purpose    = trim($data['purpose'] ?? '');
+    if (!$sourceType || !$sourceId) throw new Exception('source_type and source_id required');
+    if (!$purpose) throw new Exception('purpose required');
+
+    $src = getSourceInfo($sourceType, $sourceId);
+    $ownerId = (int)($src['owner_id'] ?? 0);
+    if ($ownerId === (int)$user['id']) throw new Exception('ไม่สามารถขอรับสารของตนเองได้');
+
+    // Check item is still in donation pool
+    $isDonated = false;
+    if ($sourceType === 'container') {
+        $row = Database::fetch("SELECT is_donated FROM containers WHERE id=:id", [':id'=>$sourceId]);
+        $isDonated = (bool)($row['is_donated'] ?? false);
+    } else {
+        $row = Database::fetch("SELECT is_donated FROM chemical_stock WHERE id=:id", [':id'=>$sourceId]);
+        $isDonated = (bool)($row['is_donated'] ?? false);
+    }
+    if (!$isDonated) throw new Exception('สารนี้ไม่ได้อยู่ในคลังบริจาคแล้ว');
+
+    // Block duplicate pending request from same user
+    $dup = Database::fetch(
+        "SELECT id FROM chemical_transactions WHERE txn_type='donation' AND source_type=:st AND source_id=:sid AND to_user_id=:uid AND status='pending'",
+        [':st'=>$sourceType, ':sid'=>$sourceId, ':uid'=>$user['id']]
+    );
+    if ($dup) throw new Exception('คุณมีคำขอรอการอนุมัติอยู่แล้วสำหรับสารนี้');
+
+    $qty    = (float)$src['remaining_qty'];
+    $txnNum = genTxnNumber();
+    $id = Database::insert('chemical_transactions', [
+        'txn_number'       => $txnNum,
+        'source_type'      => $sourceType,
+        'source_id'        => $sourceId,
+        'chemical_id'      => (int)$src['chemical_id'],
+        'barcode'          => $src['barcode'] ?? '',
+        'txn_type'         => 'donation',
+        'from_user_id'     => $ownerId,
+        'to_user_id'       => (int)$user['id'],
+        'initiated_by'     => (int)$user['id'],
+        'quantity'         => $qty,
+        'unit'             => $src['unit'] ?? '',
+        'balance_after'    => $qty,
+        'purpose'          => $purpose,
+        'from_building_id' => getUserBuilding($ownerId),
+        'to_building_id'   => getUserBuilding((int)$user['id']),
+        'requires_approval'=> 1,
+        'status'           => 'pending',
+    ]);
+
+    // Notify owner
+    $requesterName = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')) ?: 'ผู้ขอรับ';
+    $chemName      = $src['chemical_name'] ?? 'สารเคมี';
+    if ($ownerId) {
+        notifyAlert([
+            'alert_type'        => 'borrow_request',
+            'severity'          => 'info',
+            'title'             => 'มีคำขอรับบริจาคสารเคมี',
+            'message'           => "{$chemName} {$qty} {$src['unit']} — {$requesterName} ขอรับบริจาค: {$purpose}",
+            'user_id'           => $ownerId,
+            'chemical_id'       => (int)$src['chemical_id'],
+            'borrow_request_id' => $id,
+            'action_required'   => 1,
+        ]);
+    }
+    return ['id'=>$id, 'txn_number'=>$txnNum, 'status'=>'pending'];
 }
 
 // ========== DISPOSAL BIN ==========

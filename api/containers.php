@@ -209,6 +209,10 @@ function getStats(array $user): array {
             'containers' => (int)$cn['total'],
             'chemical_stock' => (int)$cs['total'],
         ],
+        'donated_count'  => (int)(Database::fetch(
+            "SELECT (SELECT COUNT(*) FROM containers WHERE is_donated=1 AND is_active=1) +
+                    (SELECT COUNT(*) FROM chemical_stock WHERE is_donated=1) as cnt"
+        )['cnt'] ?? 0),
     ];
 }
 
@@ -233,7 +237,9 @@ function listContainers(array $params, array $user): array {
     // ── Build WHERE for containers table ──
     $cnWhere = ["cn.is_active = 1"];
     $cnBind  = [];
-    if ($tab === 'my') {
+    if ($tab === 'donated') {
+        $cnWhere[] = "cn.is_donated = 1";
+    } elseif ($tab === 'my') {
         $cnWhere[] = "cn.owner_id = :cn_my_uid";
         $cnBind[':cn_my_uid'] = $uid;
     } elseif ($role === 'lab_manager') {
@@ -259,7 +265,9 @@ function listContainers(array $params, array $user): array {
     // ── Build WHERE for chemical_stock table ──
     $csWhere = ['1=1'];
     $csBind  = [];
-    if ($tab === 'my') {
+    if ($tab === 'donated') {
+        $csWhere[] = "s.is_donated = 1";
+    } elseif ($tab === 'my') {
         $csWhere[] = "s.owner_user_id = :cs_my_uid";
         $csBind[':cs_my_uid'] = $uid;
     } elseif ($role === 'lab_manager') {
@@ -309,7 +317,8 @@ function listContainers(array $params, array $user): array {
             l.name as lab_name, m.name as manufacturer_name,
             b.name as building_name, COALESCE(b.shortname, b.name) as building_short,
             rm.name as room_name, rm.code as room_code,
-            NULL as storage_location
+            NULL as storage_location,
+            cn.is_donated, cn.donated_at, cn.donation_note
         FROM containers cn
         LEFT JOIN chemicals ch ON cn.chemical_id = ch.id
         LEFT JOIN users u ON cn.owner_id = u.id
@@ -323,7 +332,7 @@ function listContainers(array $params, array $user): array {
     $csSelect = "SELECT -(s.id) as id, 'stock' as source,
             NULL as qr_code, s.bottle_code, 'bottle' as container_type, 'glass' as container_material,
             s.package_size as initial_quantity, s.remaining_qty as current_quantity, s.unit as quantity_unit,
-            s.remaining_pct as remaining_percentage,
+            CASE WHEN s.package_size > 0 THEN ROUND((s.remaining_qty / s.package_size) * 100, 1) ELSE COALESCE(s.remaining_pct, 100) END as remaining_percentage,
             s.status, 'good' as quality_status, s.grade, NULL as cost, NULL as expiry_date,
             s.added_at as received_date,
             NULL as building_id, NULL as room_id, NULL as container_3d_model,
@@ -338,7 +347,8 @@ function listContainers(array $params, array $user): array {
             NULL as lab_name, NULL as manufacturer_name,
             NULL as building_name, NULL as building_short,
             NULL as room_name, NULL as room_code,
-            s.storage_location
+            s.storage_location,
+            s.is_donated, s.donated_at, s.donation_note
         FROM chemical_stock s
         LEFT JOIN chemicals ch2 ON s.chemical_id = ch2.id
         LEFT JOIN users u2 ON s.owner_user_id = u2.id
@@ -398,9 +408,32 @@ function listContainers(array $params, array $user): array {
         }
     } catch (\Throwable $e) { /* non-fatal */ }
 
+    // ── Pending donation-request lookup (by me + total count per item) ──
+    $donationByMeMap    = [];
+    $donationCountMap   = [];
+    try {
+        if ($cnIds) {
+            $in = implode(',', array_map('intval', $cnIds));
+            foreach (Database::fetchAll("SELECT source_id, initiated_by, COUNT(*) as cnt FROM chemical_transactions WHERE txn_type='donation' AND status='pending' AND source_type='container' AND source_id IN ({$in}) GROUP BY source_id, initiated_by") as $dr) {
+                $key = 'container_'.$dr['source_id'];
+                $donationCountMap[$key] = ($donationCountMap[$key] ?? 0) + (int)$dr['cnt'];
+                if ((int)$dr['initiated_by'] === $uid) $donationByMeMap[$key] = true;
+            }
+        }
+        if ($csIds) {
+            $in = implode(',', array_map('intval', $csIds));
+            foreach (Database::fetchAll("SELECT source_id, initiated_by, COUNT(*) as cnt FROM chemical_transactions WHERE txn_type='donation' AND status='pending' AND source_type='stock' AND source_id IN ({$in}) GROUP BY source_id, initiated_by") as $dr) {
+                $key = 'stock_'.$dr['source_id'];
+                $donationCountMap[$key] = ($donationCountMap[$key] ?? 0) + (int)$dr['cnt'];
+                if ((int)$dr['initiated_by'] === $uid) $donationByMeMap[$key] = true;
+            }
+        }
+    } catch (\Throwable $e) { /* non-fatal */ }
+
     foreach ($data as &$row) {
         $row['hazard_pictograms'] = json_decode($row['hazard_pictograms'] ?? '[]', true);
-        $row['is_mine'] = ((int)($row['owner_uid'] ?? 0) === (int)$user['id']);
+        $row['is_mine']    = ((int)($row['owner_uid'] ?? 0) === (int)$user['id']);
+        $row['is_donated'] = (bool)(int)($row['is_donated'] ?? 0);
 
         // Stamp pending transfer info
         $pt = $pendingMap[$row['source'].'_'.abs((int)$row['id'])] ?? null;
@@ -410,6 +443,11 @@ function listContainers(array $params, array $user): array {
 
         // Stamp pending borrow by current user
         $row['pending_borrow_by_me'] = isset($borrowedByMeMap[$row['source'].'_'.abs((int)$row['id'])]);
+
+        // Stamp donation request state
+        $dKey = $row['source'].'_'.abs((int)$row['id']);
+        $row['pending_donation_by_me']  = isset($donationByMeMap[$dKey]);
+        $row['donation_request_count']  = (int)($donationCountMap[$dKey] ?? 0);
 
         if ($row['source'] === 'container') {
             $row['has_3d'] = !empty($row['container_3d_model']) || has3DModel($row['container_type'], $row['container_material']);
@@ -570,7 +608,9 @@ function getStockDetail(int $stockId, array $user): array {
     if (!$s) throw new Exception('Stock record not found');
 
     // Map to the same output structure as getContainerDetails()
-    $pct = (float)($s['remaining_pct'] ?? 100);
+    $pct = (float)$s['package_size'] > 0
+        ? round((float)$s['remaining_qty'] / (float)$s['package_size'] * 100, 1)
+        : (float)($s['remaining_pct'] ?? 100);
     $containerType = guessContainerType($s['unit']);
     
     $c = [
@@ -617,6 +657,9 @@ function getStockDetail(int $stockId, array $user): array {
         'notes'                => null,
         'created_at'           => $s['created_at'],
         'is_mine'              => ((int)($s['owner_user_id'] ?? 0) === (int)$user['id']),
+        'is_donated'           => (bool)(int)($s['is_donated'] ?? 0),
+        'donated_at'           => $s['donated_at'] ?? null,
+        'donation_note'        => $s['donation_note'] ?? null,
         'history'              => [],  // chemical_stock has no history table
         'ar_data'              => getARData([
             'container_type'    => $containerType,
@@ -628,6 +671,14 @@ function getStockDetail(int $stockId, array $user): array {
             'container_3d_model'=> null,
         ]),
     ];
+
+    $uid = (int)$user['id'];
+    $donReqs = Database::fetchAll(
+        "SELECT initiated_by FROM chemical_transactions WHERE txn_type='donation' AND status='pending' AND source_type='stock' AND source_id=:id",
+        [':id' => $stockId]
+    );
+    $c['donation_request_count'] = count($donReqs);
+    $c['pending_donation_by_me'] = in_array($uid, array_column($donReqs, 'initiated_by'));
 
     return $c;
 }
@@ -662,7 +713,15 @@ function getContainerDetails(int $id, array $user): array {
     $c['hazard_pictograms'] = json_decode($c['hazard_pictograms'] ?? '[]', true);
     $c['ghs_classifications'] = json_decode($c['ghs_classifications'] ?? '[]', true);
     $c['location_text'] = buildLocationText($c);
-    $c['is_mine'] = ((int)($c['owner_id'] ?? 0) === (int)$user['id']);
+    $c['is_mine']    = ((int)($c['owner_id'] ?? 0) === (int)$user['id']);
+    $c['is_donated'] = (bool)(int)($c['is_donated'] ?? 0);
+    $uid = (int)$user['id'];
+    $donReqs = Database::fetchAll(
+        "SELECT initiated_by FROM chemical_transactions WHERE txn_type='donation' AND status='pending' AND source_type='container' AND source_id=:id",
+        [':id' => $id]
+    );
+    $c['donation_request_count'] = count($donReqs);
+    $c['pending_donation_by_me'] = in_array($uid, array_column($donReqs, 'initiated_by'));
 
     $c['history'] = Database::fetchAll(
         "SELECT h.*, CONCAT(u.first_name,' ',u.last_name) as user_name 
@@ -717,10 +776,16 @@ function getContainerByQR(string $qrCode, array $user = []): array {
 function createContainer(array $data, array $user): array {
     $chemicalId = $data['chemical_id'] ?? null;
     if (!$chemicalId && !empty($data['chemical_name'])) {
+        $casNumber = (isset($data['cas_number']) && $data['cas_number'] !== '') ? trim($data['cas_number']) : null;
+        // 1) lookup by name
         $existing = Database::fetch("SELECT id FROM chemicals WHERE name = :n LIMIT 1", [':n' => trim($data['chemical_name'])]);
+        // 2) if not found by name, try CAS number — prevents duplicate-key on unique cas_number index
+        if (!$existing && $casNumber) {
+            $existing = Database::fetch("SELECT id FROM chemicals WHERE cas_number = :c LIMIT 1", [':c' => $casNumber]);
+        }
         $chemicalId = $existing ? $existing['id'] : Database::insert('chemicals', [
-            'name' => trim($data['chemical_name']),
-            'cas_number' => $data['cas_number'] ?? null,
+            'name'           => trim($data['chemical_name']),
+            'cas_number'     => $casNumber,
             'physical_state' => $data['physical_state'] ?? null,
         ]);
     }
@@ -790,11 +855,22 @@ function createContainer(array $data, array $user): array {
     $currentQty = $data['current_quantity'] ?? $initialQty;
     $pct = ($currentQty / $initialQty) * 100;
 
+    $labId = $data['lab_id'] ?? null;
+    if (!$labId && !empty($data['room_id'])) {
+        $rm = Database::fetch("SELECT lab_id FROM rooms WHERE id = :id", [':id' => (int)$data['room_id']]);
+        $labId = $rm['lab_id'] ?? null;
+    }
+    if (!$labId) $labId = $user['lab_id'] ?? null;
+    if (!$labId) {
+        $firstLab = Database::fetch("SELECT id FROM labs WHERE is_active = 1 ORDER BY id LIMIT 1");
+        $labId = $firstLab['id'] ?? null;
+    }
+
     $id = Database::insert('containers', [
         'qr_code' => $qrCode, 'qr_code_image' => $qrImagePath,
         'chemical_id' => $chemicalId,
         'owner_id' => $data['owner_id'] ?? $user['id'],
-        'lab_id' => $data['lab_id'] ?? $user['lab_id'],
+        'lab_id' => $labId,
         'bottle_code' => $bottleCode,
         'container_type' => $data['container_type'] ?? 'bottle',
         'container_material' => $data['container_material'] ?? 'glass',
@@ -806,7 +882,8 @@ function createContainer(array $data, array $user): array {
         'manufacturer_id' => $manufacturerId,
         'building_id' => !empty($data['building_id']) ? (int)$data['building_id'] : null,
         'room_id' => !empty($data['room_id']) ? (int)$data['room_id'] : null,
-        'location_slot_id' => !empty($data['cabinet_id']) ? (int)$data['cabinet_id'] : ($data['location_slot_id'] ?? null),
+        'cabinet_id' => !empty($data['cabinet_id']) ? (int)$data['cabinet_id'] : null,
+        'location_slot_id' => !empty($data['location_slot_id']) ? (int)$data['location_slot_id'] : null,
         'received_date' => $data['received_date'] ?? date('Y-m-d'),
         'expiry_date' => $data['expiry_date'] ?? null,
         'cost' => !empty($data['cost']) ? (float)$data['cost'] : null,

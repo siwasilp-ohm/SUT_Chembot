@@ -63,6 +63,19 @@ Layout::head($lang === 'th' ? 'คลังสารเคมี — ขวด�
 .stk-tab.active{background:#fff;color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .stk-tab .bg{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;background:#e2e8f0;color:var(--c3)}
 .stk-tab.active .bg{background:var(--accent);color:#fff}
+.stk-tab[data-tab="donated"].active{color:#db2777}
+.stk-tab[data-tab="donated"].active .bg{background:#db2777}
+/* ── Donated Cards ── */
+.stk-card.donated{border-left:3px solid #ec4899}
+.donated-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#fdf2f8,#fce7f3);color:#9d174d;border:1px solid #fbcfe8;border-radius:20px;font-size:9px;font-weight:700;padding:2px 8px;white-space:nowrap}
+/* ── Donate / Request Modal ── */
+.dnModal-ov{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:1200;display:none;align-items:center;justify-content:center;padding:16px}
+.dnModal-ov.show{display:flex}
+.dnModal{background:#fff;border-radius:16px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden}
+.dnModal-hdr{padding:18px 20px 14px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:10px}
+.dnModal-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.dnModal-body{padding:18px 20px}
+.dnModal-foot{padding:12px 20px;border-top:1px solid #f1f5f9;display:flex;gap:8px;justify-content:flex-end}
 
 /* ── My Banner ── */
 .stk-my{background:linear-gradient(135deg,#1e40af,#3b82f6);border-radius:var(--stk-r);padding:16px 20px;color:#fff;display:flex;align-items:center;gap:14px;margin-bottom:16px}
@@ -123,6 +136,12 @@ Layout::head($lang === 'th' ? 'คลังสารเคมี — ขวด�
 tr.pending-borrow td{background:#eff6ff!important}
 tr.pending-borrow{border-left:3px solid #2563eb}
 .stk-pb-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;white-space:nowrap}
+.stk-card.pending-donation{background:#fff7ed;border-color:#fed7aa!important}
+.stk-card.pending-donation:hover{border-color:#fb923c!important}
+.stk-cr.pending-donation{background:#fff7ed!important;border-left:3px solid #f97316!important}
+tr.pending-donation td{background:#fff7ed!important}
+tr.pending-donation{border-left:3px solid #f97316}
+.stk-pdon-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;white-space:nowrap}
 .stk-card-hd{display:flex;align-items:flex-start;gap:10px;padding:16px 16px 0}
 .stk-card-ic{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .stk-card-nm{font-size:13px;font-weight:700;color:var(--c1);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -474,6 +493,10 @@ tr.pending-borrow{border-left:3px solid #2563eb}
 .bab-borrow:hover{background:rgba(59,130,246,.35);color:#bfdbfe}
 .bab-transfer{background:rgba(139,92,246,.18);color:#c4b5fd}
 .bab-transfer:hover{background:rgba(139,92,246,.35);color:#ddd6fe}
+.bab-donate{background:rgba(236,72,153,.18);color:#f9a8d4}
+.bab-donate:hover{background:rgba(236,72,153,.35);color:#fbcfe8}
+.bab-reqdon{background:rgba(13,148,136,.18);color:#5eead4}
+.bab-reqdon:hover{background:rgba(13,148,136,.35);color:#99f6e4}
 /* Print/utility buttons */
 .bab-print{background:rgba(255,255,255,.07);color:rgba(255,255,255,.65)}
 .bab-print:hover{background:rgba(255,255,255,.15);color:#fff}
@@ -1187,6 +1210,10 @@ tr .stk-chk{accent-color:var(--accent)}
             <i class="fas fa-globe"></i> <?php echo $lang==='th'?($canSeeAll?'ทั้งหมด':'ที่เข้าถึงได้'):($canSeeAll?'All':'Accessible'); ?>
             <span class="bg" id="badgeAll">0</span>
         </button>
+        <button class="stk-tab" data-tab="donated" onclick="switchTab('donated')">
+            <i class="fas fa-hand-holding-heart"></i> <?php echo $lang==='th'?'บริจาค':'Donations'; ?>
+            <span class="bg" id="badgeDonated">0</span>
+        </button>
     </div>
     <div class="stk-tabs-actions" style="display:flex;gap:6px;align-items:center">
         <div class="stk-vw" id="viewSw">
@@ -1342,6 +1369,12 @@ tr .stk-chk{accent-color:var(--accent)}
         <button id="bbBtnTransfer" class="bab bab-transfer" onclick="openBatchTxn('transfer')" title="<?php echo $lang==='th'?'โอน':'Transfer'; ?>">
             <i class="fas fa-share-nodes"></i><span class="bab-lbl"><?php echo $lang==='th'?'โอน':'Transfer'; ?></span>
         </button>
+        <button id="bbBtnDonate" class="bab bab-donate" onclick="openBatchTxn('donate')" title="<?php echo $lang==='th'?'บริจาค':'Donate'; ?>">
+            <i class="fas fa-hand-holding-heart"></i><span class="bab-lbl"><?php echo $lang==='th'?'บริจาค':'Donate'; ?></span>
+        </button>
+        <button id="bbBtnRequestDon" class="bab bab-reqdon" onclick="openBatchTxn('request_donation')" title="<?php echo $lang==='th'?'ขอรับบริจาค':'Request Donation'; ?>" style="display:none">
+            <i class="fas fa-gift"></i><span class="bab-lbl"><?php echo $lang==='th'?'ขอรับ':'Request'; ?></span>
+        </button>
         <?php if($isAdmin||$isLab): ?>
         <button class="bab bab-dispose" onclick="openDispose()" title="<?php echo $lang==='th'?'จำหน่ายออก':'Dispose'; ?>">
             <i class="fas fa-trash-alt"></i><span class="bab-lbl"><?php echo $lang==='th'?'กำจัด':'Dispose'; ?></span>
@@ -1390,6 +1423,9 @@ tr .stk-chk{accent-color:var(--accent)}
                 </button>
                 <button class="btx-tab" id="btxTabTransfer" onclick="switchBatchTab('transfer')">
                     <i class="fas fa-share-nodes"></i> <?php echo $lang==='th'?'โอน':'Transfer'; ?>
+                </button>
+                <button class="btx-tab" id="btxTabDonate" onclick="switchBatchTab('donate')">
+                    <i class="fas fa-hand-holding-heart"></i> <?php echo $lang==='th'?'บริจาค':'Donate'; ?>
                 </button>
             </div>
         </div>
@@ -1831,6 +1867,7 @@ async function loadStats(){
         document.getElementById('hero3D').textContent=num(s.models_3d||0);
         document.getElementById('badgeAll').textContent=num(s.total);
         document.getElementById('badgeMy').textContent=num(s.my_total||0);
+        document.getElementById('badgeDonated').textContent=num(s.donated_count||0);
         // Source breakdown tooltip
         const sb=s.source_breakdown||{};
         const heroEl=document.getElementById('heroTotal');
@@ -1934,11 +1971,12 @@ function renderTable(area){
 
         const hasPendingTx=!!r.pending_transfer_id;
         const hasPendingBorrow=!!r.pending_borrow_by_me;
-        const rowStyle=hasPendingBorrow?'background:#eff6ff':hasPendingTx?'background:#fffbeb':isExp?'background:#fff5f5':isLow&&mine?'background:#fffbeb':'';
+        const hasPendingDon=!mine&&r.is_donated&&r.donation_request_count>0;
+        const rowStyle=hasPendingBorrow?'background:#eff6ff':hasPendingTx?'background:#fffbeb':hasPendingDon?'background:#fff7ed':isExp?'background:#fff5f5':isLow&&mine?'background:#fffbeb':'';
         const warningDot=isExp?`<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#dc2626;margin-right:4px;flex-shrink:0" title="${T('หมดอายุ','Expired')}"></span>`:
                          isLow?`<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#f59e0b;margin-right:4px;flex-shrink:0" title="${T('ปริมาณน้อย','Low stock')}"></span>`:'';
 
-        h+=`<tr class="${mine?'me':''}${hasPendingTx?' pending-transfer':''}${hasPendingBorrow?' pending-borrow':''}" style="${rowStyle}" onclick="openDetail(${r.id})">
+        h+=`<tr class="${mine?'me':''}${hasPendingTx?' pending-transfer':''}${hasPendingBorrow?' pending-borrow':''}${hasPendingDon?' pending-donation':''}" style="${rowStyle}" onclick="openDetail(${r.id})">
             <td style="padding:9px 8px" onclick="event.stopPropagation()">
                 <input type="checkbox" class="stk-chk" data-id="${r.id}" ${SELECTED.has(+r.id)?'checked':''} onchange="toggleSelect(${r.id},event)" style="cursor:pointer;accent-color:var(--accent)">
             </td>
@@ -1960,6 +1998,8 @@ function renderTable(area){
                             ${r.location_text&&r.location_text!=='-'?`<span style="opacity:.4">·</span><span><i class="fas fa-map-marker-alt" style="font-size:8px;opacity:.6"></i> ${esc(r.location_text)}</span>`:''}
                             ${hasPendingTx?`<span class="stk-pt-badge"><i class="fas fa-clock"></i> รอรับโอน</span>`:''}
                             ${hasPendingBorrow?`<span class="stk-pb-badge"><i class="fas fa-hand-holding"></i> รอการอนุมัติยืม</span>`:''}
+                            ${r.is_donated?`<span class="donated-badge"><i class="fas fa-hand-holding-heart"></i> ${T('บริจาค','Donated')}</span>`:''}
+                            ${hasPendingDon?`<span class="stk-pdon-badge"><i class="fas fa-hourglass-half"></i> ${T('รอดำเนินการ','Processing')}</span>`:''}
                         </div>
                     </div>
                 </div>
@@ -1990,6 +2030,14 @@ function renderTable(area){
                     <button class="stk-btn stk-btn-g" onclick="showQRModal(${r.id})" title="QR Code" style="padding:5px 7px;font-size:11px"><i class="fas fa-qrcode"></i></button>
                     <button class="stk-btn stk-btn-g" onclick="doPrintSingleLabel(${r.id})" title="${T('พิมพ์ฉลาก','Print Label')}" style="padding:5px 7px;font-size:11px"><i class="fas fa-tag"></i></button>
                     ${r.has_3d?`<a href="/v1/ar/view_ar.php?id=${r.id}" target="_blank" class="stk-btn" style="padding:5px 7px;font-size:11px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;text-decoration:none" title="AR"><i class="fas fa-vr-cardboard"></i></a>`:''}
+                    ${mine&&!r.is_donated?`<button class="stk-btn stk-btn-g" onclick="openDonateModal(${r.id})" title="${T('บริจาค','Donate')}" style="padding:5px 7px;font-size:11px;color:#db2777;border-color:#fbcfe8"><i class="fas fa-hand-holding-heart"></i></button>`:''}
+                    ${mine&&r.is_donated?`<button class="stk-btn stk-btn-g" onclick="openUndonateModal(${r.id})" title="${T('ยกเลิกบริจาค','Cancel Donation')}" style="padding:5px 7px;font-size:11px;color:#9ca3af;border-color:#e2e8f0"><i class="fas fa-times-circle"></i></button>`:''}
+                    ${!mine&&r.is_donated?(r.pending_donation_by_me
+                        ?`<span style="display:inline-flex;align-items:center;gap:4px;padding:5px 9px;font-size:11px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:8px;font-weight:600;white-space:nowrap"><i class="fas fa-clock"></i> ${T('รอตอบรับ','Pending')}</span>`
+                        :r.donation_request_count>0
+                            ?`<span style="display:inline-flex;align-items:center;gap:4px;padding:5px 9px;font-size:11px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:8px;font-weight:600;white-space:nowrap;cursor:default"><i class="fas fa-hourglass-half"></i> ${T('รอดำเนินการ','Processing')}</span>`
+                            :`<button class="stk-btn stk-btn-s" onclick="openRequestDonationModal(${r.id})" style="padding:5px 9px;font-size:11px;background:#059669;color:#fff;border-color:#059669"><i class="fas fa-box-open"></i> ${T('ขอรับ','Request')}</button>`
+                    ):''}
                 </div>
             </td>
         </tr>`;
@@ -2011,8 +2059,10 @@ function renderGrid(area){
         const hazMini=haz.length?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:6px">${haz.slice(0,5).map(hp=>`<span style="width:20px;height:20px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;background:#fef2f2;color:${ghsTinyColors[hp]||'#dc2626'};border:1px solid ${ghsTinyColors[hp]||'#fecaca'}30" title="${hp}"><i class="fas ${ghsTinyIcons[hp]||'fa-exclamation'}"></i></span>`).join('')}${haz.length>5?`<span style="font-size:9px;color:var(--c3)">+${haz.length-5}</span>`:''}</div>`:'';
         const pColor=pctColor(p);
         const pborrow=!!r.pending_borrow_by_me;
-        h+=`<div class="stk-card${mine?' me':''}${SELECTED.has(+r.id)?' stk-selected':''}${!!r.pending_transfer_id?' pending-transfer':''}${pborrow?' pending-borrow':''}" onclick="openDetail(${r.id})" style="padding-bottom:${CAN_EDIT?'0':'0'}">
+        const pdon=!mine&&r.is_donated&&r.donation_request_count>0;
+        h+=`<div class="stk-card${mine?' me':''}${SELECTED.has(+r.id)?' stk-selected':''}${!!r.pending_transfer_id?' pending-transfer':''}${pborrow?' pending-borrow':''}${pdon?' pending-donation':''}" onclick="openDetail(${r.id})" style="padding-bottom:${CAN_EDIT?'0':'0'}">
             ${pborrow?`<div style="position:absolute;top:8px;right:8px;z-index:3"><span class="stk-pb-badge"><i class="fas fa-hand-holding"></i> รอการอนุมัติยืม</span></div>`:''}
+            ${pdon&&!r.pending_donation_by_me?`<div style="position:absolute;top:8px;right:8px;z-index:3"><span class="stk-pdon-badge"><i class="fas fa-hourglass-half"></i> ${T('รอดำเนินการ','Processing')}</span></div>`:''}
             ${r.has_3d?`<div class="stk-3d-badge"><i class="fas fa-cube"></i> 3D</div>`:''}
             <div onclick="event.stopPropagation()" style="position:absolute;top:9px;left:9px;z-index:3">
                 <input type="checkbox" class="stk-chk" data-id="${r.id}" ${SELECTED.has(+r.id)?'checked':''} onchange="toggleSelect(${r.id},event)" style="cursor:pointer;width:15px;height:15px;accent-color:var(--accent)">
@@ -2030,6 +2080,7 @@ function renderGrid(area){
                     <span class="stk-card-tag" style="background:#f0fdf4;color:#059669">${typeLabels[r.container_type]||r.container_type||'-'}</span>
                     ${r.grade?`<span class="stk-card-tag" style="background:#ede9fe;color:#6d28d9">${esc(r.grade)}</span>`:''}
                     ${r.manufacturer_name?`<span class="stk-card-tag" style="background:#fef3c7;color:#d97706;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.manufacturer_name)}</span>`:''}
+                    ${r.is_donated?`<span class="donated-badge"><i class="fas fa-hand-holding-heart"></i> ${T('บริจาค','Donated')}</span>`:''}
                 </div>
                 <div class="stk-card-ft" style="margin-bottom:5px">
                     <span style="font-size:11px">${r.current_quantity||0} / ${r.initial_quantity||0} ${esc(r.quantity_unit||'')}</span>
@@ -2046,8 +2097,16 @@ function renderGrid(area){
             <div class="stk-card-actions" onclick="event.stopPropagation()">
                 <button class="stk-card-action-btn" onclick="showQRModal(${r.id})" title="QR"><i class="fas fa-qrcode"></i> QR</button>
                 <button class="stk-card-action-btn" onclick="doPrintSingleLabel(${r.id})" title="${T('ฉลาก','Label')}"><i class="fas fa-tag"></i> ${T('ฉลาก','Label')}</button>
-                ${(CAN_EDIT||(CAN_ACT&&r.is_mine))?`<button class="stk-card-action-btn" onclick="openTxnModal('use');_txnItem=DATA.find(x=>x.id==${r.id})||_txnItem" style="color:#16a34a;border-color:#bbf7d0"><i class="fas fa-flask"></i> ${T('เบิก','Use')}</button>`:''}
+                ${(IS_ADMIN||(CAN_ACT&&r.is_mine))?`<button class="stk-card-action-btn" onclick="_txnItem=DATA.find(x=>x.id==${r.id})||_txnItem;openTxnModal('use')" style="color:#16a34a;border-color:#bbf7d0"><i class="fas fa-flask"></i> ${T('เบิก','Use')}</button>`:''}
                 ${r.has_3d?`<a href="/v1/ar/view_ar.php?id=${r.id}" target="_blank" class="stk-card-action-btn" style="color:#0d9488;border-color:#99f6e4;text-decoration:none"><i class="fas fa-vr-cardboard"></i> AR</a>`:''}
+                ${r.is_mine&&!r.is_donated?`<button class="stk-card-action-btn" onclick="openDonateModal(${r.id})" style="color:#db2777;border-color:#fbcfe8"><i class="fas fa-hand-holding-heart"></i> ${T('บริจาค','Donate')}</button>`:''}
+                ${r.is_mine&&r.is_donated?`<button class="stk-card-action-btn" onclick="openUndonateModal(${r.id})" style="color:#9ca3af;border-color:#e2e8f0"><i class="fas fa-times-circle"></i> ${T('ยกเลิก','Cancel')}</button>`:''}
+                ${!r.is_mine&&r.is_donated?(r.pending_donation_by_me
+                    ?`<span class="stk-card-action-btn" style="color:#92400e;background:#fef9c3;border-color:#fde68a;cursor:default"><i class="fas fa-clock"></i> ${T('รอตอบรับ','Pending')}</span>`
+                    :r.donation_request_count>0
+                        ?`<span class="stk-card-action-btn" style="color:#9a3412;background:#fff7ed;border-color:#fed7aa;cursor:default;font-weight:700"><i class="fas fa-hourglass-half"></i> ${T('รอดำเนินการ','Processing')}</span>`
+                        :`<button class="stk-card-action-btn" onclick="openRequestDonationModal(${r.id})" style="color:#059669;border-color:#bbf7d0;font-weight:700"><i class="fas fa-box-open"></i> ${T('ขอรับ','Request')}</button>`
+                ):''}
             </div>
         </div>`;
     });
@@ -2064,7 +2123,8 @@ function renderCompact(area){
         const p=parseFloat(r.remaining_percentage)||0;
         const mine=r.is_mine;
         const pborrow=!!r.pending_borrow_by_me;
-        h+=`<div class="stk-cr${mine?' me':''}${SELECTED.has(+r.id)?' stk-selected':''}${!!r.pending_transfer_id?' pending-transfer':''}${pborrow?' pending-borrow':''}" onclick="openDetail(${r.id})">
+        const pdonCr=!mine&&r.is_donated&&r.donation_request_count>0;
+        h+=`<div class="stk-cr${mine?' me':''}${SELECTED.has(+r.id)?' stk-selected':''}${!!r.pending_transfer_id?' pending-transfer':''}${pborrow?' pending-borrow':''}${pdonCr?' pending-donation':''}" onclick="openDetail(${r.id})">
             <div onclick="event.stopPropagation()" style="display:flex;align-items:center"><input type="checkbox" class="stk-chk" data-id="${r.id}" ${SELECTED.has(+r.id)?'checked':''} onchange="toggleSelect(${r.id},event)" style="cursor:pointer;width:14px;height:14px;margin-right:6px"></div>
             <div class="type-icon type-${r.container_type||'other'}" style="width:24px;height:24px;border-radius:6px;font-size:10px"><i class="fas ${typeIcons[r.container_type]||'fa-box'}"></i></div>
             <div class="stk-cn" title="${esc(r.chemical_name)}">${esc(r.chemical_name||'-')}</div>
@@ -2075,6 +2135,7 @@ function renderCompact(area){
             <span class="stk-co">${mine?'<i class="fas fa-star" style="color:#d97706;font-size:8px;margin-right:2px"></i>':''}${esc(r.owner_name||'-')}</span>
             ${r.location_text&&r.location_text!=='-'?`<span class="stk-cl"><i class="fas fa-map-marker-alt" style="font-size:8px;opacity:.6"></i> ${esc(r.location_text)}</span>`:'<span class="stk-cl" style="color:#dde1e7">—</span>'}
             ${pborrow?`<span class="stk-pb-badge"><i class="fas fa-hand-holding"></i> รอการอนุมัติยืม</span>`:''}
+            ${pdonCr&&!r.pending_donation_by_me?`<span class="stk-pdon-badge"><i class="fas fa-hourglass-half"></i> ${T('รอดำเนินการ','Processing')}</span>`:''}
             <div onclick="event.stopPropagation()" style="display:flex;gap:2px;margin-left:4px">
                 <button class="stk-btn stk-btn-s stk-btn-g" onclick="doPrintSingleLabel(${r.id})" title="${T('ฉลาก','Label')}" style="padding:2px 5px;font-size:9px"><i class="fas fa-tag"></i></button>
                 ${r.has_3d?`<a href="/v1/ar/view_ar.php?id=${r.id}" target="_blank" style="padding:2px 5px;font-size:9px;color:#0d9488;text-decoration:none" title="AR"><i class="fas fa-vr-cardboard"></i></a>`:''}
@@ -2255,7 +2316,8 @@ async function openDetail(id){
         const ctFg=typeIconFg[c.container_type]||'#64748b';
 
         // Timeline dot colors
-        const tlDot={created:'#22c55e',used:'#eab308',moved:'#3b82f6',disposed:'#ef4444',borrowed:'#8b5cf6',returned:'#0d9488'};
+        const tlDot={created:'#22c55e',used:'#eab308',moved:'#3b82f6',disposed:'#ef4444',borrowed:'#8b5cf6',returned:'#0d9488',donated:'#db2777',received:'#9d174d',undonate:'#64748b'};
+        const tlLabel={created:T('สร้าง','Created'),used:T('เบิกใช้','Used'),moved:T('ย้าย','Moved'),disposed:T('จำหน่าย','Disposed'),borrowed:T('ยืม','Borrowed'),returned:T('คืน','Returned'),donated:T('ตั้งบริจาค','Donated'),received:T('โอนกรรมสิทธิ์บริจาค','Donation Received'),undonate:T('ยกเลิกบริจาค','Donation Cancelled')};
 
         md.innerHTML=`
         <div class="dm-handle"></div>
@@ -2352,7 +2414,7 @@ async function openDetail(id){
                         <div class="dm-tl-item">
                             <div class="dm-tl-dot" style="background:${tlDot[hi.action_type]||'#94a3b8'}"></div>
                             <div style="flex:1;min-width:0">
-                                <div class="dm-tl-act">${hi.action_type||'-'}${hi.quantity_change?` <span style="font-weight:700;color:${parseFloat(hi.quantity_change)<0?'#dc2626':'#16a34a'};font-size:10px">${parseFloat(hi.quantity_change)>0?'+':''}${hi.quantity_change}</span>`:''}</div>
+                                <div class="dm-tl-act">${tlLabel[hi.action_type]||hi.action_type||'-'}${hi.quantity_change?` <span style="font-weight:700;color:${parseFloat(hi.quantity_change)<0?'#dc2626':'#16a34a'};font-size:10px">${parseFloat(hi.quantity_change)>0?'+':''}${hi.quantity_change}</span>`:''}</div>
                                 <div class="dm-tl-det">${esc(hi.notes||'')}${hi.user_name?` — ${esc(hi.user_name)}`:''}</div>
                                 <div class="dm-tl-time"><i class="fas fa-clock" style="font-size:8px;margin-right:2px"></i>${fmtDate(hi.created_at)}</div>
                             </div>
@@ -2387,7 +2449,7 @@ async function openDetail(id){
                 ${CAN_ACT?`
                 <div class="dm-section-title" style="padding:16px 16px 0;font-size:9.5px"><i class="fas fa-exchange-alt"></i> ${T('รายการเคลื่อนไหว','Transactions')}</div>
                 <div class="dm-txn-group">
-                    ${canOwnerOp&&!hasPT?`
+                    ${isMine&&!hasPT?`
                     <button class="dm-txn-btn" style="background:linear-gradient(135deg,#15803d,#22c55e);color:#fff" onclick="openTxnModal('use')">
                         <div class="dm-txn-btn-ic"><i class="fas fa-flask"></i></div>
                         <div class="dm-txn-btn-info"><div class="dm-txn-btn-title">${T('เบิกใช้','Use / Consume')}</div><div class="dm-txn-btn-sub">${T('หักปริมาณออก ไม่ต้องคืน','Deduct quantity, no return')}</div></div>
@@ -2407,6 +2469,35 @@ async function openDetail(id){
                         <div class="dm-txn-btn-ic"><i class="fas fa-trash-alt"></i></div>
                         <div class="dm-txn-btn-info"><div class="dm-txn-btn-title">${T('จำหน่าย','Dispose')}</div><div class="dm-txn-btn-sub">${T('ตัดออกจากระบบ','Remove from system')}</div></div>
                     </button>`:''}
+                    ${isMine&&!c.is_donated&&!hasPT?`
+                    <button class="dm-txn-btn" style="background:linear-gradient(135deg,#9d174d,#db2777);color:#fff" onclick="openDonateModal(${c.id})">
+                        <div class="dm-txn-btn-ic"><i class="fas fa-hand-holding-heart"></i></div>
+                        <div class="dm-txn-btn-info"><div class="dm-txn-btn-title">${T('บริจาค','Donate')}</div><div class="dm-txn-btn-sub">${T('มอบให้ส่วนกลาง','Give to shared pool')}</div></div>
+                    </button>`:''}
+                    ${isMine&&c.is_donated?`
+                    <button class="dm-txn-btn" style="background:linear-gradient(135deg,#475569,#64748b);color:#fff" onclick="openUndonateModal(${c.id})">
+                        <div class="dm-txn-btn-ic"><i class="fas fa-times-circle"></i></div>
+                        <div class="dm-txn-btn-info"><div class="dm-txn-btn-title">${T('ยกเลิกบริจาค','Cancel Donation')}</div><div class="dm-txn-btn-sub">${T('ดึงกลับจากส่วนกลาง','Withdraw from pool')}</div></div>
+                    </button>`:''}
+                    ${!isMine&&c.is_donated?(c.pending_donation_by_me?`
+                    <div class="dm-txn-btn" style="background:linear-gradient(135deg,#78350f,#d97706);color:#fff;cursor:default;opacity:.9">
+                        <div class="dm-txn-btn-ic"><i class="fas fa-clock"></i></div>
+                        <div class="dm-txn-btn-info"><div class="dm-txn-btn-title">${T('รอการตอบรับจากเจ้าของ','Awaiting Owner Approval')}</div><div class="dm-txn-btn-sub">${T('คำขอของคุณอยู่ระหว่างการพิจารณา','Your request is under review')}</div></div>
+                    </div>`:c.donation_request_count>0?`
+                    <div class="dm-txn-btn" style="background:linear-gradient(135deg,#7c2d12,#f97316);color:#fff;cursor:default;opacity:.85">
+                        <div class="dm-txn-btn-ic"><i class="fas fa-hourglass-half"></i></div>
+                        <div class="dm-txn-btn-info">
+                            <div class="dm-txn-btn-title">${T('รอดำเนินการ','Processing')} <span style="font-size:9px;background:rgba(255,255,255,.25);padding:1px 6px;border-radius:8px;margin-left:4px">${c.donation_request_count} ${T('คำขอ','req')}</span></div>
+                            <div class="dm-txn-btn-sub">${T('มีผู้ขอรับอยู่ระหว่างรอการอนุมัติ — ไม่สามารถส่งคำขอเพิ่มได้','A request is pending approval — no further requests allowed')}</div>
+                        </div>
+                    </div>`:`
+                    <button class="dm-txn-btn" style="background:linear-gradient(135deg,#047857,#059669);color:#fff" onclick="openRequestDonationModal(${c.id})">
+                        <div class="dm-txn-btn-ic"><i class="fas fa-box-open"></i></div>
+                        <div class="dm-txn-btn-info">
+                            <div class="dm-txn-btn-title">${T('ขอรับบริจาค','Request Donation')}</div>
+                            <div class="dm-txn-btn-sub">${T('รับโอนกรรมสิทธิ์เมื่อได้รับอนุมัติ','Ownership transfers upon approval')}</div>
+                        </div>
+                    </button>`):''}
                 </div>`:''}
 
                 <div class="dm-section-title" style="padding:${CAN_ACT?'8':'16'}px 16px 0;font-size:9.5px"><i class="fas fa-tools"></i> ${T('เครื่องมือ','Tools')}</div>
@@ -2515,6 +2606,12 @@ function switchTab(tab){
     TAB=tab;
     document.querySelectorAll('.stk-tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
     document.getElementById('myBanner').style.display=tab==='my'?'flex':'none';
+    // Hide filters that don't apply to donation pool
+    const filterRow=document.getElementById('toolbar');
+    if(filterRow){
+        const srcFilter=document.getElementById('fSource');
+        if(srcFilter) srcFilter.closest('.stk-sel-wrap'||'div[style]'||'span') ;
+    }
     if(tab==='my'&&STATS){
         document.getElementById('myStatTotal').textContent=num(STATS.my_total||0);
         document.getElementById('myStatActive').textContent=num(STATS.my_active||0);
@@ -2606,7 +2703,9 @@ const _btxWholeSet=new Set(); // item ids marked as "whole bottle"
 const BTX_CFG={
     use:     {icon:'fa-flask',       bg:'rgba(22,163,74,.15)',   color:'#16a34a', btnBg:'linear-gradient(135deg,#15803d,#22c55e)',  title:{th:'เบิกใช้หลายรายการ',en:'Batch Use'}},
     borrow:  {icon:'fa-hand-holding',bg:'rgba(59,130,246,.15)',  color:'#2563eb', btnBg:'linear-gradient(135deg,#1d4ed8,#3b82f6)',  title:{th:'ยืมหลายรายการ',en:'Batch Borrow'}},
-    transfer:{icon:'fa-share-nodes', bg:'rgba(139,92,246,.15)',  color:'#7c3aed', btnBg:'linear-gradient(135deg,#6d28d9,#8b5cf6)', title:{th:'โอนหลายรายการ',en:'Batch Transfer'}},
+    transfer:{icon:'fa-share-nodes',       bg:'rgba(139,92,246,.15)',  color:'#7c3aed', btnBg:'linear-gradient(135deg,#6d28d9,#8b5cf6)', title:{th:'โอนหลายรายการ',en:'Batch Transfer'}},
+    donate:  {icon:'fa-hand-holding-heart',bg:'rgba(236,72,153,.15)',  color:'#db2777', btnBg:'linear-gradient(135deg,#9d174d,#ec4899)', title:{th:'บริจาคหลายรายการ',en:'Batch Donate'}},
+    request_donation:{icon:'fa-gift',bg:'rgba(13,148,136,.15)',color:'#0d9488',btnBg:'linear-gradient(135deg,#0f766e,#14b8a6)',title:{th:'ขอรับบริจาคหลายรายการ',en:'Batch Request Donation'}},
 };
 
 function openBatchTxn(type){
@@ -2646,7 +2745,13 @@ function switchBatchTab(type){
 }
 
 function _updateBatchTabs(){
-    ['use','borrow','transfer'].forEach(t=>{
+    const tabsEl=document.getElementById('btxTabs');
+    if(_btxType==='request_donation'){
+        if(tabsEl) tabsEl.style.display='none';
+        return;
+    }
+    if(tabsEl) tabsEl.style.display='';
+    ['use','borrow','transfer','donate'].forEach(t=>{
         const btn=document.getElementById('btxTab'+t.charAt(0).toUpperCase()+t.slice(1));
         if(btn) btn.classList.toggle('act',t===_btxType);
     });
@@ -2663,10 +2768,11 @@ function _updateBatchHeader(){
     const items=DATA.filter(r=>SELECTED.has(+r.id));
     const type=_btxType;
     const actionable=items.filter(r=>{
+        if(type==='request_donation') return r.is_donated&&!r.is_mine&&!r.pending_donation_by_me&&!(r.donation_request_count>0);
         const rem=parseFloat(r.current_quantity)||0;
         if(rem<=0) return false;
         if(type==='borrow'&&r.is_mine) return false;
-        if(type==='transfer'&&!r.is_mine&&!(IS_ADMIN||IS_LAB)) return false;
+        if((type==='transfer'||type==='donate')&&!r.is_mine&&!(IS_ADMIN||IS_LAB)) return false;
         return true;
     });
     const skipped=items.length-actionable.length;
@@ -2696,28 +2802,41 @@ function _renderBatchBody(){
         const borrowBlocked=type==='borrow'&&isMine;
         // เบิก/โอนของคนอื่น → อนุญาตเฉพาะ admin/lab เท่านั้น
         const ownerBlocked=(type==='use'||type==='transfer')&&!isMine&&!isPrivileged;
-        const disabled=isOos||borrowBlocked||ownerBlocked;
+        // บริจาคของคนอื่น → ไม่อนุญาต (ต้องเป็นของตัวเอง หรือ admin/lab)
+        const donateBlocked=type==='donate'&&!isMine&&!isPrivileged;
+        // ขอรับบริจาค: ต้องเป็นสารบริจาค, ไม่ใช่ของเรา, ยังไม่มีคำขอรอ
+        const reqDonBlocked=type==='request_donation'&&(isMine||!r.is_donated||r.pending_donation_by_me||(r.donation_request_count>0));
+        const disabled=isOos||borrowBlocked||ownerBlocked||donateBlocked||reqDonBlocked;
 
         // Badges
         let badgeHtml='';
-        if(isMine) badgeHtml+=`<span class="btx-badge btx-badge-mine"><i class="fas fa-star"></i> ${T('ของฉัน','Mine')}</span>`;
-        if(isOos)  badgeHtml+=`<span class="btx-badge btx-badge-oos"><i class="fas fa-times-circle"></i> ${T('หมด Stock','Out of stock')}</span>`;
-        else if(borrowBlocked) badgeHtml+=`<span class="btx-badge btx-badge-blocked"><i class="fas fa-ban"></i> ${T('เบิกได้อย่างเดียว','Use only')}</span>`;
-        else if(ownerBlocked) badgeHtml+=`<span class="btx-badge btx-badge-blocked"><i class="fas fa-hand-holding"></i> ${T('ไม่ใช่เจ้าของ ยืมได้อย่างเดียว','Not owner — borrow only')}</span>`;
+        if(type==='request_donation'){
+            if(isMine) badgeHtml+=`<span class="btx-badge btx-badge-blocked"><i class="fas fa-ban"></i> ${T('สารของฉัน — ขอรับไม่ได้','Own item — cannot request')}</span>`;
+            else if(!r.is_donated) badgeHtml+=`<span class="btx-badge btx-badge-blocked"><i class="fas fa-ban"></i> ${T('ไม่ใช่สารบริจาค','Not a donated item')}</span>`;
+            else if(r.pending_donation_by_me) badgeHtml+=`<span class="btx-badge btx-badge-blocked" style="background:#fef9c3;color:#92400e;border-color:#fde68a"><i class="fas fa-clock"></i> ${T('รอตอบรับ — คำขอของคุณกำลังรอ','Pending — your request awaiting approval')}</span>`;
+            else if(r.donation_request_count>0) badgeHtml+=`<span class="btx-badge btx-badge-blocked" style="background:#fff7ed;color:#9a3412;border-color:#fed7aa"><i class="fas fa-hourglass-half"></i> ${T('รอดำเนินการ — มีผู้ขออยู่แล้ว','Processing — another request pending')}</span>`;
+        } else {
+            if(isMine) badgeHtml+=`<span class="btx-badge btx-badge-mine"><i class="fas fa-star"></i> ${T('ของฉัน','Mine')}</span>`;
+            if(isOos)  badgeHtml+=`<span class="btx-badge btx-badge-oos"><i class="fas fa-times-circle"></i> ${T('หมด Stock','Out of stock')}</span>`;
+            else if(borrowBlocked) badgeHtml+=`<span class="btx-badge btx-badge-blocked"><i class="fas fa-ban"></i> ${T('เบิกได้อย่างเดียว','Use only')}</span>`;
+            else if(ownerBlocked) badgeHtml+=`<span class="btx-badge btx-badge-blocked"><i class="fas fa-hand-holding"></i> ${T('ไม่ใช่เจ้าของ ยืมได้อย่างเดียว','Not owner — borrow only')}</span>`;
+            else if(donateBlocked) badgeHtml+=`<span class="btx-badge btx-badge-blocked"><i class="fas fa-ban"></i> ${T('บริจาคได้เฉพาะของตัวเอง','Own items only')}</span>`;
+        }
 
-        // Transfer is ALWAYS whole-bottle — auto-mark and lock
-        const forceWhole=(type==='transfer'&&!disabled);
-        if(forceWhole) _btxWholeSet.add(+r.id); else if(type==='transfer') _btxWholeSet.delete(+r.id);
+        // Transfer and Donate are ALWAYS whole-bottle — auto-mark and lock
+        const forceWhole=((type==='transfer'||type==='donate')&&!disabled);
+        if(forceWhole) _btxWholeSet.add(+r.id); else if(type==='transfer'||type==='donate') _btxWholeSet.delete(+r.id);
         const isWhole=forceWhole||_btxWholeSet.has(+r.id);
-        const rowCls='btx-item'+(isOos?' btx-oos':(borrowBlocked||ownerBlocked)?' btx-blocked':isWhole?' btx-whole':'');
+        const rowCls='btx-item'+(isOos?' btx-oos':(borrowBlocked||ownerBlocked||reqDonBlocked)?' btx-blocked':isWhole?' btx-whole':'');
         const remColor=rem>0?'#0f172a':'#dc2626';
         const remText=rem>0?rem.toLocaleString():T('หมด','0');
         const qtyVal=isWhole?rem:(!disabled&&rem>0?Math.min(1,rem):'');
 
-        // Transfer: show locked "ทั้งขวด" badge instead of toggle; Use/Borrow: normal toggle
-        const wholeLabel=type==='use'?T('เบิกทั้งขวด','Use whole'):T('ยืมทั้งขวด','Borrow whole');
-        const wholeToggle=type==='transfer'
-            ?(!disabled?`<span class="btx-whole-toggle on" style="cursor:default;opacity:.75" title="${T('โอนทั้งขวดเสมอ','Always full bottle')}"><span class="btx-wt-dot"></span>${T('ทั้งขวด','Whole')}</span>`:'')
+        // Transfer/Donate: show locked "ทั้งขวด" badge; request_donation: no toggle; Use/Borrow: normal toggle
+        const wholeLabel=type==='use'?T('เบิกทั้งขวด','Use whole'):type==='donate'?T('บริจาคทั้งขวด','Donate whole'):T('ยืมทั้งขวด','Borrow whole');
+        const wholeToggle=(type==='transfer'||type==='donate')
+            ?(!disabled?`<span class="btx-whole-toggle on" style="cursor:default;opacity:.75" title="${type==='donate'?T('บริจาคทั้งขวดเสมอ','Always full bottle'):T('โอนทั้งขวดเสมอ','Always full bottle')}"><span class="btx-wt-dot"></span>${T('ทั้งขวด','Whole')}</span>`:'')
+            :type==='request_donation'?''
             :(!isOos&&!borrowBlocked&&!ownerBlocked
                 ?`<button class="btx-whole-toggle${isWhole?' on':''}" id="btxWt${r.id}" onclick="btxToggleWhole(${r.id},${rem})" title="${wholeLabel}"><span class="btx-wt-dot"></span>${T('ทั้งขวด','Whole')}</button>`
                 :'');
@@ -2730,14 +2849,14 @@ function _renderBatchBody(){
                 ${badgeHtml?`<div class="btx-badges">${badgeHtml}</div>`:''}
             </div>
             ${wholeToggle}
-            <div class="btx-item-qty" style="${(disabled||isWhole)?'opacity:.35;pointer-events:none':''}">
+            ${type!=='request_donation'?`<div class="btx-item-qty" style="${(disabled||isWhole)?'opacity:.35;pointer-events:none':''}">
                 <input type="number" min="0.001" max="${rem}" step="any"
                     value="${qtyVal}"
                     id="btxQty${r.id}" placeholder="${isOos?T('หมด','OOS'):'0'}"
                     oninput="btxQtyCheck(this,${rem})"
                     ${(disabled||isWhole)?'disabled':''}>
                 <span class="btx-unit">${unit}</span>
-            </div>
+            </div>`:''}
             <div class="btx-item-status" id="btxSt${r.id}"></div>
             <button class="btx-remove" onclick="btxRemoveItem(${r.id})" title="${T('ลบออกจากรายการ','Remove from list')}"><i class="fas fa-times"></i></button>
         </div>`;
@@ -2772,10 +2891,11 @@ function _renderBatchBody(){
     // Count actionable for header hint
     const _priv=IS_ADMIN||IS_LAB;
     const actionableCount=items.filter(r=>{
+        if(type==='request_donation') return r.is_donated&&!r.is_mine&&!r.pending_donation_by_me&&!(r.donation_request_count>0);
         const rem=parseFloat(r.current_quantity)||0;
         if(rem<=0) return false;
         if(type==='borrow'&&r.is_mine) return false;
-        if(type==='transfer'&&!r.is_mine&&!_priv) return false;
+        if((type==='transfer'||type==='donate')&&!r.is_mine&&!_priv) return false;
         return true;
     }).length;
     const skippedCount=items.length-actionableCount;
@@ -2783,7 +2903,11 @@ function _renderBatchBody(){
         ?`<span style="font-size:10px;color:#f59e0b;font-weight:700"><i class="fas fa-exclamation-triangle"></i> ${T(`ข้าม ${skippedCount} รายการ`,`${skippedCount} skipped`)}</span>`
         :type==='transfer'
             ?`<span style="font-size:10px;color:#7c3aed;font-weight:700"><i class="fas fa-bottle-droplet" style="font-size:9px"></i> ${T('โอนย้ายกรรมสิทธิทั้งขวดให้กับเจ้าของใหม่','Transfer full ownership to new owner')}</span>`
-            :`<button class="btx-whole-all" onclick="btxToggleAllWhole()"><i class="fas fa-bottle-droplet" style="font-size:9px"></i> ${T('ทั้งขวดทุกรายการ','All whole')}</button>`;
+            :type==='donate'
+                ?`<span style="font-size:10px;color:#db2777;font-weight:700"><i class="fas fa-hand-holding-heart" style="font-size:9px"></i> ${T('ตั้งบริจาคทั้งขวด ผู้สนใจสามารถขอรับได้','Mark full bottle as donation for others to claim')}</span>`
+                :type==='request_donation'
+                    ?`<span style="font-size:10px;color:#0d9488;font-weight:700"><i class="fas fa-gift" style="font-size:9px"></i> ${T('ส่งคำขอรับบริจาคไปยังเจ้าของสาร','Send request to owner for approval')}</span>`
+                    :`<button class="btx-whole-all" onclick="btxToggleAllWhole()"><i class="fas fa-bottle-droplet" style="font-size:9px"></i> ${T('ทั้งขวดทุกรายการ','All whole')}</button>`;
 
     let html=`
     <div>
@@ -2793,7 +2917,7 @@ function _renderBatchBody(){
         </div>
         <div class="btx-items-scroll">${itemRows}</div>
     </div>
-    ${purposeField}
+    ${type!=='donate'?purposeField:''}
     ${(type==='borrow'||type==='transfer')?userField:''}
     ${type==='borrow'?dateField:''}
     <div id="btxProgress" style="display:none">
@@ -3002,17 +3126,18 @@ async function submitBatchTxn(){
     const retDate=document.getElementById('btxRetDate')?.value||'';
 
     // Validate shared fields
-    if(!purpose){toast(T('กรุณาระบุวัตถุประสงค์','Please enter purpose'),'err');document.getElementById('btxPurpose')?.focus();return;}
+    if(type!=='donate'&&!purpose){toast(T('กรุณาระบุวัตถุประสงค์','Please enter purpose'),'err');document.getElementById('btxPurpose')?.focus();return;}
     if((type==='borrow'||type==='transfer')&&!_btxUser){toast(T('กรุณาเลือกผู้รับ/ผู้ยืม','Please select recipient'),'err');return;}
     if(type==='borrow'&&!retDate){toast(T('กรุณาระบุกำหนดคืน','Please enter return date'),'err');return;}
 
     // Split items: actionable vs skipped
     const isPrivileged=IS_ADMIN||IS_LAB;
     const items=allItems.filter(r=>{
+        if(type==='request_donation') return r.is_donated&&!r.is_mine&&!r.pending_donation_by_me&&!(r.donation_request_count>0);
         const rem=parseFloat(r.current_quantity)||0;
         if(rem<=0) return false;                                              // OOS — skip
         if(type==='borrow'&&r.is_mine) return false;                         // own item borrow — skip
-        if(type==='transfer'&&!r.is_mine&&!isPrivileged) return false;       // not owner, no privilege — skip
+        if((type==='transfer'||type==='donate')&&!r.is_mine&&!isPrivileged) return false; // not owner — skip
         return true;
     });
     const skipped=allItems.length-items.length;
@@ -3026,6 +3151,14 @@ async function submitBatchTxn(){
     const itemsWithQty=[];
     for(const r of items){
         const rem=parseFloat(r.current_quantity)||0;
+        if(type==='donate'){
+            itemsWithQty.push({r, qty:rem}); // donate is always whole bottle
+            continue;
+        }
+        if(type==='request_donation'){
+            itemsWithQty.push({r, qty:rem}); // request — qty for display only, not deducted
+            continue;
+        }
         const inp=document.getElementById('btxQty'+r.id);
         const qty=parseFloat(inp?.value)||0;
         if(qty<=0){
@@ -3056,19 +3189,25 @@ function _showBtcPreview(type, itemsWithQty, purpose, retDate, skipped, allItems
 
     // Per-type config
     const titles={
-        use:      {th:'ยืนยันการเบิกใช้',      en:'Confirm Use'},
-        borrow:   {th:'ยืนยันการยืม',           en:'Confirm Borrow'},
-        transfer: {th:'ยืนยันการโอนสาร',        en:'Confirm Transfer'},
+        use:              {th:'ยืนยันการเบิกใช้',        en:'Confirm Use'},
+        borrow:           {th:'ยืนยันการยืม',             en:'Confirm Borrow'},
+        transfer:         {th:'ยืนยันการโอนสาร',          en:'Confirm Transfer'},
+        donate:           {th:'ยืนยันการบริจาค',           en:'Confirm Donate'},
+        request_donation: {th:'ยืนยันการขอรับบริจาค',     en:'Confirm Donation Request'},
     };
     const confirmBtns={
-        use:      {icon:'fa-flask',        th:'เบิกใช้เลย',      en:'Confirm Use'},
-        borrow:   {icon:'fa-hand-holding', th:'ยืนยันการยืม',    en:'Confirm Borrow'},
-        transfer: {icon:'fa-check-double', th:'ยืนยันโอนสาร',    en:'Confirm Transfer'},
+        use:              {icon:'fa-flask',              th:'เบิกใช้เลย',       en:'Confirm Use'},
+        borrow:           {icon:'fa-hand-holding',       th:'ยืนยันการยืม',     en:'Confirm Borrow'},
+        transfer:         {icon:'fa-check-double',       th:'ยืนยันโอนสาร',     en:'Confirm Transfer'},
+        donate:           {icon:'fa-hand-holding-heart', th:'ตั้งบริจาคเลย',    en:'Confirm Donate'},
+        request_donation: {icon:'fa-gift',               th:'ส่งคำขอรับบริจาค', en:'Send Request'},
     };
     const confirmGradients={
-        use:      'linear-gradient(135deg,#15803d,#22c55e)',
-        borrow:   'linear-gradient(135deg,#1d4ed8,#3b82f6)',
-        transfer: 'linear-gradient(135deg,#6d28d9,#8b5cf6)',
+        use:              'linear-gradient(135deg,#15803d,#22c55e)',
+        borrow:           'linear-gradient(135deg,#1d4ed8,#3b82f6)',
+        transfer:         'linear-gradient(135deg,#6d28d9,#8b5cf6)',
+        donate:           'linear-gradient(135deg,#9d174d,#ec4899)',
+        request_donation: 'linear-gradient(135deg,#0f766e,#14b8a6)',
     };
 
     // Recipient card (borrow / transfer)
@@ -3110,7 +3249,7 @@ function _showBtcPreview(type, itemsWithQty, purpose, retDate, skipped, allItems
         const isMine=!!r.is_mine;
         const wholeBadge=isWhole?`<span style="font-size:9px;background:#ede9fe;color:#6d28d9;padding:1px 5px;border-radius:4px;font-weight:700;margin-left:4px">${T('ทั้งขวด','Whole')}</span>`:'';
         const mineBadge=(type!=='use'&&isMine)?`<span style="font-size:9px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:4px;font-weight:700;margin-left:4px">${T('ของฉัน','Mine')}</span>`:'';
-        const icon=isWhole?'fa-bottle-droplet':(type==='use'?'fa-flask':type==='borrow'?'fa-hand-holding':'fa-share-nodes');
+        const icon=isWhole?'fa-bottle-droplet':(type==='use'?'fa-flask':type==='borrow'?'fa-hand-holding':type==='donate'?'fa-hand-holding-heart':'fa-share-nodes');
         const ownerLine=(type==='borrow'&&r.owner_name&&r.owner_name!=='-')
             ?`<div style="font-size:9.5px;color:#7c3aed;font-weight:600;margin-top:2px;display:flex;align-items:center;gap:3px"><i class="fas fa-user" style="font-size:8px;opacity:.65"></i> ${esc(r.owner_name)}${r.location_text&&r.location_text!=='-'?`<span style="opacity:.45;margin:0 1px">·</span><i class="fas fa-map-marker-alt" style="font-size:8px;opacity:.65"></i> ${esc(r.location_text)}`:''}</div>`
             :'';
@@ -3153,10 +3292,15 @@ function _showBtcPreview(type, itemsWithQty, purpose, retDate, skipped, allItems
                 <div class="btc-sec"><i class="fas fa-list-ul"></i> ${T('รายการสารเคมี','Items')} (${itemsWithQty.length})</div>
                 <div class="btc-items">${itemsHtml}</div>
             </div>
-            <div>
+            ${type==='donate'
+                ?`<div class="btc-warn" style="background:rgba(236,72,153,.08);border-color:rgba(236,72,153,.25);color:#9d174d"><i class="fas fa-hand-holding-heart" style="color:#db2777"></i> ${T('รายการข้างต้นจะถูกตั้งเป็น "บริจาค" — ผู้อื่นสามารถขอรับได้ทันที','Above items will be marked as donated — others can claim them immediately')}</div>`
+                :type==='request_donation'
+                    ?`<div class="btc-warn" style="background:rgba(13,148,136,.08);border-color:rgba(13,148,136,.25);color:#134e4a"><i class="fas fa-gift" style="color:#0d9488"></i> ${T('คำขอจะถูกส่งไปยังเจ้าของสาร — รอการอนุมัติก่อนรับโอน','Requests will be sent to each item\'s owner — awaiting their approval')}</div>
+                    <div><div class="btc-sec"><i class="fas fa-align-left"></i> ${T('วัตถุประสงค์','Purpose')}</div><div class="btc-purpose">${esc(purpose)}</div></div>`
+                :`<div>
                 <div class="btc-sec"><i class="fas fa-align-left"></i> ${T('วัตถุประสงค์','Purpose')}</div>
                 <div class="btc-purpose">${esc(purpose)}</div>
-            </div>
+            </div>`}
             ${retHtml}
             ${warnHtml}
         </div>
@@ -3263,7 +3407,7 @@ async function _execBatchTxn(type, itemsWithQty, allItems, items, purpose, retDa
     } else {
         // Modals closed — show toast result and refresh
         if(fail===0&&ok>0){
-            const typeLabel={use:T('เบิกใช้','used'),borrow:T('ยืม','borrowed'),transfer:T('โอน','transferred')};
+            const typeLabel={use:T('เบิกใช้','used'),borrow:T('ยืม','borrowed'),transfer:T('โอน','transferred'),donate:T('บริจาค','donated'),request_donation:T('ขอรับบริจาค','requested')};
             toast(T(`${typeLabel[type]}สำเร็จ ${ok} รายการ`,`${ok} item(s) ${typeLabel[type]} successfully`));
         } else if(fail>0){
             toast(errors[0]||T(`ล้มเหลว ${fail} รายการ`,`${fail} failed`),'err');
@@ -3278,6 +3422,8 @@ function _execSingleTxn(type,r,qty,purpose,retDate){
     const payload={source_type:srcType,source_id:srcId,quantity:qty,purpose};
     if(type==='borrow'){payload.to_user_id=_btxUser.id;payload.expected_return_date=retDate;}
     else if(type==='transfer'){payload.to_user_id=_btxUser.id;payload.whole_bottle=true;} // always whole bottle
+    else if(type==='donate'){return apiFetch('/v1/api/borrow.php?action=donate',{method:'POST',body:JSON.stringify({source_type:srcType,source_id:srcId,note:''})});}
+    else if(type==='request_donation'){return apiFetch('/v1/api/borrow.php?action=request_donation',{method:'POST',body:JSON.stringify({source_type:srcType,source_id:srcId,purpose})});}
     return apiFetch('/v1/api/borrow.php?action='+type,{method:'POST',body:JSON.stringify(payload)});
 }
 
@@ -3482,12 +3628,17 @@ function updateSelectionUI(){
     // Show Use/Transfer only when at least one selected item is owned by current user
     const anyMine=[...SELECTED].some(id=>{const r=DATA.find(x=>+x.id===id);return r&&(r.is_mine||IS_ADMIN);});
     const allMine=[...SELECTED].every(id=>{const r=DATA.find(x=>+x.id===id);return r&&(r.is_mine||IS_ADMIN);});
+    const anyDonatedNotMine=[...SELECTED].some(id=>{const r=DATA.find(x=>+x.id===id);return r&&r.is_donated&&!r.is_mine;});
     const bbUse=document.getElementById('bbBtnUse');
     const bbBorrow=document.getElementById('bbBtnBorrow');
     const bbTransfer=document.getElementById('bbBtnTransfer');
+    const bbDonate=document.getElementById('bbBtnDonate');
+    const bbRequestDon=document.getElementById('bbBtnRequestDon');
     if(bbUse)bbUse.style.display=anyMine?'':'none';
     if(bbBorrow)bbBorrow.style.display=allMine?'none':'';
     if(bbTransfer)bbTransfer.style.display=anyMine?'':'none';
+    if(bbDonate)bbDonate.style.display=anyMine?'':'none';
+    if(bbRequestDon)bbRequestDon.style.display=anyDonatedNotMine?'':'none';
     // Update checkboxes
     document.querySelectorAll('.stk-chk').forEach(el=>{el.checked=SELECTED.has(+el.dataset.id)});
     const allCb=document.getElementById('chkAll');
@@ -3534,6 +3685,7 @@ function _renderDisposeBody(){
 
     const reasonOpts=[
         {v:'expired',    th:'หมดอายุ',           en:'Expired'},
+        {v:'used_up',    th:'ใช้จนหมดสิ้น',       en:'Used up completely'},
         {v:'damaged',    th:'แตก / เสียหาย',      en:'Broken / Damaged'},
         {v:'lost',       th:'สูญหาย',             en:'Lost / Missing'},
         {v:'discrepancy',th:'คลาดเคลื่อน / ขาด',  en:'Discrepancy'},
@@ -4619,8 +4771,9 @@ function openTxnModal(type){
         const btn=document.getElementById(TXN_CFG[t].tabId);
         if(btn){
             btn.classList.toggle('active',t===type);
-            // hide use/transfer tabs if no permission
+            // hide use/transfer if no ownership; hide borrow if own item (can't borrow from yourself)
             if((t==='use'||t==='transfer')&&!canOwnerOp) btn.style.display='none';
+            else if(t==='borrow'&&c.is_mine) btn.style.display='none';
             else btn.style.display='';
         }
     });
@@ -4721,6 +4874,15 @@ function buildTxnForm(type,c,maxQty,unit){
         html+=qtyRow+purposeRow;
     } else if(type==='borrow'){
         const isMine=c.is_mine||IS_ADMIN;
+        if(c.is_mine){
+            html+=`<div style="text-align:center;padding:28px 16px;color:#64748b">
+                <div style="font-size:36px;margin-bottom:10px">🚫</div>
+                <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:4px">${T('ไม่สามารถยืมสารของตนเองได้','Cannot borrow your own item')}</div>
+                <div style="font-size:12px;color:#94a3b8">${T('สารนี้เป็นของคุณอยู่แล้ว หากต้องการใช้งาน กรุณาเลือก "เบิกใช้" แทน','This item belongs to you. Use "Use / Consume" instead.')}</div>
+            </div>`;
+            html+=`<div class="txn-submit-row"><button class="txn-btn-cancel" onclick="closeTxnModal()"><i class="fas fa-times"></i> ${T('ปิด','Close')}</button></div>`;
+            return html;
+        }
         if(!isMine) html+=`<div class="txn-warn"><i class="fas fa-clock"></i><span>${T('<b>หมายเหตุ:</b> การยืมจะต้องรอการอนุมัติจากเจ้าของ/ผู้จัดการ','<b>Note:</b> Borrow request will need approval from the owner/manager.')}</span></div>`;
         const myInitial=(USER_NAME||'?').charAt(0).toUpperCase();
         const ownerInitial=(c.owner_name||'?').charAt(0).toUpperCase();
@@ -4746,8 +4908,20 @@ function buildTxnForm(type,c,maxQty,unit){
         </div>`;
         html+=qtyRow+borrowerFlow+returnDate+purposeRow;
     } else if(type==='transfer'){
-        html+=`<div class="txn-info"><i class="fas fa-info-circle"></i><span>${T('โอนกรรมสิทธิ์ : เจ้าของขวดจะเปลี่ยนเป็นผู้รับโอน สามารถโอนบางส่วนหรือทั้งหมด','Transfer ownership: Container owner will change to recipient. Partial or full transfer.')}</span></div>`;
-        html+=qtyRow+userPicker+purposeRow;
+        html+=`<div class="txn-info"><i class="fas fa-info-circle"></i><span>${T('โอนกรรมสิทธิ์ : โอนทั้งขวดให้ผู้รับ เจ้าของขวดจะเปลี่ยนเป็นผู้รับโอนทันที','Transfer ownership: Full bottle transfer only. Ownership changes to recipient immediately.')}</span></div>`;
+        const transferQtyBlock=`<div class="txn-field">
+            <label>${T('ปริมาณที่โอน','Transfer quantity')}</label>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid #ddd6fe;border-radius:10px">
+                <i class="fas fa-wine-bottle" style="color:#7c3aed;font-size:16px"></i>
+                <div style="flex:1">
+                    <div style="font-size:18px;font-weight:800;color:#6d28d9">${maxQty.toLocaleString()} <span style="font-size:13px;font-weight:600">${esc(unit)}</span></div>
+                    <div style="font-size:10px;color:#7c3aed;margin-top:1px">${T('โอนทั้งขวด (ไม่สามารถเปลี่ยนแปลงได้)','Full bottle — fixed amount')}</div>
+                </div>
+                <div style="background:#7c3aed;color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px">${T('ทั้งหมด','FULL')}</div>
+            </div>
+            <input type="hidden" id="txnQty" value="${maxQty}">
+        </div>`;
+        html+=transferQtyBlock+userPicker+purposeRow;
     }
 
     html+=`<div class="txn-submit-row">
@@ -4817,9 +4991,12 @@ function renderTxnUserList(users){
         const isMe=u.id===UID;
         const isSel=_txnUser&&_txnUser.id===u.id;
         const bg=_UV[i%_UV.length];
+        const avHtml=u.avatar_url
+            ?`<img src="${esc(u.avatar_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.parentElement.innerHTML='${(name||'?').charAt(0).toUpperCase()}';this.parentElement.style.background='${bg}'">`
+            :(name||'?').charAt(0).toUpperCase();
         return `<div class="txn-urow${isSel?' sel':''}" id="txnUrow${u.id}"
             onclick="selectTxnUser(${u.id},'${esc(name)}','${esc(u.department||'')}','${esc(u.username||'')}')">
-            <div class="txn-uav" style="background:${bg}">${(name||'?').charAt(0).toUpperCase()}</div>
+            <div class="txn-uav" style="background:${u.avatar_url?'transparent':bg};overflow:hidden">${avHtml}</div>
             <div style="flex:1;min-width:0">
                 <div class="txn-uname">${esc(name)}${isMe?`<span class="txn-ume">${T('ฉัน','Me')}</span>`:''}</div>
                 <div class="txn-udep">${esc(u.department||u.username||'-')}</div>
@@ -5107,5 +5284,209 @@ async function doConfirmedBorrow(){
         toast(err.message,'err');
     }
 }
+
+/* ═══════════════════════════════════════════
+   DONATION FEATURE
+   ═══════════════════════════════════════════ */
+
+/* ── Donate modal (mark own item as donated) ── */
+let _dnItem=null;
+function openDonateModal(id){
+    _dnItem=DATA.find(x=>+x.id===id)||_txnItem;
+    if(!_dnItem)return;
+    const qty=parseFloat(_dnItem.current_quantity??_dnItem.remaining_qty??0);
+    const unit=_dnItem.quantity_unit||_dnItem.unit||'';
+    document.getElementById('dnOv').innerHTML=`
+    <div class="dnModal" onclick="event.stopPropagation()">
+        <div class="dnModal-hdr">
+            <div class="dnModal-ic" style="background:#fdf2f8;color:#db2777"><i class="fas fa-hand-holding-heart"></i></div>
+            <div style="flex:1">
+                <div style="font-size:14px;font-weight:700;color:#1e293b">${T('บริจาคสารเคมีสู่ส่วนกลาง','Donate Chemical to Pool')}</div>
+                <div style="font-size:11px;color:#94a3b8">${esc(_dnItem.chemical_name||'-')}</div>
+            </div>
+            <button onclick="closeDnModal()" style="border:none;background:none;color:#94a3b8;font-size:18px;cursor:pointer;padding:0 4px">&times;</button>
+        </div>
+        <div class="dnModal-body">
+            <div style="background:#fdf2f8;border:1.5px solid #fbcfe8;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                <i class="fas fa-wine-bottle" style="color:#db2777;font-size:18px"></i>
+                <div>
+                    <div style="font-size:17px;font-weight:800;color:#9d174d">${qty.toLocaleString()} <span style="font-size:12px">${esc(unit)}</span></div>
+                    <div style="font-size:10px;color:#db2777">${T('บริจาคทั้งขวด (ไม่สามารถเปลี่ยนแปลงได้)','Full bottle — fixed amount')}</div>
+                </div>
+                <div style="margin-left:auto;background:#db2777;color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px">${T('ทั้งหมด','FULL')}</div>
+            </div>
+            <div style="margin-bottom:12px">
+                <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px">${T('หมายเหตุ / เหตุผลการบริจาค','Reason / Note')} <span style="font-weight:400;color:#9ca3af">${T('(ไม่บังคับ)','(optional)')}</span></label>
+                <textarea id="dnNote" rows="2" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:8px 12px;font-size:12px;font-family:inherit;resize:none;box-sizing:border-box" placeholder="${T('เช่น ใช้ไม่หมด ใกล้หมดอายุ...','e.g. excess stock, near expiry...')}"></textarea>
+            </div>
+            <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:11px;color:#92400e">
+                <i class="fas fa-exclamation-triangle"></i> ${T('เมื่อบริจาคแล้ว user อื่นจะเห็นและสามารถขอรับสารของคุณได้ เจ้าของยังคงเป็นของคุณจนกว่าจะอนุมัติคำขอ','Once donated, others can see and request this item. You remain owner until you approve a request.')}
+            </div>
+        </div>
+        <div class="dnModal-foot">
+            <button onclick="closeDnModal()" class="stk-btn stk-btn-g stk-btn-s"><i class="fas fa-times"></i> ${T('ยกเลิก','Cancel')}</button>
+            <button onclick="submitDonate()" class="stk-btn stk-btn-s" style="background:#db2777;color:#fff;border-color:#db2777"><i class="fas fa-hand-holding-heart"></i> ${T('ยืนยันบริจาค','Confirm Donation')}</button>
+        </div>
+    </div>`;
+    document.getElementById('dnOv').classList.add('show');
+}
+
+function closeDnModal(){document.getElementById('dnOv').classList.remove('show');}
+
+async function submitDonate(){
+    if(!_dnItem)return;
+    const note=document.getElementById('dnNote')?.value||'';
+    const srcType=_dnItem.source_type||_dnItem.source||'container';
+    const srcId=Math.abs(parseInt(_dnItem.id)||0);
+    try{
+        const res=await fetch('/v1/api/borrow.php?action=donate',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({source_type:srcType,source_id:srcId,note})
+        }).then(r=>r.json());
+        if(res.success){
+            toast(T('บริจาคสารสำเร็จ — user อื่นสามารถขอรับได้แล้ว','Donated successfully — others can now request it'),'ok');
+            closeDnModal();
+            loadData(PAGE);loadStats();
+            const detailOv=document.getElementById('detailOv');
+            if(detailOv&&detailOv.classList.contains('show'))openDetail(_dnItem.id);
+        }else throw new Error(res.error||res.message||'Error');
+    }catch(e){toast(e.message,'err');}
+}
+
+function openUndonateModal(id){
+    _dnItem=DATA.find(x=>+x.id===id)||_txnItem;
+    if(!_dnItem)return;
+    const qty=parseFloat(_dnItem.current_quantity??_dnItem.remaining_qty??0);
+    const unit=esc(_dnItem.quantity_unit||_dnItem.unit||'');
+    const name=esc(_dnItem.chemical_name||'-');
+    const code=esc(_dnItem.bottle_code||_dnItem.barcode||'');
+    const loc=esc(_dnItem.location_text||_dnItem.location||'');
+    const reqCount=+(_dnItem.donation_request_count||0);
+    const note=_dnItem.donation_note?`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:11px;color:#475569;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px"><i class="fas fa-comment-alt" style="color:#94a3b8;margin-top:1px;flex-shrink:0"></i><span><b>${T('หมายเหตุการบริจาค:','Donation note:')}</b> ${esc(_dnItem.donation_note)}</span></div>`:'';
+    const donatedSince=_dnItem.donated_at?`<div style="font-size:10px;color:#94a3b8;margin-top:3px"><i class="fas fa-clock" style="margin-right:3px"></i>${T('บริจาคเมื่อ','Donated')} ${new Date(_dnItem.donated_at).toLocaleDateString(L==='th'?'th-TH':'en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>`:'';
+    const reqWarn=reqCount>0?`<div style="background:#fef3c7;border:1.5px solid #fde68a;border-radius:10px;padding:11px 14px;display:flex;align-items:flex-start;gap:10px;margin-bottom:14px"><i class="fas fa-exclamation-triangle" style="color:#d97706;font-size:15px;flex-shrink:0;margin-top:1px"></i><div style="font-size:11px;color:#92400e;line-height:1.6"><strong>${T(`มีคำขอรออยู่ ${reqCount} รายการ`,`${reqCount} pending request(s)`)}</strong><br>${T('การยกเลิกบริจาคจะยกเลิกคำขอรับสารทั้งหมดด้วย','Cancelling donation will also cancel all pending requests')}</div></div>`:'';
+
+    document.getElementById('dnOv').innerHTML=`
+    <div class="dnModal" onclick="event.stopPropagation()" style="max-width:400px">
+        <div class="dnModal-hdr">
+            <div class="dnModal-ic" style="background:#f1f5f9;color:#475569"><i class="fas fa-rotate-left"></i></div>
+            <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:700;color:#1e293b">${T('ยกเลิกการบริจาค','Cancel Donation')}</div>
+                <div style="font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+            </div>
+            <button onclick="closeDnModal()" style="border:none;background:none;color:#94a3b8;font-size:18px;cursor:pointer;padding:0 4px">&times;</button>
+        </div>
+        <div class="dnModal-body" style="padding-bottom:4px">
+            <!-- Chemical card -->
+            <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:13px 15px;display:flex;align-items:center;gap:13px;margin-bottom:14px">
+                <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#475569,#64748b);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <i class="fas fa-flask" style="color:#fff;font-size:16px"></i>
+                </div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:13px;font-weight:700;color:#0f172a;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+                    ${code?`<div style="font-size:10px;color:#64748b;margin-top:2px"><i class="fas fa-barcode" style="margin-right:3px"></i>${code}${loc?` &nbsp;·&nbsp; <i class="fas fa-map-marker-alt" style="margin-right:2px"></i>${loc}`:''}</div>`:''}
+                    ${donatedSince}
+                </div>
+                <div style="text-align:right;flex-shrink:0">
+                    <div style="font-size:16px;font-weight:800;color:#1e293b">${qty.toLocaleString()}</div>
+                    <div style="font-size:10px;color:#64748b">${unit}</div>
+                </div>
+            </div>
+            ${reqWarn}
+            ${note}
+            <!-- Info note -->
+            <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 12px;font-size:11px;color:#0369a1;margin-bottom:4px">
+                <i class="fas fa-info-circle"></i> ${T('สารจะกลับสู่สต็อกปกติของคุณ และถูกซ่อนจากรายการบริจาค','Item will return to your stock and be hidden from the donation pool')}
+            </div>
+        </div>
+        <div class="dnModal-foot">
+            <button onclick="closeDnModal()" class="stk-btn stk-btn-g stk-btn-s"><i class="fas fa-arrow-left"></i> ${T('ปิด','Close')}</button>
+            <button onclick="submitUndonate()" class="stk-btn stk-btn-s" style="background:linear-gradient(135deg,#7f1d1d,#dc2626);color:#fff;border:none;font-weight:700"><i class="fas fa-rotate-left"></i> ${T('ยืนยันยกเลิกบริจาค','Confirm Cancel Donation')}</button>
+        </div>
+    </div>`;
+    document.getElementById('dnOv').classList.add('show');
+}
+
+async function submitUndonate(){
+    if(!_dnItem)return;
+    const item=_dnItem;
+    closeDnModal();
+    const srcType=item.source_type||item.source||'container';
+    const srcId=Math.abs(parseInt(item.id)||0);
+    try{
+        const res=await fetch('/v1/api/borrow.php?action=undonate',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({source_type:srcType,source_id:srcId})
+        }).then(r=>r.json());
+        if(res.success){
+            toast(T('ยกเลิกการบริจาคแล้ว','Donation cancelled'),'ok');
+            loadData(PAGE);loadStats();
+            const detailOv=document.getElementById('detailOv');
+            if(detailOv&&detailOv.classList.contains('show'))openDetail(item.id);
+        }else throw new Error(res.error||res.message||'Error');
+    }catch(e){toast(e.message,'err');}
+}
+
+/* ── Request donation modal ── */
+function openRequestDonationModal(id){
+    _dnItem=DATA.find(x=>+x.id===id);
+    if(!_dnItem)return;
+    const qty=parseFloat(_dnItem.current_quantity??_dnItem.remaining_qty??0);
+    const unit=_dnItem.quantity_unit||_dnItem.unit||'';
+    document.getElementById('dnOv').innerHTML=`
+    <div class="dnModal" onclick="event.stopPropagation()">
+        <div class="dnModal-hdr">
+            <div class="dnModal-ic" style="background:#ecfdf5;color:#059669"><i class="fas fa-box-open"></i></div>
+            <div style="flex:1">
+                <div style="font-size:14px;font-weight:700;color:#1e293b">${T('ขอรับสารเคมีบริจาค','Request Donated Chemical')}</div>
+                <div style="font-size:11px;color:#94a3b8">${esc(_dnItem.chemical_name||'-')} · ${T('เจ้าของ','Owner')}: ${esc(_dnItem.owner_name||'-')}</div>
+            </div>
+            <button onclick="closeDnModal()" style="border:none;background:none;color:#94a3b8;font-size:18px;cursor:pointer;padding:0 4px">&times;</button>
+        </div>
+        <div class="dnModal-body">
+            <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                <i class="fas fa-wine-bottle" style="color:#059669;font-size:18px"></i>
+                <div>
+                    <div style="font-size:17px;font-weight:800;color:#065f46">${qty.toLocaleString()} <span style="font-size:12px">${esc(unit)}</span></div>
+                    <div style="font-size:10px;color:#059669">${T('รับทั้งขวด — โอนกรรมสิทธิ์เมื่อได้รับการอนุมัติ','Full bottle — ownership transfers upon approval')}</div>
+                </div>
+            </div>
+            ${_dnItem.donation_note?`<div style="background:#f8fafc;border-radius:8px;padding:10px 12px;font-size:11px;color:#475569;margin-bottom:12px"><i class="fas fa-comment-alt" style="color:#94a3b8"></i> <b>${T('หมายเหตุจากผู้บริจาค:','Donor note:')}</b> ${esc(_dnItem.donation_note)}</div>`:''}
+            ${_dnItem.donation_request_count>0?`<div style="background:#fef3c7;border:1.5px solid #fde68a;border-radius:10px;padding:10px 13px;display:flex;align-items:center;gap:10px;margin-bottom:12px"><i class="fas fa-user-clock" style="color:#d97706;font-size:15px;flex-shrink:0"></i><div style="font-size:11px;color:#92400e;line-height:1.5"><strong>${T('มีคำขอรอการพิจารณาอยู่แล้ว','Already has pending requests')}</strong><br>${T('ผู้บริจาคยังไม่ตอบรับ','Donor has not yet responded')} · ${_dnItem.donation_request_count} ${T('คำขอ','request(s)')}<br><span style="font-size:10px;color:#b45309">${T('คุณยังส่งคำขอได้ แต่เจ้าของจะอนุมัติทีละคำขอ','You can still apply — the owner approves one at a time')}</span></div></div>`:''}
+            <div style="margin-bottom:12px">
+                <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px">${T('วัตถุประสงค์การใช้งาน','Purpose')} <span style="color:#dc2626">*</span></label>
+                <textarea id="dnPurpose" rows="3" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:8px 12px;font-size:12px;font-family:inherit;resize:none;box-sizing:border-box" placeholder="${T('ระบุวัตถุประสงค์ที่จะนำไปใช้...','Describe your intended use...')}"></textarea>
+            </div>
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;font-size:11px;color:#1e40af">
+                <i class="fas fa-info-circle"></i> ${T('คำขอจะถูกส่งให้เจ้าของพิจารณา เมื่ออนุมัติแล้วสารจะโอนมาเป็นของคุณทันที','Request will be sent to owner. Upon approval, ownership transfers to you immediately.')}
+            </div>
+        </div>
+        <div class="dnModal-foot">
+            <button onclick="closeDnModal()" class="stk-btn stk-btn-g stk-btn-s"><i class="fas fa-times"></i> ${T('ยกเลิก','Cancel')}</button>
+            <button onclick="submitRequestDonation()" class="stk-btn stk-btn-s" style="background:#059669;color:#fff;border-color:#059669"><i class="fas fa-box-open"></i> ${T('ส่งคำขอ','Send Request')}</button>
+        </div>
+    </div>`;
+    document.getElementById('dnOv').classList.add('show');
+}
+
+async function submitRequestDonation(){
+    if(!_dnItem)return;
+    const purpose=(document.getElementById('dnPurpose')?.value||'').trim();
+    if(!purpose){toast(T('กรุณาระบุวัตถุประสงค์','Please enter purpose'),'err');return;}
+    const srcType=_dnItem.source_type||_dnItem.source||'container';
+    const srcId=Math.abs(parseInt(_dnItem.id)||0);
+    try{
+        const res=await fetch('/v1/api/borrow.php?action=request_donation',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({source_type:srcType,source_id:srcId,purpose})
+        }).then(r=>r.json());
+        if(res.success){
+            toast(T('ส่งคำขอแล้ว — รอเจ้าของอนุมัติ','Request sent — awaiting owner approval'),'ok');
+            closeDnModal();loadData(PAGE);
+        }else throw new Error(res.error||res.message||'Error');
+    }catch(e){toast(e.message,'err');}
+}
 </script>
+<!-- Donation Modal Overlay -->
+<div class="dnModal-ov" id="dnOv" onclick="if(event.target===this)closeDnModal()"></div>
 </body></html>

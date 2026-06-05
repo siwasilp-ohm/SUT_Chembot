@@ -925,8 +925,8 @@ async function exportHolder(uid){
 }
 
 /* ─────────────── CHEMICAL STOCK DETAIL MODAL ─────────────── */
-const TXN_LABELS={borrow:TH?'ยืม':'Borrow',return:TH?'คืน':'Return',transfer:TH?'โอน':'Transfer',dispose:TH?'ทำลาย':'Dispose',adjust:TH?'ปรับปริมาณ':'Adjust',receive:TH?'รับเข้า':'Receive',use:TH?'ใช้งาน':'Use'};
-const TXN_ICONS={borrow:'fa-hand-holding',return:'fa-undo-alt',transfer:'fa-exchange-alt',dispose:'fa-trash-alt',adjust:'fa-sliders-h',receive:'fa-box-open',use:'fa-vial'};
+const TXN_LABELS={borrow:TH?'ยืม':'Borrow',return:TH?'คืน':'Return',transfer:TH?'โอน':'Transfer',dispose:TH?'ทำลาย':'Dispose',adjust:TH?'ปรับปริมาณ':'Adjust',receive:TH?'รับเข้า':'Receive',use:TH?'ใช้งาน':'Use',donation:TH?'บริจาค':'Donation'};
+const TXN_ICONS={borrow:'fa-hand-holding',return:'fa-undo-alt',transfer:'fa-exchange-alt',dispose:'fa-trash-alt',adjust:'fa-sliders-h',receive:'fa-box-open',use:'fa-vial',donation:'fa-hand-holding-heart'};
 
 async function openChemDetail(stockId){
     const ov=document.getElementById('chemDetailModal');

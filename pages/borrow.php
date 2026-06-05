@@ -496,6 +496,9 @@ Layout::head($lang==='th'?'ธุรกรรมของฉัน':'My Transact
             <div style="display:flex;gap:8px">
                 <input type="text" id="timelineBarcode" class="ci-input" placeholder="e.g. 320F6600000001">
                 <button onclick="loadTimeline()" class="ci-btn ci-btn-primary"><i class="fas fa-search"></i></button>
+                <button id="tlPrintBtn" onclick="printTimeline()" class="ci-btn ci-btn-outline" style="font-size:12px;gap:5px" disabled>
+                    <i class="fas fa-print"></i> <?php echo $lang==='th'?'พิมพ์':'Print'; ?>
+                </button>
             </div>
         </div>
         <div id="timelineContent"></div>
@@ -1098,6 +1101,7 @@ Layout::head($lang==='th'?'ธุรกรรมของฉัน':'My Transact
 .txn-type-icon.return{background:#e8f5e9;color:#2e7d32}
 .txn-type-icon.transfer{background:#e3f2fd;color:#1565c0}
 .txn-type-icon.dispose{background:#fce4ec;color:#c62828}
+.txn-type-icon.donation{background:#fdf2f8;color:#db2777}
 
 /* Status check overlay on icon */
 .txn-status-check{position:absolute;bottom:-3px;right:-3px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;border:2px solid var(--card);z-index:2;transition:transform .15s}
@@ -1134,7 +1138,7 @@ Layout::head($lang==='th'?'ธุรกรรมของฉัน':'My Transact
 .tl-item::before{content:'';position:absolute;left:8px;top:22px;bottom:-16px;width:2px;background:#e0e0e0}
 .tl-item:last-child::before{display:none}
 .tl-dot{position:absolute;left:0;top:4px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff}
-.tl-dot.borrow{background:#e65100}.tl-dot.use{background:#7c3aed}.tl-dot.return{background:#2e7d32}.tl-dot.transfer{background:#1565c0}
+.tl-dot.borrow{background:#e65100}.tl-dot.use{background:#7c3aed}.tl-dot.return{background:#2e7d32}.tl-dot.transfer{background:#1565c0}.tl-dot.donation{background:#db2777}
 .tl-dot.dispose{background:#c62828}.tl-dot.receive{background:#6a1b9a}.tl-dot.adjust{background:#795548}
 
 /* ========== USE MODE STYLES ========== */
@@ -1496,8 +1500,8 @@ const TH = L==='th';
 const RETURNER_NAME = '<?php echo addslashes(trim(!empty($user['full_name_th']) ? $user['full_name_th'] : (($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')))); ?>';
 const RETURNER_AVATAR = '<?php echo addslashes($user['avatar_url'] ?? ''); ?>';
 
-const TXN_LABELS = {borrow:TH?'ยืม':'Borrow', use:TH?'ใช้':'Use', return:TH?'คืน':'Return', transfer:TH?'โอน':'Transfer', dispose:TH?'จำหน่าย':'Dispose', adjust:TH?'ปรับ':'Adjust', receive:TH?'รับเข้า':'Receive'};
-const TXN_ICONS  = {borrow:'fa-hand-holding-medical', use:'fa-eye-dropper', return:'fa-undo', transfer:'fa-people-arrows', dispose:'fa-trash-alt', adjust:'fa-sliders-h', receive:'fa-box-open'};
+const TXN_LABELS = {borrow:TH?'ยืม':'Borrow', use:TH?'ใช้':'Use', return:TH?'คืน':'Return', transfer:TH?'โอน':'Transfer', dispose:TH?'จำหน่าย':'Dispose', adjust:TH?'ปรับ':'Adjust', receive:TH?'รับเข้า':'Receive', donation:TH?'บริจาค':'Donation'};
+const TXN_ICONS  = {borrow:'fa-hand-holding-medical', use:'fa-eye-dropper', return:'fa-undo', transfer:'fa-people-arrows', dispose:'fa-trash-alt', adjust:'fa-sliders-h', receive:'fa-box-open', donation:'fa-hand-holding-heart'};
 const STATUS_MAP = {pending:['ci-badge-warning',TH?'รออนุมัติ':'Pending'], completed:['ci-badge-success',TH?'เสร็จสิ้น':'Completed'], rejected:['ci-badge-danger',TH?'ปฏิเสธ':'Rejected'], cancelled:['ci-badge-default',TH?'ยกเลิก':'Cancelled'], approved:['ci-badge-info',TH?'อนุมัติแล้ว':'Approved']};
 
 let currentTab = 'all', currentPage = 1, searchTimer = null;
@@ -1736,7 +1740,7 @@ async function loadList() {
 function renderTxnCard(t) {
     const type = t.txn_type || 'unknown';
     const icon = TXN_ICONS[type] || 'fa-exchange-alt';
-    const label = TXN_LABELS[type] || type;
+    const label = TXN_LABELS[type] || (type === 'unknown' ? (TH?'ธุรกรรม':'Transaction') : type);
     const fromName = [t.from_first, t.from_last].filter(Boolean).join(' ') || '-';
     const toName = [t.to_first, t.to_last].filter(Boolean).join(' ') || '-';
     const chemName = t.chemical_name || '-';
@@ -1754,6 +1758,9 @@ function renderTxnCard(t) {
     const isApproved = t.status === 'approved';
     const isRejected = t.status === 'rejected';
     const isCancelled = t.status === 'cancelled';
+    const displayLabel = (type === 'donation' && isRejected) ? (TH?'ถูกปฏิเสธ':'Rejected')
+                       : (type === 'donation' && isCancelled) ? (TH?'ยกเลิก':'Cancelled')
+                       : label;
 
     // Card status class
     let stCls = isOverdue ? 'st-overdue' : `st-${t.status}`;
@@ -1816,13 +1823,21 @@ function renderTxnCard(t) {
 
     // ── Action buttons ──
     let actions = '';
-    const isTransferPending = isPending && type === 'transfer';
+    const isTransferPending  = isPending && type === 'transfer';
+    const isDonationPending  = isPending && type === 'donation';
     const canApproveTransfer = isTransferPending && (IS_ADMIN || IS_MANAGER || t.to_user_id == UID);
-    const canApproveBorrow   = isPending && !isTransferPending && (IS_ADMIN || IS_MANAGER || t.from_user_id == UID);
+    const canApproveDonation = isDonationPending && (IS_ADMIN || IS_MANAGER || t.from_user_id == UID);
+    const canApproveBorrow   = isPending && !isTransferPending && !isDonationPending && (IS_ADMIN || IS_MANAGER || t.from_user_id == UID);
     const isBorrower         = isPending && type === 'borrow' && t.to_user_id == UID;
+    const isDonationRequester= isDonationPending && t.to_user_id == UID;
     if (canApproveTransfer) {
         actions = `<div class="txn-card-actions">
             <button onclick="event.stopPropagation();approveTxn(${t.id})" class="ci-btn ci-btn-primary ci-btn-sm"><i class="fas fa-handshake"></i> ${TH?'ยืนยันรับโอน':'Accept'}</button>
+            <button onclick="event.stopPropagation();rejectTxn(${t.id})" class="ci-btn ci-btn-danger ci-btn-sm"><i class="fas fa-times"></i> ${TH?'ปฏิเสธ':'Reject'}</button>
+        </div>`;
+    } else if (canApproveDonation) {
+        actions = `<div class="txn-card-actions">
+            <button onclick="event.stopPropagation();approveTxn(${t.id})" class="ci-btn ci-btn-sm" style="background:linear-gradient(135deg,#9d174d,#db2777);color:#fff;border:none"><i class="fas fa-hand-holding-heart"></i> ${TH?'อนุมัติมอบให้':'Approve Donation'}</button>
             <button onclick="event.stopPropagation();rejectTxn(${t.id})" class="ci-btn ci-btn-danger ci-btn-sm"><i class="fas fa-times"></i> ${TH?'ปฏิเสธ':'Reject'}</button>
         </div>`;
     } else if (canApproveBorrow) {
@@ -1833,6 +1848,10 @@ function renderTxnCard(t) {
     } else if (isBorrower) {
         actions = `<div class="txn-card-actions">
             <button onclick="event.stopPropagation();cancelBorrowRequest(${t.id})" class="ci-btn ci-btn-sm" style="border:1.5px solid #f59e0b;background:#fffbeb;color:#92400e;font-weight:700;gap:5px"><i class="fas fa-ban"></i> ${TH?'ยกเลิกคำขอยืม':'Cancel Request'}</button>
+        </div>`;
+    } else if (isDonationRequester) {
+        actions = `<div class="txn-card-actions">
+            <button onclick="event.stopPropagation();rejectTxn(${t.id})" class="ci-btn ci-btn-sm" style="border:1.5px solid #f59e0b;background:#fffbeb;color:#92400e;font-weight:700;gap:5px"><i class="fas fa-ban"></i> ${TH?'ยกเลิกคำขอ':'Cancel Request'}</button>
         </div>`;
     }
     if (type === 'borrow' && t.status === 'completed' && !parseInt(t.has_return) && t.to_user_id == UID) {
@@ -1861,7 +1880,7 @@ function renderTxnCard(t) {
                     <div class="txn-card-chem" title="${esc(chemName)}">${esc(chemName)}</div>
                     <div class="txn-card-txnno">
                         ${t.txn_number || '#'+t.id}
-                        <span style="margin-left:8px;color:var(--accent);font-weight:500">${label}</span>
+                        <span style="margin-left:8px;color:${(type==='donation'&&isRejected)?'#dc2626':(type==='donation'&&isCancelled)?'#9ca3af':'var(--accent)'};font-weight:500">${displayLabel}</span>
                     </div>
                     <div class="txn-card-meta">
                         <span><i class="fas fa-flask"></i> ${Number(t.quantity).toLocaleString()} ${t.unit}</span>
@@ -2887,6 +2906,8 @@ function closeDetailModal() {
 }
 
 // ========== TIMELINE MODAL ==========
+let _tlData = null, _tlBarcode = '';
+
 function openTimelineModal() {
     document.getElementById('timelineModal').classList.add('show');
 }
@@ -2901,6 +2922,8 @@ async function loadTimeline() {
 
     const cont = document.getElementById('timelineContent');
     cont.innerHTML = '<div class="ci-loading"><div class="ci-spinner"></div></div>';
+    const pb = document.getElementById('tlPrintBtn');
+    if (pb) pb.disabled = true;
 
     try {
         const d = await apiFetch('/v1/api/borrow.php?action=timeline&barcode=' + encodeURIComponent(barcode));
@@ -2912,6 +2935,10 @@ async function loadTimeline() {
             return;
         }
 
+        _tlData = items;
+        _tlBarcode = barcode;
+        if (pb) pb.disabled = false;
+
         const chemName = items[0].chemical_name || barcode;
         cont.innerHTML = `
             <div style="font-weight:600;font-size:14px;margin-bottom:12px">${esc(chemName)}</div>
@@ -2920,16 +2947,24 @@ async function loadTimeline() {
                 const type = t.txn_type;
                 const fromName = [t.from_first, t.from_last].filter(Boolean).join(' ');
                 const toName = [t.to_first, t.to_last].filter(Boolean).join(' ');
+                const isDonRejected = type === 'donation' && t.status === 'rejected';
+                const isDonCancelled = type === 'donation' && t.status === 'cancelled';
+                const tlDotStyle = isDonRejected ? 'background:#dc2626' : isDonCancelled ? 'background:#9ca3af' : '';
+                const tlLabel = isDonRejected
+                    ? `${TXN_LABELS[type]||type} <span style="font-size:9px;background:#fee2e2;color:#b91c1c;padding:1px 6px;border-radius:4px;font-weight:700;border:1px solid #fca5a5"><i class="fas fa-times-circle" style="font-size:8px"></i> ${TH?'ถูกปฏิเสธ':'Rejected'}</span>`
+                    : isDonCancelled
+                        ? `${TXN_LABELS[type]||type} <span style="font-size:9px;background:#f3f4f6;color:#6b7280;padding:1px 6px;border-radius:4px;font-weight:700;border:1px solid #d1d5db"><i class="fas fa-ban" style="font-size:8px"></i> ${TH?'ยกเลิก':'Cancelled'}</span>`
+                        : (TXN_LABELS[type]||type);
                 return `<div class="tl-item">
-                    <div class="tl-dot ${type}"><i class="fas ${TXN_ICONS[type]||'fa-circle'}" style="font-size:8px"></i></div>
+                    <div class="tl-dot ${type}" ${tlDotStyle?`style="${tlDotStyle}"` : ''}><i class="fas ${TXN_ICONS[type]||'fa-circle'}" style="font-size:8px"></i></div>
                     <div>
-                        <div style="font-weight:600;font-size:13px">${TXN_LABELS[type]||type}</div>
+                        <div style="font-weight:600;font-size:13px">${tlLabel}</div>
                         <div style="font-size:12px;color:var(--c2);margin-top:2px">
                             ${Number(t.quantity).toLocaleString()} ${t.unit}
                             ${type !== 'dispose' ? ` — ${fromName} → ${toName}` : ` — ${fromName}`}
                         </div>
                         ${t.purpose ? `<div style="font-size:11px;color:var(--c3);margin-top:2px">${esc(t.purpose)}</div>` : ''}
-                        <div style="font-size:10px;color:var(--c3);margin-top:4px">${formatDate(t.created_at)}</div>
+                        <div style="font-size:10px;color:var(--c3);margin-top:4px"><i class="far fa-clock" style="font-size:9px;margin-right:2px"></i>${(()=>{const _d=fmtDateTime(t.created_at);return _d.date+' · '+_d.time;})()}</div>
                     </div>
                 </div>`;
             }).join('')}
@@ -2937,6 +2972,129 @@ async function loadTimeline() {
     } catch(e) {
         cont.innerHTML = `<div class="ci-alert ci-alert-danger">${e.message}</div>`;
     }
+}
+
+function printTimeline() {
+    if (!_tlData || !_tlData.length) return;
+
+    const STATUS_LABELS = {
+        pending:   TH?'รออนุมัติ':'Pending',
+        completed: TH?'เสร็จสิ้น':'Completed',
+        rejected:  TH?'ปฏิเสธ':'Rejected',
+        cancelled: TH?'ยกเลิก':'Cancelled',
+        approved:  TH?'อนุมัติแล้ว':'Approved',
+    };
+    const STATUS_COLORS = {
+        completed:'#15803d', rejected:'#b91c1c', cancelled:'#6b7280',
+        pending:'#a16207', approved:'#1d4ed8',
+    };
+
+    const chemName = _tlData[0].chemical_name || _tlBarcode;
+    const now = fmtDateTime(new Date().toISOString());
+    const printedBy = typeof RETURNER_NAME !== 'undefined' ? RETURNER_NAME : '';
+
+    const periodFrom = fmtDateTime(_tlData[0].created_at).date;
+    const periodTo   = fmtDateTime(_tlData[_tlData.length - 1].created_at).date;
+
+    const rows = _tlData.map((t, i) => {
+        const type = t.txn_type;
+        const isDonRej = type === 'donation' && t.status === 'rejected';
+        const isDonCan = type === 'donation' && t.status === 'cancelled';
+        const typeLbl   = TXN_LABELS[type] || type;
+        const statusLbl = STATUS_LABELS[t.status] || t.status;
+        const statusCol = STATUS_COLORS[t.status] || '#374151';
+        const from = [t.from_first, t.from_last].filter(Boolean).join(' ') || '-';
+        const to   = [t.to_first,   t.to_last  ].filter(Boolean).join(' ') || '-';
+        const _dt  = fmtDateTime(t.created_at);
+        const direction = type !== 'dispose' ? `${from} → ${to}` : from;
+        const statusNote = isDonRej ? ` (${TH?'ถูกปฏิเสธ':'Rejected'})` : isDonCan ? ` (${TH?'ยกเลิก':'Cancelled'})` : '';
+        return `<tr>
+            <td style="text-align:center;color:#94a3b8;font-size:11px">${i + 1}</td>
+            <td><strong>${typeLbl}</strong></td>
+            <td style="color:${statusCol};font-weight:600">${statusLbl}${statusNote}</td>
+            <td>${direction}</td>
+            <td style="text-align:right;white-space:nowrap">${Number(t.quantity).toLocaleString()} ${t.unit}</td>
+            <td style="color:#475569">${t.purpose ? t.purpose.replace(/</g,'&lt;') : '—'}</td>
+            <td style="white-space:nowrap;font-size:11px">${_dt.date}<br><span style="color:#94a3b8">${_dt.time}</span></td>
+        </tr>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="${TH?'th':'en'}">
+<head>
+<meta charset="UTF-8">
+<title>Lifecycle Timeline — ${chemName.replace(/</g,'&lt;')}</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'TH Sarabun New','Sarabun','Segoe UI',Arial,sans-serif;font-size:13px;color:#1e293b;padding:28px 32px}
+.rpt-hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #1e40af;padding-bottom:14px;margin-bottom:18px}
+.rpt-hdr-left .title{font-size:20px;font-weight:800;color:#1e40af}
+.rpt-hdr-left .sub{font-size:11px;color:#64748b;margin-top:3px}
+.rpt-hdr-right{text-align:right;font-size:11px;color:#64748b;line-height:1.7}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;margin-bottom:18px}
+.info-lbl{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.4px}
+.info-val{font-weight:700;margin-top:2px}
+table{width:100%;border-collapse:collapse}
+thead th{background:#1e40af;color:#fff;padding:8px 10px;font-size:11px;font-weight:700;text-align:left}
+thead th:first-child{border-radius:0}
+tbody td{padding:7px 10px;border-bottom:1px solid #e2e8f0;vertical-align:top;font-size:12px}
+tbody tr:nth-child(even) td{background:#f8fafc}
+tbody tr:last-child td{border-bottom:2px solid #cbd5e1}
+.rpt-footer{margin-top:28px;display:flex;justify-content:space-between;align-items:flex-end;font-size:10px;color:#94a3b8}
+.sig{text-align:center}
+.sig-line{border-top:1px solid #94a3b8;width:180px;margin:36px auto 5px}
+@media print{body{padding:12px 16px}@page{margin:.8cm 1cm;size:A4 landscape}}
+</style>
+</head>
+<body>
+<div class="rpt-hdr">
+  <div class="rpt-hdr-left">
+    <div class="title">📋 Lifecycle Timeline Report</div>
+    <div class="sub">${TH?'รายงานประวัติการเคลื่อนไหวของสารเคมี':'Chemical Lifecycle Traceability Report'}</div>
+  </div>
+  <div class="rpt-hdr-right">
+    <div>${TH?'วันที่พิมพ์':'Printed'}: ${now.date} ${now.time}</div>
+    ${printedBy ? `<div>${TH?'พิมพ์โดย':'By'}: ${printedBy}</div>` : ''}
+  </div>
+</div>
+
+<div class="info-grid">
+  <div><div class="info-lbl">${TH?'ชื่อสารเคมี':'Chemical Name'}</div><div class="info-val">${chemName.replace(/</g,'&lt;')}</div></div>
+  <div><div class="info-lbl">Barcode / ${TH?'รหัสขวด':'Bottle Code'}</div><div class="info-val" style="font-family:monospace">${_tlBarcode}</div></div>
+  <div><div class="info-lbl">${TH?'จำนวนรายการ':'Total Events'}</div><div class="info-val">${_tlData.length} ${TH?'รายการ':'events'}</div></div>
+  <div><div class="info-lbl">${TH?'ช่วงเวลา':'Period'}</div><div class="info-val">${periodFrom}${periodFrom !== periodTo ? ' — ' + periodTo : ''}</div></div>
+</div>
+
+<table>
+<thead>
+  <tr>
+    <th style="width:34px">#</th>
+    <th>${TH?'ประเภท':'Type'}</th>
+    <th>${TH?'สถานะ':'Status'}</th>
+    <th>${TH?'จาก → ถึง':'From → To'}</th>
+    <th style="text-align:right">${TH?'ปริมาณ':'Qty'}</th>
+    <th>${TH?'วัตถุประสงค์':'Purpose'}</th>
+    <th>${TH?'วันที่ / เวลา':'Date / Time'}</th>
+  </tr>
+</thead>
+<tbody>${rows}</tbody>
+</table>
+
+<div class="rpt-footer">
+  <div>${TH?'เอกสารนี้สร้างโดยระบบอัตโนมัติ':'System-generated document'}</div>
+  <div class="sig">
+    <div class="sig-line"></div>
+    <div>${TH?'ผู้ตรวจสอบ / Verified by':'Verified by'}</div>
+  </div>
+</div>
+</body></html>`;
+
+    const w = window.open('', '_blank', 'width=1000,height=720');
+    if (!w) { alert(TH?'กรุณาอนุญาต Pop-up เพื่อพิมพ์':'Allow pop-ups to print'); return; }
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 450);
 }
 
 // ========== DISPOSAL ACTIONS ==========

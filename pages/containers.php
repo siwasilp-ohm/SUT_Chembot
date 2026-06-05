@@ -332,6 +332,20 @@ Layout::head($lang==='th' ? 'จัดการขวดสารเคมี' :
 .ctn-form-grid label{font-size:11px;font-weight:600;color:var(--c3);display:block;margin-bottom:3px}
 .ctn-form-grid input,.ctn-form-grid select,.ctn-form-grid textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:#fff;color:var(--c1);box-sizing:border-box}
 .ctn-form-grid input:focus,.ctn-form-grid select:focus,.ctn-form-grid textarea:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+/* ═══ Chemical Autocomplete ═══ */
+.cac-wrap{position:relative}
+.cac-dd{position:absolute;left:0;right:0;top:calc(100% + 3px);z-index:1200;background:#fff;border:1.5px solid #bfdbfe;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.13);max-height:280px;overflow-y:auto;display:none}
+.cac-item{padding:9px 13px;cursor:pointer;border-bottom:1px solid #f1f5f9;display:flex;align-items:flex-start;gap:10px;transition:background .12s}
+.cac-item:last-child{border-bottom:none}
+.cac-item:hover,.cac-item.cac-focused{background:#eff6ff}
+.cac-item-body{flex:1;min-width:0}
+.cac-item-name{font-weight:700;font-size:13px;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cac-item-meta{font-size:11px;color:#64748b;margin-top:2px;display:flex;flex-wrap:wrap;gap:4px}
+.cac-item-tag{background:#f1f5f9;padding:1px 6px;border-radius:4px;white-space:nowrap}
+.cac-db-badge{flex-shrink:0;font-size:9px;background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:5px;font-weight:700;align-self:center;white-space:nowrap}
+.cac-matched{margin-top:5px;font-size:11px;color:#15803d;display:none;align-items:center;gap:5px;padding:5px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px}
+.cac-matched.show{display:flex}
+.cac-loading{padding:12px 13px;font-size:12px;color:#64748b;display:flex;align-items:center;gap:8px}
 
 /* ═══ Preview ═══ */
 .ctn-preview{background:#f0f4ff;border:1.5px solid #bfdbfe;border-radius:var(--ctn-r);padding:20px;display:none;margin-bottom:16px}
@@ -349,6 +363,29 @@ Layout::head($lang==='th' ? 'จัดการขวดสารเคมี' :
 .ctn-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:#1a1a2e;color:#fff;padding:12px 24px;border-radius:var(--ctn-rs);font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;z-index:99999;opacity:0;transition:all .3s}
 .ctn-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .ctn-toast.ok{background:#0d6832}.ctn-toast.err{background:#c62828}
+
+/* ═══ Save-Success Modal ═══ */
+.csm-ov{position:fixed;inset:0;background:rgba(0,0,0,.52);backdrop-filter:blur(5px);z-index:9200;display:flex;align-items:center;justify-content:center;padding:16px;animation:csmFd .2s ease}
+@keyframes csmFd{from{opacity:0}to{opacity:1}}
+.csm-box{background:#fff;border-radius:20px;width:100%;max-width:580px;box-shadow:0 24px 64px rgba(0,0,0,.22);overflow:hidden;animation:csmUp .25s cubic-bezier(.22,1,.36,1)}
+@keyframes csmUp{from{transform:translateY(28px);opacity:0}to{transform:translateY(0);opacity:1}}
+.csm-hd{color:#fff;padding:26px 28px 22px;text-align:center}
+.csm-hd.rv{background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%)}
+.csm-hd.ok{background:linear-gradient(135deg,#0d6832 0%,#16a34a 100%)}
+.csm-hd-ic{width:62px;height:62px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 11px}
+.csm-hd h3{font-size:18px;font-weight:800;margin:0 0 4px;letter-spacing:.2px}
+.csm-hd p{font-size:12px;opacity:.85;margin:0}
+.csm-code-wrap{margin-top:11px}
+.csm-code{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:8px;padding:5px 18px;font-size:15px;font-weight:800;letter-spacing:1.2px;font-family:monospace}
+.csm-bd{padding:18px 22px;max-height:48vh;overflow-y:auto}
+.csm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.csm-row{background:#f8fafc;border-radius:10px;padding:10px 13px;border:1px solid var(--border)}
+.csm-row.full{grid-column:1/-1}
+.csm-lbl{font-size:10px;color:var(--c3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px;font-weight:600}
+.csm-val{font-size:13px;font-weight:600;color:var(--c1);word-break:break-word}
+.csm-val.emp{color:#94a3b8;font-weight:400;font-style:italic;font-size:12px}
+.csm-ft{padding:14px 22px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+@media(max-width:480px){.csm-grid{grid-template-columns:1fr}.csm-row.full{grid-column:auto}}
 
 /* ═══ Responsive ═══ */
 @media(max-width:768px){
@@ -395,12 +432,24 @@ Layout::head($lang==='th' ? 'จัดการขวดสารเคมี' :
     <div class="ctn-form-grid">
         <div class="ctn-form-full">
             <label><?php echo $lang==='th'?'ชื่อสารเคมี':'Chemical Name'; ?> <span style="color:#ef4444">*</span></label>
-            <input type="text" id="chemName" list="chemSuggestions" required placeholder="<?php echo $lang==='th'?'เช่น Sodium Hydroxide':'e.g. Sodium Hydroxide'; ?>">
-            <datalist id="chemSuggestions"></datalist>
+            <input type="hidden" id="chemId">
+            <div class="cac-wrap" id="chemNameWrap">
+                <input type="text" id="chemName" required autocomplete="off"
+                    placeholder="<?php echo $lang==='th'?'พิมพ์ชื่อสาร หรือ CAS เพื่อค้นหา...':'Type name or CAS to search…'; ?>">
+                <div class="cac-dd" id="chemNameDd"></div>
+            </div>
+            <div class="cac-matched" id="chemMatchedBadge">
+                <i class="fas fa-check-circle"></i>
+                <span id="chemMatchedText"></span>
+                <button type="button" onclick="_cacClear()" style="margin-left:auto;background:none;border:none;color:#15803d;cursor:pointer;font-size:11px;padding:0"><i class="fas fa-times"></i></button>
+            </div>
         </div>
         <div>
             <label>CAS Number</label>
-            <input type="text" id="casNumber" placeholder="e.g. 1310-73-2">
+            <div class="cac-wrap" id="casWrap">
+                <input type="text" id="casNumber" autocomplete="off" placeholder="e.g. 1310-73-2">
+                <div class="cac-dd" id="casNumberDd"></div>
+            </div>
         </div>
         <div>
             <label><?php echo $lang==='th'?'เกรด':'Grade'; ?></label>
@@ -531,6 +580,37 @@ Layout::head($lang==='th' ? 'จัดการขวดสารเคมี' :
     <button type="submit" id="submitBtn" class="ctn-btn ctn-btn-p" style="padding:10px 28px"><i class="fas fa-save"></i> <?php echo $lang==='th'?'บันทึกเข้าคลัง':'Save to Inventory'; ?></button>
 </div>
 </form>
+
+<!-- ═══ Review & Save Modal ═══ -->
+<div class="csm-ov" id="csmOverlay" style="display:none">
+    <div class="csm-box">
+        <!-- Review header (blue) -->
+        <div class="csm-hd rv" id="csmHdReview">
+            <div class="csm-hd-ic"><i class="fas fa-clipboard-list"></i></div>
+            <h3><?php echo $lang==='th'?'ตรวจสอบข้อมูลก่อนบันทึก':'Review Before Saving'; ?></h3>
+            <p><?php echo $lang==='th'?'กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อนยืนยัน':'Please verify the details before confirming'; ?></p>
+        </div>
+        <!-- Success header (green) -->
+        <div class="csm-hd ok" id="csmHdSuccess" style="display:none">
+            <div class="csm-hd-ic"><i class="fas fa-check-circle"></i></div>
+            <h3><?php echo $lang==='th'?'บันทึกสำเร็จ!':'Saved Successfully!'; ?></h3>
+            <p><?php echo $lang==='th'?'ข้อมูลถูกบันทึกเข้าคลังสารเคมีแล้ว':'Container has been added to inventory'; ?></p>
+            <div class="csm-code-wrap"><span class="csm-code" id="csmCode">—</span></div>
+        </div>
+        <div class="csm-bd"><div class="csm-grid" id="csmGrid"></div></div>
+        <!-- Review footer -->
+        <div class="csm-ft" id="csmFtReview">
+            <button onclick="csmClose()" class="ctn-btn ctn-btn-g"><i class="fas fa-pen"></i> <?php echo $lang==='th'?'แก้ไข':'Edit'; ?></button>
+            <button onclick="csmConfirm()" class="ctn-btn ctn-btn-p" id="csmConfirmBtn"><i class="fas fa-save"></i> <?php echo $lang==='th'?'ยืนยันบันทึก':'Confirm & Save'; ?></button>
+        </div>
+        <!-- Success footer -->
+        <div class="csm-ft" id="csmFtSuccess" style="display:none">
+            <button onclick="csmGoList()" class="ctn-btn ctn-btn-g"><i class="fas fa-list"></i> <?php echo $lang==='th'?'ดูรายการ':'View List'; ?></button>
+            <button onclick="csmAddAnother()" class="ctn-btn ctn-btn-o"><i class="fas fa-plus"></i> <?php echo $lang==='th'?'เพิ่มขวดอีก':'Add Another'; ?></button>
+            <button onclick="csmGoDetail()" class="ctn-btn ctn-btn-p"><i class="fas fa-eye"></i> <?php echo $lang==='th'?'ดูรายละเอียด':'View Detail'; ?></button>
+        </div>
+    </div>
+</div>
 
 <?php else: ?>
 <!-- ═══════════════════════════════════════════ -->
@@ -676,9 +756,102 @@ function toast(msg,ok=true){const t=document.getElementById('toast');t.textConte
     const mfrs=await load('/v1/api/locations.php?type=manufacturers');
     const mDl=document.getElementById('mfrSuggestions');
     mfrs.forEach(m=>{const o=document.createElement('option');o.value=m.name;mDl.appendChild(o)});
-    // Chemicals
-    try{const d=await apiFetch('/v1/api/chemicals.php?limit=200');if(d.success){const items=d.data?.data||d.data?.chemicals||d.data||[];const dl=document.getElementById('chemSuggestions');items.forEach(c=>{const o=document.createElement('option');o.value=c.name||c.chemical_name;if(c.cas_number)o.label=c.cas_number;dl.appendChild(o)})}}catch(e){}
 })();
+
+/* ═══════════════════════════════════════
+   CHEMICAL AUTOCOMPLETE
+   ═══════════════════════════════════════ */
+const _cac = {
+    timer: null,
+    cache: {},
+    _e: s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'),
+};
+
+function _cacRender(items, ddEl) {
+    if (!items.length) {
+        ddEl.innerHTML = `<div class="cac-loading"><i class="fas fa-search" style="color:#94a3b8"></i> ${LANG==='th'?'ไม่พบสารที่ตรงกัน':'No chemicals matched'}</div>`;
+        ddEl.style.display = 'block';
+        return;
+    }
+    ddEl.innerHTML = items.map((c, i) => {
+        const key = 'k' + c.id;
+        _cac.cache[key] = c;
+        const tags = [
+            c.cas_number ? `<span class="cac-item-tag">CAS: ${_cac._e(c.cas_number)}</span>` : '',
+            c.physical_state ? `<span class="cac-item-tag">${_cac._e(c.physical_state)}</span>` : '',
+            c.manufacturer_name ? `<span class="cac-item-tag"><i class="fas fa-industry" style="font-size:9px"></i> ${_cac._e(c.manufacturer_name)}</span>` : '',
+        ].filter(Boolean).join('');
+        return `<div class="cac-item" onmousedown="_cacSelect('${key}')" onmouseenter="_cacFocus(this)">
+            <div class="cac-item-body">
+                <div class="cac-item-name">${_cac._e(c.name)}</div>
+                ${tags ? `<div class="cac-item-meta">${tags}</div>` : ''}
+            </div>
+            <span class="cac-db-badge"><i class="fas fa-database" style="font-size:8px"></i> DB</span>
+        </div>`;
+    }).join('');
+    ddEl.style.display = 'block';
+}
+
+function _cacFocus(el) {
+    el.closest('.cac-dd').querySelectorAll('.cac-item').forEach(x => x.classList.remove('cac-focused'));
+    el.classList.add('cac-focused');
+}
+
+function _cacSelect(key) {
+    const c = _cac.cache[key];
+    if (!c) return;
+    document.getElementById('chemId').value = c.id || '';
+    document.getElementById('chemName').value = c.name || '';
+    document.getElementById('casNumber').value = c.cas_number || '';
+    if (c.physical_state) document.getElementById('physicalState').value = c.physical_state;
+    if (c.manufacturer_name) document.getElementById('manufacturer').value = c.manufacturer_name;
+    document.getElementById('chemNameDd').style.display = 'none';
+    document.getElementById('casNumberDd').style.display = 'none';
+    const badge = document.getElementById('chemMatchedBadge');
+    badge.classList.add('show');
+    document.getElementById('chemMatchedText').textContent = (LANG==='th'?'เลือกจากฐานข้อมูล: ':'Matched from DB: ') + c.name;
+}
+
+function _cacClear() {
+    document.getElementById('chemId').value = '';
+    document.getElementById('chemMatchedBadge').classList.remove('show');
+}
+
+async function _cacSearch(q, ddEl) {
+    if (q.length < 2) { ddEl.style.display = 'none'; return; }
+    ddEl.innerHTML = `<div class="cac-loading"><i class="fas fa-spinner fa-spin" style="color:#2563eb"></i> ${LANG==='th'?'กำลังค้นหา...':'Searching…'}</div>`;
+    ddEl.style.display = 'block';
+    try {
+        const d = await apiFetch('/v1/api/chemicals.php?action=search&q=' + encodeURIComponent(q));
+        _cacRender(d.success ? (d.data || []) : [], ddEl);
+    } catch(e) { ddEl.style.display = 'none'; }
+}
+
+// Wire #chemName
+document.getElementById('chemName').addEventListener('input', function() {
+    _cacClear();
+    clearTimeout(_cac.timer);
+    _cac.timer = setTimeout(() => _cacSearch(this.value.trim(), document.getElementById('chemNameDd')), 280);
+});
+document.getElementById('chemName').addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') document.getElementById('chemNameDd').style.display = 'none';
+});
+
+// Wire #casNumber — also fills name if user starts with CAS
+document.getElementById('casNumber').addEventListener('input', function() {
+    _cacClear();
+    clearTimeout(_cac.timer);
+    _cac.timer = setTimeout(() => _cacSearch(this.value.trim(), document.getElementById('casNumberDd')), 280);
+});
+document.getElementById('casNumber').addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') document.getElementById('casNumberDd').style.display = 'none';
+});
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('chemNameWrap').contains(e.target)) document.getElementById('chemNameDd').style.display = 'none';
+    if (!document.getElementById('casWrap').contains(e.target)) document.getElementById('casNumberDd').style.display = 'none';
+});
 
 // Cascading
 document.getElementById('buildingSelect').addEventListener('change',async function(){
@@ -715,12 +888,12 @@ function previewForm(){
     const pv=document.getElementById('formPreview');pv.style.display='block';pv.scrollIntoView({behavior:'smooth'});
 }
 
-document.getElementById('addBottleForm').addEventListener('submit',async function(e){
+document.getElementById('addBottleForm').addEventListener('submit',function(e){
     e.preventDefault();
-    const btn=document.getElementById('submitBtn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> '+(LANG==='th'?'กำลังบันทึก...':'Saving...');
     const packSize=parseFloat(document.getElementById('packSize').value);
     const remaining=document.getElementById('remainingQty').value?parseFloat(document.getElementById('remainingQty').value):packSize;
-    const body={
+    _csmBody={
+        chemical_id:document.getElementById('chemId').value||null,
         chemical_name:document.getElementById('chemName').value.trim(),
         cas_number:document.getElementById('casNumber').value.trim(),
         grade:document.getElementById('gradeSelect').value,
@@ -742,19 +915,84 @@ document.getElementById('addBottleForm').addEventListener('submit',async functio
         notes:document.getElementById('notes').value.trim(),
         expiry_date:document.getElementById('expiryDate').value||null,
     };
+    _csmOpenReview(_csmBody);
+});
+
+// ═══ Review & Save Modal ═══
+let _csmBody=null,_csmSavedId=null;
+function _csmBuildGrid(body){
+    const th=LANG==='th';
+    const selTxt=id=>{const s=document.getElementById(id);const t=s?.options[s.selectedIndex]?.text||'';return /^[—\-]$/.test(t.trim())?'':t};
+    const stateMap={solid:th?'ของแข็ง':'Solid',liquid:th?'ของเหลว':'Liquid',gas:th?'แก๊ส':'Gas',mixed:th?'ผสม':'Mixed'};
+    const typeMap={bottle:th?'ขวด':'Bottle',vial:th?'ไวแอล':'Vial',flask:th?'ฟลาสก์':'Flask',canister:th?'กระป๋อง':'Canister',cylinder:th?'ถัง':'Cylinder',ampoule:th?'แอมพูล':'Ampoule',bag:th?'ถุง':'Bag',other:th?'อื่นๆ':'Other'};
+    const rows=[
+        {lbl:th?'ชื่อสารเคมี':'Chemical Name',val:body.chemical_name,full:true},
+        {lbl:'CAS No.',val:body.cas_number},
+        {lbl:th?'สภาพ':'Physical State',val:stateMap[body.physical_state]||body.physical_state},
+        {lbl:th?'เกรด':'Grade',val:body.grade},
+        {lbl:th?'ผู้ผลิต':'Manufacturer',val:body.manufacturer},
+        {lbl:th?'ประเภทภาชนะ':'Container Type',val:typeMap[body.container_type]||body.container_type},
+        {lbl:th?'ปริมาณเริ่มต้น':'Initial Qty',val:body.initial_quantity?(body.initial_quantity+' '+body.quantity_unit):''},
+        {lbl:th?'ปริมาณคงเหลือ':'Current Qty',val:body.current_quantity?(body.current_quantity+' '+body.quantity_unit):''},
+        {lbl:th?'อาคาร':'Building',val:selTxt('buildingSelect')},
+        {lbl:th?'ห้อง':'Room',val:selTxt('roomSelect')},
+        {lbl:th?'ตู้/ชั้น':'Cabinet',val:selTxt('cabinetSelect')},
+        {lbl:th?'วันหมดอายุ':'Expiry Date',val:body.expiry_date},
+        ...(body.invoice_number?[{lbl:th?'เลขที่ใบแจ้งหนี้':'Invoice No.',val:body.invoice_number}]:[]),
+        ...(body.cost?[{lbl:th?'ราคา':'Cost',val:'฿'+Number(body.cost).toLocaleString()}]:[]),
+        ...(body.notes?[{lbl:th?'หมายเหตุ':'Notes',val:body.notes,full:true}]:[]),
+    ];
+    document.getElementById('csmGrid').innerHTML=rows.map(r=>{
+        const empty=!r.val;
+        return `<div class="csm-row${r.full?' full':''}">
+            <div class="csm-lbl">${r.lbl}</div>
+            <div class="csm-val${empty?' emp':''}">${empty?(th?'ไม่ระบุ':'—'):r.val}</div>
+        </div>`;
+    }).join('');
+}
+function _csmOpenReview(body){
+    _csmBuildGrid(body);
+    // reset to review state
+    document.getElementById('csmHdReview').style.display='';
+    document.getElementById('csmHdSuccess').style.display='none';
+    document.getElementById('csmFtReview').style.display='';
+    document.getElementById('csmFtSuccess').style.display='none';
+    const cb=document.getElementById('csmConfirmBtn');
+    cb.disabled=false;cb.innerHTML='<i class="fas fa-save"></i> '+(LANG==='th'?'ยืนยันบันทึก':'Confirm & Save');
+    document.getElementById('csmOverlay').style.display='flex';
+}
+async function csmConfirm(){
+    const cb=document.getElementById('csmConfirmBtn');
+    cb.disabled=true;cb.innerHTML='<i class="fas fa-spinner fa-spin"></i> '+(LANG==='th'?'กำลังบันทึก...':'Saving...');
     try{
-        const d=await apiFetch('/v1/api/containers.php',{method:'POST',body:JSON.stringify(body)});
+        const d=await apiFetch('/v1/api/containers.php',{method:'POST',body:JSON.stringify(_csmBody)});
         if(d.success){
-            const code=d.data?.bottle_code||d.data?.id||'';
-            if(confirm((LANG==='th'?'✅ บันทึกสำเร็จ!\nรหัสขวด: '+code+'\n\nต้องการเพิ่มขวดอีกหรือไม่?':'✅ Saved! Bottle: '+code+'\n\nAdd another?'))){
-                document.getElementById('addBottleForm').reset();document.getElementById('formPreview').style.display='none';document.getElementById('chemName').focus();
-            }else{window.location.href='/v1/pages/containers.php'}
+            _csmSavedId=d.data?.id||null;
+            document.getElementById('csmCode').textContent=d.data?.bottle_code||d.data?.id||'—';
+            document.getElementById('csmHdReview').style.display='none';
+            document.getElementById('csmHdSuccess').style.display='';
+            document.getElementById('csmFtReview').style.display='none';
+            document.getElementById('csmFtSuccess').style.display='';
         }else{throw new Error(d.error||'Failed')}
     }catch(er){
+        cb.disabled=false;cb.innerHTML='<i class="fas fa-save"></i> '+(LANG==='th'?'ยืนยันบันทึก':'Confirm & Save');
         alert('❌ '+(LANG==='th'?'เกิดข้อผิดพลาด: ':'Error: ')+er.message);
-        btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> '+(LANG==='th'?'บันทึกเข้าคลัง':'Save to Inventory');
     }
-});
+}
+function csmClose(){
+    document.getElementById('csmOverlay').style.display='none';
+}
+function csmGoList(){window.location.href='/v1/pages/containers.php';}
+function csmGoDetail(){
+    window.location.href='/v1/pages/containers.php'+(_csmSavedId?'?highlight='+_csmSavedId:'');
+}
+function csmAddAnother(){
+    document.getElementById('csmOverlay').style.display='none';
+    document.getElementById('addBottleForm').reset();
+    document.getElementById('formPreview').style.display='none';
+    _cacClear();
+    document.getElementById('chemName').focus();
+}
 
 <?php else: ?>
 // ═══════════════════════════════════════════
