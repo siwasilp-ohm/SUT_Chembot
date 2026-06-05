@@ -1,0 +1,17 @@
+[28-May-2026 09:29:26 Asia/Bangkok] [notifyAlert] SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`chem_inventory_db`.`alerts`, CONSTRAINT `alerts_ibfk_5` FOREIGN KEY (`borrow_request_id`) REFERENCES `borrow_requests` (`id`) ON DELETE CASCADE)
+[01-Jun-2026 09:33:16 Asia/Bangkok] Database connection failed: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it
+[01-Jun-2026 22:06:53 Asia/Bangkok] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'role' in 'where clause' in C:\xampp\htdocs\v1\includes\database.php:100
+Stack trace:
+#0 C:\xampp\htdocs\v1\includes\database.php(100): PDOStatement->execute()
+#1 C:\xampp\htdocs\v1\includes\database.php(105): Database::query('SELECT id FROM ...', Array)
+#2 Command line code(5): Database::fetch('SELECT id FROM ...')
+#3 {main}
+  thrown in C:\xampp\htdocs\v1\includes\database.php on line 100
+[04-Jun-2026 10:47:48 Asia/Bangkok] PHP Fatal error:  Uncaught Error: Call to undefined method Database::getConnection() in Command line code:4
+Stack trace:
+#0 {main}
+  thrown in Command line code on line 4
+[04-Jun-2026 16:55:28 Asia/Bangkok] PHP Fatal error:  Uncaught Error: Call to undefined method Database::getConnection() in Command line code:1
+Stack trace:
+#0 {main}
+  thrown in Command line code on line 1
