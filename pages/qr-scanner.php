@@ -2123,21 +2123,54 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             // turn until one *confirms* the facing we wanted, instead of
             // blindly trusting that the request worked.
             if (settings && settings.facingMode && settings.facingMode !== activeFacing && cameras.length > 1) {
-                const wrongId = settings.deviceId;
+                const originalId = settings.deviceId;
+                const originalSettings = settings;
+                const retryCfg = isIOS
+                    ? { fps: 10, qrbox: qrboxIOS, rememberLastUsedCamera: false, formatsToSupport: formats, experimentalFeatures: { useBarCodeDetectorIfSupported: false } }
+                    : { fps: 20, qrbox: qrboxFn, rememberLastUsedCamera: false, formatsToSupport: formats, experimentalFeatures: { useBarCodeDetectorIfSupported: true }, videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } } };
+                let corrected = false;
+
                 for (const cam of cameras) {
-                    if (cam.id === wrongId) continue;
+                    if (cam.id === originalId) continue;
                     try {
                         await qr.stop();
                         document.getElementById('qrBox').innerHTML = '';
                         qr = new Html5Qrcode('qrBox');
-                        const retryCfg = isIOS
-                            ? { fps: 10, qrbox: qrboxIOS, rememberLastUsedCamera: false, formatsToSupport: formats, experimentalFeatures: { useBarCodeDetectorIfSupported: false } }
-                            : { fps: 20, qrbox: qrboxFn, rememberLastUsedCamera: false, formatsToSupport: formats, experimentalFeatures: { useBarCodeDetectorIfSupported: true }, videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } } };
                         await qr.start(cam.id, retryCfg, onScan, () => {});
                         const s2 = getSettingsSafe();
-                        if (s2 && s2.facingMode === activeFacing) { settings = s2; break; }
-                        settings = s2 || settings; // keep best-effort result if facingMode is unreported
+                        if (s2 && s2.facingMode === activeFacing) { settings = s2; corrected = true; break; }
                     } catch (_) { /* this candidate failed to open — try the next one */ }
+                }
+
+                // No candidate confirmed the facing we wanted (none matched,
+                // or every attempt to open one threw). Never leave the user
+                // with a blank screen over an unverified "improvement" —
+                // revert to the camera that was already confirmed to work,
+                // even though its reported facing didn't match. A visible
+                // camera (even the "wrong" one) beats a black screen, and
+                // the switch button is still right there to fix it manually.
+                if (!corrected) {
+                    try {
+                        await qr.stop().catch(() => {});
+                    } catch (_) {}
+                    document.getElementById('qrBox').innerHTML = '';
+                    qr = new Html5Qrcode('qrBox');
+                    try {
+                        await qr.start(originalId, retryCfg, onScan, () => {});
+                        settings = getSettingsSafe() || originalSettings;
+                    } catch (e) {
+                        // Even reverting to the known-working camera failed —
+                        // an actual hardware/permission hiccup, not just a
+                        // facing mismatch. Surface the normal failure UI
+                        // rather than pretend the camera is running.
+                        camOn = false;
+                        console.error('Camera revert failed:', e.message);
+                        g('noCam').style.display = '';
+                        g('noCam').querySelector('p').textContent = TH
+                            ? 'กล้องขัดข้อง กรุณาลองเปิดกล้องใหม่อีกครั้ง'
+                            : 'Camera error — please try opening the camera again';
+                        return;
+                    }
                 }
             }
 
