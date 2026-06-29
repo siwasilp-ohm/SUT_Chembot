@@ -1800,24 +1800,25 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 return;
             }
 
-            // Stop any existing session
+            // ── Stop existing session ──────────────────────────────────────
             if (qr && camOn) {
-                try { await qr.stop(); } catch (e) {}
+                let cleanStop = false;
+                try { await qr.stop(); cleanStop = true; } catch (e) {}
                 camOn = false;
-                // WebKit needs time to fully release the camera track before restarting
-                if (isIOS) await new Promise(r => setTimeout(r, 350));
+                if (!cleanStop) {
+                    // stop() threw — instance may be corrupt; discard and clean DOM
+                    document.getElementById('qrBox').innerHTML = '';
+                    qr = null;
+                }
+                // Let camera hardware fully release before restarting
+                await new Promise(r => setTimeout(r, isIOS ? 400 : 150));
             }
-            // Always recreate instance after stop (avoids stale state on iOS/WebKit)
-            qr = new Html5Qrcode('qrBox');
 
-            // qrbox callback — sets our custom frame dimensions too
-            const qrboxFn = (w, h) => {
-                const size = Math.min(Math.round(Math.min(w, h) * .76), 268);
-                const f = g('scFrame');
-                if (f) { f.style.width = size + 'px'; f.style.height = size + 'px'; }
-                return { width: size, height: size };
-            };
+            // html5-qrcode is designed to be reused across stop/start cycles.
+            // Only create a new instance when there is none (first launch or after corrupt stop).
+            if (!qr) qr = new Html5Qrcode('qrBox');
 
+            // ── Scan formats ───────────────────────────────────────────────
             const formats = [
                 Html5QrcodeSupportedFormats.QR_CODE,
                 Html5QrcodeSupportedFormats.CODE_128,
@@ -1831,65 +1832,89 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 Html5QrcodeSupportedFormats.DATA_MATRIX,
             ];
 
-            // Base scan config (no videoConstraints — set per-strategy below)
-            const baseCfg = {
-                fps: 15,
-                qrbox: qrboxFn,
-                rememberLastUsedCamera: false,
-                formatsToSupport: formats,
-                experimentalFeatures: { useBarCodeDetectorIfSupported: false },
+            // ── qrbox ──────────────────────────────────────────────────────
+            // iOS/WebKit: video.clientWidth/clientHeight = 0 when qrboxFn first fires
+            // (absolute-positioned video needs layout tick to get real dimensions).
+            // A qrboxFn returning {0,0} means the scan region is empty → nothing decoded.
+            // Fix: use a fixed pixel number on iOS; use function on other platforms.
+            const qrboxFn = (w, h) => {
+                const size = Math.min(Math.round(Math.min(w, h) * .76), 268);
+                const f = g('scFrame');
+                if (f) { f.style.width = size + 'px'; f.style.height = size + 'px'; }
+                return { width: size, height: size };
             };
-
-            // Non-iOS config includes resolution hints
-            const desktopCfg = {
-                ...baseCfg,
-                fps: 20,
-                experimentalFeatures: { useBarCodeDetectorIfSupported: true },
-                videoConstraints: {
-                    width:  { min: 480, ideal: 1280, max: 1920 },
-                    height: { min: 360, ideal: 720,  max: 1080 },
-                }
-            };
+            const qrboxIOS = 250; // fixed — bypasses the 0×0 race condition on WebKit
 
             let started = false;
             const errors = [];
 
+            // ══ iOS / Safari path ══════════════════════════════════════════
             if (isIOS) {
-                // iOS/Safari: simplest possible constraint — facingMode only, no resolution ranges
-                // Resolution constraints combined with facingMode cause OverconstrainedError on Safari
-                try {
-                    await qr.start({ facingMode: activeFacing }, baseCfg, onScan, () => {});
-                    started = true;
-                } catch (e) { errors.push('ios-facing:' + e.message); }
+                const iosCfg = {
+                    fps: 10,
+                    qrbox: qrboxIOS,
+                    rememberLastUsedCamera: false,
+                    formatsToSupport: formats,
+                    experimentalFeatures: { useBarCodeDetectorIfSupported: false },
+                    // NO videoConstraints — combining facingMode with resolution
+                    // ranges causes OverconstrainedError on iOS Safari
+                };
 
-                // iOS fallback: pick by camera ID (back = last in list, front = first)
+                // Strategy A — soft facingMode, minimal constraints
+                try {
+                    await qr.start({ facingMode: activeFacing }, iosCfg, onScan, () => {});
+                    started = true;
+                } catch (e) {
+                    errors.push('ios-a:' + e.message);
+                    // Strategy A failed — instance may be in bad state; clean up
+                    try { await qr.stop(); } catch (_) {}
+                    document.getElementById('qrBox').innerHTML = '';
+                    qr = new Html5Qrcode('qrBox');
+                    await new Promise(r => setTimeout(r, 200));
+                }
+
+                // Strategy B — camera device ID (back = last entry, front = first)
                 if (!started) {
                     try {
+                        cameras = []; // force-refresh list (may have been cached empty)
                         const list = await getCameraList();
-                        const cam = activeFacing === 'environment'
-                            ? (list[list.length - 1] || list[0])
-                            : list[0];
-                        if (!cam) throw new Error('No cameras');
-                        await qr.start(cam.id, baseCfg, onScan, () => {});
+                        if (!list.length) throw new Error('No cameras');
+                        const cam = (activeFacing === 'environment')
+                            ? (list[list.length - 1] || list[0]) : list[0];
+                        await qr.start(cam.id, iosCfg, onScan, () => {});
                         started = true;
-                    } catch (e) { errors.push('ios-id:' + e.message); }
+                    } catch (e) { errors.push('ios-b:' + e.message); }
                 }
+
+            // ══ Android / Desktop path ═════════════════════════════════════
             } else {
-                // Strategy 1 — exact facingMode (best for Android; fails on iOS)
+                const cfg = {
+                    fps: 20,
+                    qrbox: qrboxFn,
+                    rememberLastUsedCamera: false,
+                    formatsToSupport: formats,
+                    experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+                    videoConstraints: {
+                        width:  { min: 480, ideal: 1280, max: 1920 },
+                        height: { min: 360, ideal: 720,  max: 1080 },
+                    }
+                };
+
+                // Strategy 1 — exact facingMode (best for Android rear camera)
                 try {
-                    await qr.start({ facingMode: { exact: activeFacing } }, desktopCfg, onScan, () => {});
+                    await qr.start({ facingMode: { exact: activeFacing } }, cfg, onScan, () => {});
                     started = true;
                 } catch (e) { errors.push('exact:' + e.message); }
 
                 // Strategy 2 — soft facingMode + resolution hints
                 if (!started) {
                     try {
-                        await qr.start({ facingMode: activeFacing }, desktopCfg, onScan, () => {});
+                        await qr.start({ facingMode: activeFacing }, cfg, onScan, () => {});
                         started = true;
                     } catch (e) { errors.push('soft:' + e.message); }
                 }
 
-                // Strategy 3 — enumerate and pick by label
+                // Strategy 3 — enumerate cameras and pick by label / position
                 if (!started) {
                     try {
                         const list = await getCameraList();
@@ -1902,12 +1927,13 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                                 || list[0];
                         }
                         if (!cam) throw new Error('No cameras');
-                        await qr.start(cam.id, desktopCfg, onScan, () => {});
+                        await qr.start(cam.id, cfg, onScan, () => {});
                         started = true;
                     } catch (e) { errors.push('id:' + e.message); }
                 }
             }
 
+            // ── Failure ────────────────────────────────────────────────────
             if (!started) {
                 console.error('Camera failed:', errors);
                 g('noCam').style.display = '';
@@ -1920,30 +1946,28 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 return;
             }
 
+            // ── Success ────────────────────────────────────────────────────
             camOn = true;
 
-            // Remove library overlays immediately and again after 400ms
             stripLibraryOverlays();
             setTimeout(stripLibraryOverlays, 400);
 
-            // Show our custom frame
             showFrame();
             g('scHint').style.display = 'flex';
             g('camTogBtn').classList.add('on');
             g('camIco').className = 'fas fa-video-slash';
 
-            // Switch button: always show on mobile (front+rear always available)
-            // Don't call getCameras() while camera is running — fails on iOS (stream conflict)
+            // Switch button: always show on mobile (all phones have front + rear)
+            // Do NOT call getCameras() here — calling it while camera is running
+            // opens a second getUserMedia request which fails on iOS (stream conflict)
             if (isMobile) {
                 g('swBtn').style.display = '';
             } else {
-                // Desktop: enumerate to check if multiple cameras exist
                 const list = await getCameraList();
                 if (list.length > 1) g('swBtn').style.display = '';
             }
             if (isMobile) g('torchBtn').style.display = '';
 
-            // Icon hint: show which cam is active
             g('swBtn').title = activeFacing === 'environment'
                 ? (TH ? 'สลับเป็นกล้องหน้า' : 'Switch to front cam')
                 : (TH ? 'สลับเป็นกล้องหลัง' : 'Switch to rear cam');
