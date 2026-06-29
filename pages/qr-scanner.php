@@ -1800,26 +1800,24 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
         const IS_MANAGER = <?php echo json_encode($isManager); ?>;
         const API = '/v1/api/borrow.php';
         const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-        // iOS Safari: exact facingMode unsupported, no BarcodeDetector, needs softer constraints
+        // iPadOS 13+ reports as "Macintosh" with touch support — maxTouchPoints
+        // distinguishes a real Mac (0/falsy) from an iPad (>1).
         const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
                       (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
 
         let qr = null, camOn = false, cameras = [], torchOn = false;
-        let camBusy = false; // guard: prevent concurrent startCam / switchCam calls
         let activeFacing = 'environment'; // 'environment' | 'user'
-        let currentDeviceId = null; // deviceId of the camera track currently running
-        let facingMap = {}; // facing ('environment'|'user') -> confirmed-working deviceId, learned at runtime
         let qrFile = null; // separate Html5Qrcode instance used only for iOS tap-to-capture decoding
         let captureBusy = false; // guard: prevent overlapping capture taps
         let cart = []; // {barcode,chemName,cas,unit,qty,remaining,sourceType,sourceId,relation,activeBorrow}
         let selAction = null;
         let lastScanTs = 0;
         const COOLDOWN = 1800;
-        // Shared by both the live camera scan and the iOS capture-and-decode
-        // path (see captureAndDecode below): the only formats this app ever
-        // generates (QR_CODE for containers.qr_code, CODE_128 for bottle
-        // barcodes). Restricting both decode paths the same way avoids
-        // cross-format misreads in either of them.
+        // The only formats this app ever generates: QR_CODE for
+        // containers.qr_code, CODE_128 for bottle barcodes (JsBarcode, see
+        // pages/stock.php). Restricting to just these avoids the decoder
+        // misidentifying a CODE_128 barcode as a similar-looking alphanumeric
+        // format (CODE_39/CODE_93/etc.) that this app never actually uses.
         const SCAN_FORMATS = [
             Html5QrcodeSupportedFormats.QR_CODE,
             Html5QrcodeSupportedFormats.CODE_128,
@@ -1876,16 +1874,6 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
         }
 
         async function startCam(facing) {
-            if (camBusy) return; // prevent concurrent calls (rapid switch taps)
-            camBusy = true;
-            try {
-                await _startCam(facing);
-            } finally {
-                camBusy = false;
-            }
-        }
-
-        async function _startCam(facing) {
             if (facing !== undefined) activeFacing = facing;
 
             g('noCam').style.display = 'none';
@@ -1900,90 +1888,52 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 return;
             }
 
-            // ── Stop existing session ──────────────────────────────────────
-            if (qr && camOn) {
-                try { await qr.stop(); } catch (e) {}
-                camOn = false;
-                // Always fully tear down and recreate the Html5Qrcode instance
-                // (and its <video>/<canvas> DOM) before opening a different
-                // camera. Reusing the same instance across a camera SWITCH
-                // (as opposed to simply restarting the same camera) is a
-                // known source of a frozen/stuck preview on Android Chrome:
-                // qr.stop() releases the MediaStream, but the old <video>
-                // element and the library's internal track references can
-                // remain bound to the previous camera, so the next start()
-                // call succeeds internally (no thrown error) while the
-                // visible frame never actually updates to the new camera.
-                // A clean teardown removes any chance of that stale state
-                // carrying over.
-                document.getElementById('qrBox').innerHTML = '';
-                qr = null;
-                // Let camera hardware fully release before restarting.
-                // Switching to a DIFFERENT physical camera needs more time
-                // than restarting the same one — the previous lens needs a
-                // full hardware teardown before the next can initialize.
-                await new Promise(r => setTimeout(r, isIOS ? 400 : 500));
-            }
-
+            // Stop any existing session
+            if (qr && camOn) { try { await qr.stop(); } catch (e) {} camOn = false; }
             if (!qr) qr = new Html5Qrcode('qrBox');
 
-            // ── Scan formats ───────────────────────────────────────────────
-            // See SCAN_FORMATS declaration above for why this is restricted
-            // to just QR_CODE + CODE_128.
-            const formats = SCAN_FORMATS;
-
-            // ── qrbox ──────────────────────────────────────────────────────
-            // iOS/WebKit: video.clientWidth/clientHeight = 0 when qrboxFn first fires
-            // (absolute-positioned video needs layout tick to get real dimensions).
-            // A qrboxFn returning {0,0} means the scan region is empty → nothing decoded.
-            // Fix: use a fixed pixel number on iOS; use function on other platforms.
+            // qrbox callback — sets our custom frame dimensions too
             const qrboxFn = (w, h) => {
                 const size = Math.min(Math.round(Math.min(w, h) * .76), 268);
                 const f = g('scFrame');
                 if (f) { f.style.width = size + 'px'; f.style.height = size + 'px'; }
                 return { width: size, height: size };
             };
-            const qrboxIOS = 250; // fixed — bypasses the 0×0 race condition on WebKit
 
             let started = false;
             const errors = [];
 
             // ══ iOS / Safari path ══════════════════════════════════════════
+            // Kept deliberately simpler than Android: combining an exact
+            // facingMode constraint with hard min/max resolution ranges is a
+            // known cause of OverconstrainedError on iOS Safari, so this
+            // never combines them. The preview opening is still worth doing
+            // (the capture button below needs a live frame to grab), but
+            // continuous live decode does not reliably fire on iOS regardless
+            // — see captureAndDecode() for why and what's done about it.
             if (isIOS) {
                 const iosCfg = {
                     fps: 10,
-                    qrbox: qrboxIOS,
+                    qrbox: qrboxFn,
                     rememberLastUsedCamera: false,
-                    formatsToSupport: formats,
+                    formatsToSupport: SCAN_FORMATS,
                     experimentalFeatures: { useBarCodeDetectorIfSupported: false },
-                    // NO videoConstraints — combining facingMode with resolution
-                    // ranges causes OverconstrainedError on iOS Safari
                 };
 
-                // Strategy A — soft facingMode, minimal constraints
                 try {
                     await qr.start({ facingMode: activeFacing }, iosCfg, onScan, () => {});
                     started = true;
-                } catch (e) {
-                    errors.push('ios-a:' + e.message);
-                    // Strategy A failed — instance may be in bad state; clean up
-                    try { await qr.stop(); } catch (_) {}
-                    document.getElementById('qrBox').innerHTML = '';
-                    qr = new Html5Qrcode('qrBox');
-                    await new Promise(r => setTimeout(r, 200));
-                }
+                } catch (e) { errors.push('ios-soft:' + e.message); }
 
-                // Strategy B — camera device ID (back = last entry, front = first)
                 if (!started) {
                     try {
-                        cameras = []; // force-refresh list (may have been cached empty)
                         const list = await getCameraList();
-                        if (!list.length) throw new Error('No cameras');
                         const cam = (activeFacing === 'environment')
                             ? (list[list.length - 1] || list[0]) : list[0];
+                        if (!cam) throw new Error('No cameras');
                         await qr.start(cam.id, iosCfg, onScan, () => {});
                         started = true;
-                    } catch (e) { errors.push('ios-b:' + e.message); }
+                    } catch (e) { errors.push('ios-id:' + e.message); }
                 }
 
             // ══ Android / Desktop path ═════════════════════════════════════
@@ -1992,63 +1942,22 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                     fps: 20,
                     qrbox: qrboxFn,
                     rememberLastUsedCamera: false,
-                    formatsToSupport: formats,
+                    formatsToSupport: SCAN_FORMATS,
                     experimentalFeatures: { useBarCodeDetectorIfSupported: true },
-                    // ideal-only hints, no min/max. Hard min/max combined with
-                    // a facingMode constraint can throw OverconstrainedError
-                    // on some Android devices/camera combos, which silently
-                    // pushes the camera-open logic down into less reliable
-                    // fallback strategies (label-matching / position guesses)
-                    // instead of just opening the requested camera directly.
-                    // ideal hints request good resolution without ever
-                    // causing a hard rejection.
                     videoConstraints: {
-                        width:  { ideal: 1280 },
-                        height: { ideal: 720  },
+                        facingMode: activeFacing,
+                        width:  { min: 480, ideal: 1280, max: 1920 },
+                        height: { min: 360, ideal: 720,  max: 1080 },
                     }
                 };
 
-                // Strategy 0 — deviceId learned from a previous successful start of this
-                // exact facing mode. Most reliable: it's a real, browser-confirmed ID,
-                // not a guess from a label or position.
-                if (!started && facingMap[activeFacing]) {
-                    try {
-                        await qr.start(facingMap[activeFacing], cfg, onScan, () => {});
-                        started = true;
-                    } catch (e) { errors.push('learned:' + e.message); }
-                }
+                // Strategy 1 — exact facingMode (ideal for mobile)
+                try {
+                    await qr.start({ facingMode: { exact: activeFacing } }, cfg, onScan, () => {});
+                    started = true;
+                } catch (e) { errors.push('exact:' + e.message); }
 
-                // Strategy 0b — device ID from cache, matched by label, EXCLUDING the
-                // currently-running device. Many Android browsers (Firefox Android,
-                // some in-app WebViews, Samsung Internet) return blank/generic camera
-                // labels even after permission is granted, so the label regex can fail
-                // to match. Falling back to a positional guess ("back is last camera")
-                // is not guaranteed by spec and is backwards on many real devices —
-                // that mismatch is what causes "switch to rear camera" to silently
-                // reopen the front camera. Instead, fall back to "any camera that
-                // isn't the one currently active," which guarantees an actual switch.
-                if (!started && cameras.length) {
-                    try {
-                        const re = activeFacing === 'environment'
-                            ? /(back|rear|environment|post)/i
-                            : /(front|user|selfie|face)/i;
-                        let cam = cameras.find(c => re.test(c.label) && c.id !== currentDeviceId);
-                        if (!cam) cam = cameras.find(c => c.id !== currentDeviceId);
-                        if (!cam) cam = cameras[0];
-                        await qr.start(cam.id, cfg, onScan, () => {});
-                        started = true;
-                    } catch (e) { errors.push('cached:' + e.message); }
-                }
-
-                // Strategy 1 — exact facingMode (first launch before IDs are cached)
-                if (!started) {
-                    try {
-                        await qr.start({ facingMode: { exact: activeFacing } }, cfg, onScan, () => {});
-                        started = true;
-                    } catch (e) { errors.push('exact:' + e.message); }
-                }
-
-                // Strategy 2 — soft facingMode
+                // Strategy 2 — non-exact facingMode
                 if (!started) {
                     try {
                         await qr.start({ facingMode: activeFacing }, cfg, onScan, () => {});
@@ -2056,18 +1965,18 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                     } catch (e) { errors.push('soft:' + e.message); }
                 }
 
-                // Strategy 3 — enumerate cameras fresh and pick by label, excluding
-                // whichever device is currently active (see Strategy 0b note above).
+                // Strategy 3 — enumerate and pick by label
                 if (!started) {
                     try {
-                        cameras = []; // clear cache to force fresh enumeration
                         const list = await getCameraList();
-                        const re = activeFacing === 'environment'
-                            ? /(back|rear|environment|post)/i
-                            : /(front|user|selfie|face)/i;
-                        let cam = list.find(c => re.test(c.label) && c.id !== currentDeviceId);
-                        if (!cam) cam = list.find(c => c.id !== currentDeviceId);
-                        if (!cam) cam = list[0];
+                        let cam;
+                        if (activeFacing === 'environment') {
+                            cam = list.find(c => /(back|rear|environment|post)/i.test(c.label))
+                                || list[list.length - 1] || list[0];
+                        } else {
+                            cam = list.find(c => /(front|user|selfie|face)/i.test(c.label))
+                                || list[0];
+                        }
                         if (!cam) throw new Error('No cameras');
                         await qr.start(cam.id, cfg, onScan, () => {});
                         started = true;
@@ -2075,7 +1984,6 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 }
             }
 
-            // ── Failure ────────────────────────────────────────────────────
             if (!started) {
                 console.error('Camera failed:', errors);
                 g('noCam').style.display = '';
@@ -2088,108 +1996,18 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 return;
             }
 
-            // ── Success ────────────────────────────────────────────────────
             camOn = true;
 
-            // Refresh the camera ID cache NOW, with real labels (now that
-            // permission is granted — labels are blank until then). The
-            // verification step right below needs an accurate list to pick
-            // a correction from if the wrong camera came up; the switch
-            // button below also needs it ready before it's shown.
-            if (navigator.mediaDevices?.enumerateDevices) {
-                try {
-                    const devs = await navigator.mediaDevices.enumerateDevices();
-                    const cams = devs
-                        .filter(d => d.kind === 'videoinput')
-                        .map(d => ({ id: d.deviceId, label: d.label || '' }));
-                    if (cams.length) cameras = cams;
-                } catch (_) {}
-            }
-
-            const getSettingsSafe = () => {
-                try { return qr.getRunningTrackSettings ? qr.getRunningTrackSettings() : null; }
-                catch (_) { return null; }
-            };
-
-            let settings = getSettingsSafe();
-
-            // ── Verify the browser actually opened the camera we asked for ──
-            // A facingMode/deviceId constraint is a REQUEST, not a guarantee —
-            // on some Android devices the browser silently resolves
-            // "environment" to the front camera anyway (a device/Chrome-build
-            // quirk, not something a constraint can force). getSettings()
-            // reports what's ACTUALLY running; if it disagrees with what we
-            // asked for, self-correct by trying every other known camera in
-            // turn until one *confirms* the facing we wanted, instead of
-            // blindly trusting that the request worked.
-            if (settings && settings.facingMode && settings.facingMode !== activeFacing && cameras.length > 1) {
-                const originalId = settings.deviceId;
-                const originalSettings = settings;
-                const retryCfg = isIOS
-                    ? { fps: 10, qrbox: qrboxIOS, rememberLastUsedCamera: false, formatsToSupport: formats, experimentalFeatures: { useBarCodeDetectorIfSupported: false } }
-                    : { fps: 20, qrbox: qrboxFn, rememberLastUsedCamera: false, formatsToSupport: formats, experimentalFeatures: { useBarCodeDetectorIfSupported: true }, videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } } };
-                let corrected = false;
-
-                for (const cam of cameras) {
-                    if (cam.id === originalId) continue;
-                    try {
-                        await qr.stop();
-                        document.getElementById('qrBox').innerHTML = '';
-                        qr = new Html5Qrcode('qrBox');
-                        await qr.start(cam.id, retryCfg, onScan, () => {});
-                        const s2 = getSettingsSafe();
-                        if (s2 && s2.facingMode === activeFacing) { settings = s2; corrected = true; break; }
-                    } catch (_) { /* this candidate failed to open — try the next one */ }
-                }
-
-                // No candidate confirmed the facing we wanted (none matched,
-                // or every attempt to open one threw). Never leave the user
-                // with a blank screen over an unverified "improvement" —
-                // revert to the camera that was already confirmed to work,
-                // even though its reported facing didn't match. A visible
-                // camera (even the "wrong" one) beats a black screen, and
-                // the switch button is still right there to fix it manually.
-                if (!corrected) {
-                    try {
-                        await qr.stop().catch(() => {});
-                    } catch (_) {}
-                    document.getElementById('qrBox').innerHTML = '';
-                    qr = new Html5Qrcode('qrBox');
-                    try {
-                        await qr.start(originalId, retryCfg, onScan, () => {});
-                        settings = getSettingsSafe() || originalSettings;
-                    } catch (e) {
-                        // Even reverting to the known-working camera failed —
-                        // an actual hardware/permission hiccup, not just a
-                        // facing mismatch. Surface the normal failure UI
-                        // rather than pretend the camera is running.
-                        camOn = false;
-                        console.error('Camera revert failed:', e.message);
-                        g('noCam').style.display = '';
-                        g('noCam').querySelector('p').textContent = TH
-                            ? 'กล้องขัดข้อง กรุณาลองเปิดกล้องใหม่อีกครั้ง'
-                            : 'Camera error — please try opening the camera again';
-                        return;
-                    }
-                }
-            }
-
-            // Learn the real deviceId the browser actually opened (now verified
-            // where possible) for this facing mode, so future switches can
-            // target it directly instead of guessing.
-            if (settings && settings.deviceId) {
-                currentDeviceId = settings.deviceId;
-                facingMap[activeFacing] = settings.deviceId;
-            }
-
+            // Remove library overlays immediately and again after 400ms
             stripLibraryOverlays();
             setTimeout(stripLibraryOverlays, 400);
 
+            // Show our custom frame
             showFrame();
             // iOS: continuous live decode doesn't fire reliably (see
-            // captureAndDecode notes above), so show the tap-to-capture
-            // button as the primary scan method instead of the "scanning
-            // continuously" hint, which would otherwise mislead the user.
+            // captureAndDecode below), so show the tap-to-capture button as
+            // the primary scan method instead of the "scanning continuously"
+            // hint, which would otherwise mislead the user.
             if (isIOS) {
                 g('scHint').style.display = 'none';
                 g('captureBtn').classList.add('show');
@@ -2199,14 +2017,13 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             g('camTogBtn').classList.add('on');
             g('camIco').className = 'fas fa-video-slash';
 
-            // Switch button — shown AFTER camera IDs are cached above
-            if (isMobile) {
-                g('swBtn').style.display = '';
-            } else {
-                if (cameras.length > 1) g('swBtn').style.display = '';
-            }
+            // Enumerate cameras to decide whether to show switch button
+            const list = await getCameraList();
+            if (list.length > 1) g('swBtn').style.display = '';
+            // Torch only on mobile
             if (isMobile) g('torchBtn').style.display = '';
 
+            // Icon hint: show which cam is active
             g('swBtn').title = activeFacing === 'environment'
                 ? (TH ? 'สลับเป็นกล้องหน้า' : 'Switch to front cam')
                 : (TH ? 'สลับเป็นกล้องหลัง' : 'Switch to rear cam');
@@ -2233,15 +2050,18 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
 
         // Toggle between rear ↔ front camera
         async function switchCam() {
-            if (!camOn || camBusy) return;
+            if (!camOn) return;
             const next = activeFacing === 'environment' ? 'user' : 'environment';
+            // Spin icon for feedback
             const ico = g('swIco');
             ico.style.transition = 'transform .4s';
             ico.style.transform = 'rotate(180deg)';
             g('swBtn').disabled = true;
             await startCam(next);
-            ico.style.transform = '';
-            g('swBtn').disabled = false;
+            setTimeout(() => {
+                ico.style.transform = '';
+                g('swBtn').disabled = false;
+            }, 420);
         }
 
         async function toggleTorch() {
@@ -2311,13 +2131,15 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
         // ── iOS: capture the current frame as a still image and decode that
         // instead of relying on continuous live-video decoding. html5-qrcode's
         // live decode path is a longstanding, still-unresolved problem on iOS
-        // Safari (the camera preview renders fine, but the decoder never
-        // fires) — this is documented across years of upstream issues with no
-        // fix. scanFile() decodes a single static image instead, which is a
-        // completely different code path that does not share that limitation.
-        // Uses a separate Html5Qrcode instance (qrFile) because the library
-        // refuses to run a file scan on an instance that has an active camera
-        // scan running.
+        // Safari (confirmed against multiple multi-year upstream issues:
+        // mebjas/html5-qrcode #484, #820, #512, #974, #618, #915, #454,
+        // #1036) — the camera preview renders fine, but the decoder never
+        // fires. No upstream fix exists, so tuning constraints further can't
+        // solve it; scanFile() decodes a single static image instead, which
+        // is a completely different code path unaffected by that bug. Uses a
+        // separate Html5Qrcode instance (qrFile) because the library refuses
+        // to run a file scan on an instance that has an active camera scan
+        // running ("Cannot start file scan - ongoing camera scan").
         async function captureAndDecode() {
             if (captureBusy || !camOn) return;
             captureBusy = true;
@@ -2616,13 +2438,8 @@ ${over ? `<div class="sc-warn-msg"><i class="fas fa-exclamation-triangle"></i>${
                 bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('show'); })
             );
             renderCart();
-            // Auto-start camera — always explicitly request the rear/environment
-            // camera by default. This is a barcode/QR scanner for bottles on a
-            // shelf; the rear camera is what's actually needed in practice, so
-            // defaulting to it directly means most users never have to rely on
-            // the switch-camera button (and whatever device-specific quirks it
-            // may still run into) at all.
-            startCam('environment');
+            // Auto-start camera
+            startCam();
         });
     </script>
     <?php Layout::footer(); ?>
