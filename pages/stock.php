@@ -327,35 +327,39 @@ tr.pending-donation{border-left:3px solid #f97316}
 .stk-label-ghs{width:20px;height:20px;position:relative;flex-shrink:0}
 .stk-label-ghs-inner{position:absolute;inset:1px;transform:rotate(45deg);border:1.5px solid #dc2626;border-radius:2px;display:flex;align-items:center;justify-content:center}
 .stk-label-ghs-inner i{transform:rotate(-45deg);font-size:7px}
-.stk-label-body{padding:8px 12px 6px}
+.stk-label-body{padding:8px 12px 5px}
 .stk-label-chem{font-size:15px;font-weight:900;color:#0f172a;line-height:1.2;margin-bottom:2px}
-.stk-label-formula{font-size:8.5px;color:#475569;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.stk-label-formula{font-size:8.5px;color:#475569;margin-bottom:5px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .stk-label-formula .lf-pill{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 5px;font-family:monospace;font-size:8px;color:#334155;font-weight:700}
 .stk-label-formula .lf-sep{color:#cbd5e1}
 .stk-label-props{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px}
 .stk-label-prop{background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:1px 6px;font-size:7.5px;color:#64748b}
 .stk-label-prop b{color:#1e293b;font-weight:700}
-.stk-label-qtyrow{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.stk-label-qtyrow{display:flex;align-items:center;gap:7px;margin-bottom:0}
 .stk-label-qty{font-size:9px;font-weight:800;color:#1e293b;white-space:nowrap}
 .stk-label-pbar{flex:1;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden}
 .stk-label-pfill{height:100%;border-radius:3px;transition:width .3s}
 .stk-label-pct{font-size:9px;font-weight:900;min-width:30px;text-align:right}
-.stk-label-metarow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
-.stk-label-exp{font-size:8px;font-weight:700;padding:1px 6px;border-radius:4px}
+/* Info band — moved above codes for easy reading */
+.stk-label-infoband{display:flex;flex-wrap:wrap;align-items:center;gap:5px 10px;padding:5px 12px;border-top:1px solid #e2e8f0;border-bottom:1.5px solid #1e293b;background:#f8fafc}
+.stk-label-exp{font-size:8px;font-weight:700;padding:2px 7px;border-radius:4px;display:inline-flex;align-items:center;gap:3px}
 .stk-label-exp.fresh{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
 .stk-label-exp.warn{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
 .stk-label-exp.danger{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
 .stk-label-exp.nodate{background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0}
-.stk-label-owner{font-size:7.5px;color:#475569;display:flex;align-items:center;gap:3px}
-.stk-label-owner i{font-size:6px;color:#94a3b8}
-.stk-label-batch{font-size:7px;color:#94a3b8;margin-bottom:2px;font-family:monospace}
-.stk-label-codes{display:flex;align-items:stretch;gap:0;border-top:1.5px solid #e2e8f0;background:#fafafa}
-.stk-label-qr{width:72px;height:72px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-right:1px solid #e2e8f0;padding:4px;background:#fff}
+.stk-label-ib-item{font-size:7.5px;color:#475569;display:inline-flex;align-items:center;gap:3px}
+.stk-label-ib-item i{font-size:6.5px;color:#94a3b8}
+.stk-label-ib-sep{color:#cbd5e1;font-size:8px}
+/* Codes — large scan area */
+.stk-label-codes{display:flex;align-items:stretch;gap:0;background:#fff;min-height:152px}
+.stk-label-qr{width:152px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-right:1.5px solid #e2e8f0;padding:8px 6px 6px;background:#fff}
 .stk-label-qr canvas,.stk-label-qr img,.stk-label-qr svg{max-width:100%;max-height:100%}
-.stk-label-barcode{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 8px;overflow:hidden}
-.stk-label-barcode svg{max-width:100%;height:36px!important}
-.stk-label-barcode-text{font-family:'Courier New',monospace;font-size:7px;letter-spacing:.8px;color:#334155;margin-top:1px;font-weight:700}
-.stk-label-footer{display:flex;justify-content:space-between;align-items:center;padding:3px 10px;background:#f8fafc;border-top:1px dashed #cbd5e1;font-size:6.5px;color:#94a3b8}
+.stk-label-qr-hint{font-size:6.5px;color:#6d28d9;font-weight:800;letter-spacing:.4px;text-transform:uppercase;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.stk-label-barcode{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 14px;overflow:hidden;gap:5px}
+.stk-label-barcode svg{max-width:100%;height:66px!important}
+.stk-label-barcode-text{font-family:'Courier New',monospace;font-size:8.5px;letter-spacing:1.2px;color:#334155;font-weight:700;text-align:center}
+.stk-label-barcode-hint{font-size:6.5px;color:#0369a1;font-weight:800;letter-spacing:.4px;text-transform:uppercase;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.stk-label-footer{display:flex;justify-content:space-between;align-items:center;padding:3px 10px;background:#f1f5f9;border-top:1px dashed #cbd5e1;font-size:6.5px;color:#94a3b8}
 /* ── Print Settings Modal ── */
 .ps-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);z-index:10000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .25s}
 .ps-ov.show{opacity:1;visibility:visible}
@@ -444,7 +448,7 @@ tr.pending-donation{border-left:3px solid #f97316}
 
 /* ── QR code canvas fallback ── */
 .stk-label-qr canvas,.stk-label-qr img,.stk-label-qr svg{max-width:100%;max-height:100%}
-.stk-label-barcode svg{max-width:100%;height:36px!important}
+.stk-label-barcode svg{max-width:100%;height:66px!important}
 
 /* ── QR Modal Display ── */
 .stk-qr-display{text-align:center;padding:20px}
@@ -1162,6 +1166,169 @@ tr .stk-chk{accent-color:var(--accent)}
     .stk-dg{grid-template-columns:1fr}
     .stk-my>div:last-child{display:none}
 }
+
+/* ═══════════════════════════════════════════════
+   Chemical Import Wizard  (.ciw-*)
+   ═══════════════════════════════════════════════ */
+.ciw-ov{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);z-index:9800;display:none;align-items:center;justify-content:center;padding:16px}
+.ciw-ov.open{display:flex}
+.ciw-box{background:#fff;border-radius:18px;width:100%;max-width:860px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.22);overflow:hidden}
+.ciw-hd{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;padding:20px 24px;display:flex;align-items:center;gap:12px}
+.ciw-hd-ic{width:40px;height:40px;background:rgba(255,255,255,.18);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.ciw-hd-txt h3{margin:0;font-size:16px;font-weight:700}
+.ciw-hd-txt p{margin:2px 0 0;font-size:12px;opacity:.82}
+.ciw-hd-close{margin-left:auto;background:rgba(255,255,255,.18);border:none;color:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.ciw-hd-close:hover{background:rgba(255,255,255,.3)}
+.ciw-steps{display:flex;padding:16px 24px 0;gap:0;border-bottom:1px solid #f1f5f9}
+.ciw-step{flex:1;display:flex;flex-direction:column;align-items:center;padding-bottom:12px;position:relative;cursor:default}
+.ciw-step:not(:last-child)::after{content:'';position:absolute;top:14px;left:calc(50% + 18px);right:calc(-50% + 18px);height:2px;background:#e2e8f0}
+.ciw-step.done:not(:last-child)::after,.ciw-step.active:not(:last-child)::after{background:#3b82f6}
+.ciw-sn{width:28px;height:28px;border-radius:50%;background:#e2e8f0;color:#94a3b8;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-bottom:4px;transition:.2s;position:relative;z-index:1}
+.ciw-step.active .ciw-sn{background:#3b82f6;color:#fff;box-shadow:0 0 0 3px rgba(59,130,246,.25)}
+.ciw-step.done .ciw-sn{background:#10b981;color:#fff}
+.ciw-sa{font-size:10px;color:#94a3b8;text-align:center;white-space:nowrap}
+.ciw-step.active .ciw-sa{color:#3b82f6;font-weight:600}
+.ciw-step.done .ciw-sa{color:#10b981}
+.ciw-bd{flex:1;overflow-y:auto;padding:20px 24px}
+.ciw-ft{padding:14px 24px;border-top:1px solid #f1f5f9;display:flex;gap:8px;justify-content:flex-end;background:#fafafa}
+/* Step 1 – drop zone */
+.ciw-drop{border:2px dashed #cbd5e1;border-radius:14px;padding:40px 24px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+.ciw-drop:hover,.ciw-drop.over{border-color:#3b82f6;background:#eff6ff}
+.ciw-drop-ic{font-size:36px;color:#93c5fd;margin-bottom:10px}
+.ciw-drop-t{font-size:14px;font-weight:600;color:#334155;margin:0 0 4px}
+.ciw-drop-s{font-size:12px;color:#94a3b8;margin:0}
+.ciw-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.ciw-fcard{display:flex;align-items:center;gap:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-top:12px}
+.ciw-fcard-ic{font-size:22px;color:#16a34a}
+.ciw-fcard-info{flex:1}
+.ciw-fcard-name{font-size:13px;font-weight:600;color:#15803d;margin:0}
+.ciw-fcard-meta{font-size:11px;color:#86efac;margin:2px 0 0}
+.ciw-fcard-rm{background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px;padding:4px}
+/* Step 2 – mapping */
+.ciw-map-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.ciw-map-row{display:contents}
+.ciw-map-lbl{font-size:12px;color:#64748b;padding:8px 0 4px;font-weight:600;border-bottom:1px solid #f1f5f9}
+.ciw-map-item{display:flex;flex-direction:column;gap:4px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px}
+.ciw-map-field{font-size:12px;font-weight:600;color:#334155}
+.ciw-map-req{color:#ef4444;font-size:10px;margin-left:3px}
+.ciw-map-sel{width:100%;padding:5px 8px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:12px;background:#fff;color:#334155}
+.ciw-map-sel:focus{border-color:#3b82f6;outline:none}
+.ciw-map-sample{font-size:10px;color:#94a3b8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Step 3 – preview */
+.ciw-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.ciw-sum-c{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;text-align:center}
+.ciw-sum-n{font-size:20px;font-weight:700;color:#334155}
+.ciw-sum-l{font-size:10px;color:#94a3b8;margin-top:2px}
+.ciw-sum-c.ok .ciw-sum-n{color:#16a34a}
+.ciw-sum-c.dup .ciw-sum-n{color:#f59e0b}
+.ciw-sum-c.err .ciw-sum-n{color:#ef4444}
+.ciw-ftabs{display:flex;gap:4px;margin-bottom:10px}
+.ciw-ftab{padding:5px 12px;border-radius:6px;border:1.5px solid #e2e8f0;background:#fff;font-size:12px;cursor:pointer;font-weight:500;color:#64748b}
+.ciw-ftab.active{background:#3b82f6;color:#fff;border-color:#3b82f6}
+.ciw-tbl-w{overflow-x:auto;border-radius:8px;border:1px solid #e2e8f0}
+.ciw-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.ciw-tbl th{background:#f8fafc;padding:8px 10px;text-align:left;font-weight:600;color:#64748b;white-space:nowrap;border-bottom:1px solid #e2e8f0}
+.ciw-tbl td{padding:7px 10px;border-bottom:1px solid #f1f5f9;color:#334155;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.ciw-tbl tr:last-child td{border-bottom:none}
+.ciw-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600}
+.ciw-badge.new{background:#dcfce7;color:#16a34a}
+.ciw-badge.dup{background:#fef3c7;color:#d97706}
+.ciw-badge.err{background:#fee2e2;color:#dc2626}
+/* Step 4 – results */
+.ciw-res-hd{display:flex;align-items:center;gap:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;margin-bottom:14px}
+.ciw-res-ic{font-size:26px;flex-shrink:0}
+.ciw-res-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.ciw-res-stat{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px;text-align:center;transition:.15s}
+.ciw-res-stat:hover{border-color:#94a3b8;background:#f1f5f9}
+.ciw-res-stat.active{border-color:#3b82f6;background:#eff6ff;box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+.ciw-res-sn{font-size:22px;font-weight:700;color:#334155}
+.ciw-res-sl{font-size:10px;color:#94a3b8;margin-top:2px}
+.ciw-res-sn.ok{color:#16a34a}
+.ciw-res-sn.skip{color:#f59e0b}
+.ciw-res-sn.err{color:#ef4444}
+.ciw-prog{height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-bottom:4px}
+.ciw-prog-b{height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);border-radius:99px;transition:width .3s}
+.ciw-prog-t{font-size:11px;color:#64748b;text-align:right;margin-bottom:12px}
+/* Buttons */
+.ciw-btn{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:.15s;display:inline-flex;align-items:center;gap:6px}
+.ciw-btn-p{background:#3b82f6;color:#fff}
+.ciw-btn-p:hover{background:#2563eb}
+.ciw-btn-p:disabled{background:#93c5fd;cursor:not-allowed}
+.ciw-btn-g{background:#f1f5f9;color:#475569}
+.ciw-btn-g:hover{background:#e2e8f0}
+.ciw-btn-ok{background:#16a34a;color:#fff}
+.ciw-btn-ok:hover{background:#15803d}
+/* ── Smart Lab Import Wizard (.siw-*) ── */
+.siw-ov{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);z-index:9801;display:none;align-items:center;justify-content:center;padding:16px}
+.siw-ov.open{display:flex}
+.siw-box{background:#fff;border-radius:18px;width:100%;max-width:960px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.22);overflow:hidden}
+.siw-hd{background:linear-gradient(135deg,#065f46 0%,#059669 60%,#10b981 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.siw-hd-ic{width:40px;height:40px;background:rgba(255,255,255,.18);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.siw-hd-txt h3{margin:0;font-size:16px;font-weight:700}
+.siw-hd-txt p{margin:2px 0 0;font-size:12px;opacity:.82}
+.siw-hd-close{margin-left:auto;background:rgba(255,255,255,.18);border:none;color:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.siw-hd-close:hover{background:rgba(255,255,255,.3)}
+.siw-steps{display:flex;padding:16px 24px 0;gap:0;border-bottom:1px solid #f1f5f9;flex-shrink:0}
+.siw-step{flex:1;display:flex;flex-direction:column;align-items:center;padding-bottom:12px;position:relative}
+.siw-step:not(:last-child)::after{content:'';position:absolute;top:14px;left:calc(50% + 18px);right:calc(-50% + 18px);height:2px;background:#e2e8f0}
+.siw-step.done:not(:last-child)::after,.siw-step.active:not(:last-child)::after{background:#059669}
+.siw-sn{width:28px;height:28px;border-radius:50%;background:#e2e8f0;color:#94a3b8;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-bottom:4px;transition:.2s;position:relative;z-index:1}
+.siw-step.active .siw-sn{background:#059669;color:#fff;box-shadow:0 0 0 3px rgba(5,150,105,.25)}
+.siw-step.done .siw-sn{background:#10b981;color:#fff}
+.siw-sa{font-size:10px;color:#94a3b8;text-align:center;white-space:nowrap}
+.siw-step.active .siw-sa{color:#059669;font-weight:600}
+.siw-step.done .siw-sa{color:#10b981}
+.siw-bd{flex:1;overflow-y:auto;padding:20px 24px}
+.siw-ft{padding:14px 24px;border-top:1px solid #f1f5f9;display:flex;gap:8px;justify-content:flex-end;background:#fafafa;flex-shrink:0}
+.siw-drop{border:2px dashed #6ee7b7;border-radius:14px;padding:40px 24px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+.siw-drop:hover,.siw-drop.over{border-color:#059669;background:#ecfdf5}
+.siw-drop-ic{font-size:36px;color:#6ee7b7;margin-bottom:10px}
+.siw-drop-t{font-size:14px;font-weight:600;color:#334155;margin:0 0 4px}
+.siw-drop-s{font-size:12px;color:#94a3b8;margin:0}
+.siw-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.siw-fcard{display:flex;align-items:center;gap:12px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:10px;padding:12px 16px;margin-top:12px}
+.siw-fcard-ic{font-size:22px;color:#059669}
+.siw-fcard-info{flex:1}
+.siw-fcard-name{font-size:13px;font-weight:600;color:#065f46;margin:0}
+.siw-fcard-meta{font-size:11px;color:#6ee7b7;margin:2px 0 0}
+.siw-srv{margin-top:12px;border:1px solid #d1fae5;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.2s;background:#f0fdf4}
+.siw-srv:hover{border-color:#059669;background:#ecfdf5}
+.siw-srv-ic{width:36px;height:36px;background:#d1fae5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#059669;flex-shrink:0}
+.siw-srv-txt h4{margin:0;font-size:12px;font-weight:700;color:#065f46}
+.siw-srv-txt p{margin:2px 0 0;font-size:11px;color:#6ee7b7}
+.siw-smr{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.siw-smr-c{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;text-align:center}
+.siw-smr-n{font-size:22px;font-weight:800;line-height:1}
+.siw-smr-n.ok{color:#16a34a}.siw-smr-n.wa{color:#d97706}.siw-smr-n.er{color:#dc2626}.siw-smr-n.bl{color:#2563eb}
+.siw-smr-l{font-size:10px;color:#94a3b8;margin-top:3px;text-transform:uppercase;letter-spacing:.3px}
+.siw-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.siw-tbl th{background:#f8fafc;border-bottom:2px solid #e2e8f0;padding:8px 10px;text-align:left;font-size:11px;color:#64748b;white-space:nowrap}
+.siw-tbl td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.siw-tbl tr:hover td{background:#f8fafc}
+.siw-code{font-family:monospace;font-size:11px;background:#f1f5f9;border-radius:4px;padding:1px 5px;color:#334155}
+.siw-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;border:1px solid transparent}
+.siw-badge.ok{background:#dcfce7;color:#16a34a;border-color:#bbf7d0}
+.siw-badge.wa{background:#fef3c7;color:#d97706;border-color:#fde68a}
+.siw-badge.er{background:#fee2e2;color:#dc2626;border-color:#fecaca}
+.siw-badge.sk{background:#f1f5f9;color:#64748b;border-color:#e2e8f0}
+.siw-prog{height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin-bottom:8px}
+.siw-prog-fill{height:100%;background:linear-gradient(90deg,#059669,#10b981);border-radius:3px;transition:width .3s}
+.siw-res-hd{display:flex;align-items:center;gap:12px;padding:16px;background:#f8fafc;border-radius:12px;margin-bottom:14px}
+.siw-res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.siw-res-stat{text-align:center;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px}
+.siw-res-sn{font-size:22px;font-weight:800;line-height:1}
+.siw-res-sn.ok{color:#16a34a}.siw-res-sn.sk{color:#64748b}.siw-res-sn.er{color:#dc2626}
+.siw-res-sl{font-size:10px;color:#94a3b8;margin-top:3px}
+.siw-btn{padding:8px 18px;border-radius:9px;border:none;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s}
+.siw-btn-g{background:#f1f5f9;color:#475569}.siw-btn-g:hover{background:#e2e8f0}
+.siw-btn-p{background:#059669;color:#fff}.siw-btn-p:hover{background:#047857}
+.siw-btn-p:disabled{background:#a7f3d0;cursor:not-allowed}
+.siw-btn-ok{background:#16a34a;color:#fff}.siw-btn-ok:hover{background:#15803d}
+.siw-conf{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;margin-bottom:14px}
+.siw-conf-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #d1fae5;font-size:12px}
+.siw-conf-row:last-child{border:none}
+.siw-conf-key{color:#065f46;font-weight:600}
+.siw-conf-val{color:#374151}
 </style>
 <body>
 <?php Layout::sidebar('stock'); Layout::beginContent(); ?>
@@ -1289,6 +1456,19 @@ tr .stk-chk{accent-color:var(--accent)}
             <div class="stk-export-sep"></div>
             <button class="stk-export-item" onclick="doPrintLabels('qr_sheet')">
                 <i class="fas fa-qrcode" style="color:#2563eb"></i> <?php echo $lang==='th'?'แผ่น QR Code (A4)':'QR Code Sheet (A4)'; ?>
+            </button>
+            <div class="stk-export-sep"></div>
+            <button class="stk-export-item" onclick="exportStockXLSX()">
+                <i class="fas fa-file-excel" style="color:#16a34a"></i> <?php echo $lang==='th'?'ส่งออก Excel (XLSX)':'Export Excel (XLSX)'; ?>
+                <span class="ext" style="background:#dcfce7;color:#16a34a">.xlsx</span>
+            </button>
+            <div class="stk-export-sep"></div>
+            <button class="stk-export-item" onclick="ciwOpen()">
+                <i class="fas fa-file-import" style="color:#1e40af"></i> <?php echo $lang==='th'?'นำเข้าจาก Cheminvent':'Import from Cheminvent'; ?>
+            </button>
+            <button class="stk-export-item" onclick="siwOpen()">
+                <i class="fas fa-flask" style="color:#059669"></i> <?php echo $lang==='th'?'นำเข้าจาก Smart lab':'Import from Smart lab'; ?>
+                <span class="ext" style="background:#d1fae5;color:#059669">.csv</span>
             </button>
         </div>
     </div>
@@ -1720,6 +1900,156 @@ tr .stk-chk{accent-color:var(--accent)}
 
 <!-- ═══ Toast ═══ -->
 <div class="stk-toast" id="stkToast"></div>
+
+<!-- ═══ Chemical Import Wizard ═══ -->
+<div class="ciw-ov" id="ciwOv" onclick="if(event.target===this)ciwClose()">
+  <div class="ciw-box">
+    <!-- Header -->
+    <div class="ciw-hd">
+      <div class="ciw-hd-ic"><i class="fas fa-file-import"></i></div>
+      <div class="ciw-hd-txt">
+        <h3><?php echo $lang==='th'?'นำเข้าข้อมูลสารเคมีจาก Cheminvent':'Import Chemical Data from Cheminvent'; ?></h3>
+        <p id="ciwHdSub"><?php echo $lang==='th'?'อัปโหลดไฟล์ Excel (.xlsx) เพื่อนำเข้าข้อมูลขวดสารเคมีเป็นชุด':'Upload an Excel (.xlsx) file to batch-import chemical containers'; ?></p>
+      </div>
+      <button class="ciw-hd-close" onclick="ciwClose()"><i class="fas fa-times"></i></button>
+    </div>
+    <!-- Steps -->
+    <div class="ciw-steps" id="ciwSteps">
+      <div class="ciw-step active" id="ciwS1"><div class="ciw-sn">1</div><div class="ciw-sa"><?php echo $lang==='th'?'อัปโหลด':'Upload'; ?></div></div>
+      <div class="ciw-step" id="ciwS2"><div class="ciw-sn">2</div><div class="ciw-sa"><?php echo $lang==='th'?'จับคู่คอลัมน์':'Map Columns'; ?></div></div>
+      <div class="ciw-step" id="ciwS3"><div class="ciw-sn">3</div><div class="ciw-sa"><?php echo $lang==='th'?'ตรวจสอบ':'Preview'; ?></div></div>
+      <div class="ciw-step" id="ciwS4"><div class="ciw-sn">4</div><div class="ciw-sa"><?php echo $lang==='th'?'ผลลัพธ์':'Results'; ?></div></div>
+    </div>
+    <!-- Body -->
+    <div class="ciw-bd" id="ciwBody">
+      <!-- Step 1: Upload -->
+      <div id="ciwP1">
+        <div class="ciw-drop" id="ciwDrop" ondragover="ciwDrag(event,true)" ondragleave="ciwDrag(event,false)" ondrop="ciwDropFile(event)">
+          <input type="file" id="ciwFile" accept=".xlsx,.xls,.csv" onchange="ciwOnFile(this.files[0])">
+          <div class="ciw-drop-ic"><i class="fas fa-cloud-upload-alt"></i></div>
+          <p class="ciw-drop-t"><?php echo $lang==='th'?'ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือก':'Drag & drop file here, or click to browse'; ?></p>
+          <p class="ciw-drop-s"><?php echo $lang==='th'?'รองรับ .xlsx, .xls, .csv · ขนาดสูงสุด 10 MB':'Supports .xlsx, .xls, .csv · Max 10 MB'; ?></p>
+        </div>
+        <div class="ciw-fcard" id="ciwFCard" style="display:none">
+          <div class="ciw-fcard-ic"><i class="fas fa-file-excel"></i></div>
+          <div class="ciw-fcard-info">
+            <p class="ciw-fcard-name" id="ciwFName">—</p>
+            <p class="ciw-fcard-meta" id="ciwFMeta">—</p>
+          </div>
+          <button class="ciw-fcard-rm" onclick="ciwClearFile()" title="<?php echo $lang==='th'?'ลบไฟล์':'Remove'; ?>"><i class="fas fa-times-circle"></i></button>
+        </div>
+      </div>
+      <!-- Step 2: Column Mapping -->
+      <div id="ciwP2" style="display:none">
+        <p style="font-size:12px;color:#64748b;margin:0 0 12px"><?php echo $lang==='th'?'จับคู่คอลัมน์จากไฟล์ (ซ้าย) กับฟิลด์ในระบบ (ขวา) ระบบพยายามจับคู่อัตโนมัติแล้ว':'Match file columns (left) to system fields (right). Auto-mapping has been applied where possible.'; ?></p>
+        <div class="ciw-map-grid" id="ciwMapGrid"></div>
+      </div>
+      <!-- Step 3: Preview -->
+      <div id="ciwP3" style="display:none">
+        <div class="ciw-sum" id="ciwSum"></div>
+        <div class="ciw-ftabs" id="ciwTabs"></div>
+        <div class="ciw-tbl-w" id="ciwTblW"></div>
+      </div>
+      <!-- Step 4: Results -->
+      <div id="ciwP4" style="display:none">
+        <div class="ciw-res-hd" id="ciwResHd"></div>
+        <div class="ciw-prog" id="ciwProgBar" style="display:none"><div class="ciw-prog-b" id="ciwProgFill" style="width:0%"></div></div>
+        <p class="ciw-prog-t" id="ciwProgTxt" style="display:none"></p>
+        <div class="ciw-res-stats" id="ciwResStats"></div>
+        <div class="ciw-tbl-w" id="ciwResTbl"></div>
+      </div>
+    </div>
+    <!-- Footer -->
+    <div class="ciw-ft" id="ciwFt">
+      <button class="ciw-btn ciw-btn-g" id="ciwBtnBack" onclick="ciwBack()" style="display:none"><i class="fas fa-arrow-left"></i> <?php echo $lang==='th'?'ย้อนกลับ':'Back'; ?></button>
+      <button class="ciw-btn ciw-btn-g" id="ciwBtnCancel" onclick="ciwClose()"><?php echo $lang==='th'?'ยกเลิก':'Cancel'; ?></button>
+      <button class="ciw-btn ciw-btn-p" id="ciwBtnNext" onclick="ciwNext()" disabled><i class="fas fa-arrow-right"></i> <?php echo $lang==='th'?'ถัดไป':'Next'; ?></button>
+      <button class="ciw-btn ciw-btn-ok" id="ciwBtnImport" onclick="ciwDoImport()" style="display:none"><i class="fas fa-file-import"></i> <?php echo $lang==='th'?'นำเข้าข้อมูล':'Import Data'; ?></button>
+      <button class="ciw-btn ciw-btn-g" id="ciwBtnExportRes" onclick="_ciwResExport()" style="display:none"><i class="fas fa-file-excel" style="color:#16a34a"></i> <?php echo $lang==='th'?'ส่งออกผลลัพธ์':'Export Results'; ?></button>
+      <button class="ciw-btn ciw-btn-p" id="ciwBtnDone" onclick="ciwClose();loadData(PAGE);" style="display:none"><i class="fas fa-check"></i> <?php echo $lang==='th'?'เสร็จสิ้น':'Done'; ?></button>
+    </div>
+  </div>
+</div>
+<!-- ═══ Smart Lab Import Wizard ═══ -->
+<div class="siw-ov" id="siwOv" onclick="if(event.target===this)siwClose()">
+ <div class="siw-box">
+  <!-- Header -->
+  <div class="siw-hd">
+   <div class="siw-hd-ic"><i class="fas fa-flask"></i></div>
+   <div class="siw-hd-txt">
+    <h3>นำเข้าข้อมูลสารเคมีจาก Smart lab</h3>
+    <p id="siwHdSub">เลือกไฟล์ CSV จาก Smart lab เพื่อเริ่มนำเข้า</p>
+   </div>
+   <button class="siw-hd-close" onclick="siwClose()"><i class="fas fa-times"></i></button>
+  </div>
+  <!-- Steps -->
+  <div class="siw-steps">
+   <div class="siw-step" id="siwS1"><div class="siw-sn">1</div><div class="siw-sa">อัปโหลดไฟล์</div></div>
+   <div class="siw-step" id="siwS2"><div class="siw-sn">2</div><div class="siw-sa">ตรวจสอบข้อมูล</div></div>
+   <div class="siw-step" id="siwS3"><div class="siw-sn">3</div><div class="siw-sa">ยืนยันนำเข้า</div></div>
+   <div class="siw-step" id="siwS4"><div class="siw-sn">4</div><div class="siw-sa">ผลลัพธ์</div></div>
+  </div>
+  <!-- Body -->
+  <div class="siw-bd">
+   <!-- Step 1 -->
+   <div id="siwP1">
+    <div class="siw-drop" id="siwDrop" ondragover="siwDrag(event,true)" ondragleave="siwDrag(event,false)" ondrop="siwDropFile(event)">
+     <input type="file" accept=".csv" onchange="siwOnFile(this.files[0])">
+     <div class="siw-drop-ic"><i class="fas fa-file-csv"></i></div>
+     <p class="siw-drop-t">ลากไฟล์ CSV หรือคลิกเพื่อเลือก</p>
+     <p class="siw-drop-s">รองรับไฟล์ .csv จาก Smart lab เท่านั้น</p>
+    </div>
+    <div class="siw-fcard" id="siwFCard" style="display:none">
+     <div class="siw-fcard-ic"><i class="fas fa-file-csv"></i></div>
+     <div class="siw-fcard-info">
+      <p class="siw-fcard-name" id="siwFName">—</p>
+      <p class="siw-fcard-meta" id="siwFMeta">—</p>
+     </div>
+     <button style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px" onclick="siwClearFile()"><i class="fas fa-times-circle"></i></button>
+    </div>
+    <div class="siw-srv" onclick="siwLoadServer()">
+     <div class="siw-srv-ic"><i class="fas fa-server"></i></div>
+     <div class="siw-srv-txt">
+      <h4>โหลดจาก Server (Smart lab 20-5-69-data.csv)</h4>
+      <p>ไฟล์ล่าสุดที่อัปโหลดไว้บน server</p>
+     </div>
+     <i class="fas fa-chevron-right" style="color:#6ee7b7;margin-left:auto"></i>
+    </div>
+   </div>
+   <!-- Step 2 -->
+   <div id="siwP2" style="display:none">
+    <div class="siw-smr" id="siwSmr"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+     <div id="siwRowTabs" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+     <span id="siwRowCount" style="margin-left:auto;font-size:11px;color:#94a3b8"></span>
+    </div>
+    <div id="siwRowTbl" style="overflow-x:auto"></div>
+   </div>
+   <!-- Step 3 -->
+   <div id="siwP3" style="display:none">
+    <div class="siw-conf" id="siwConf"></div>
+    <div id="siwP3Warn" style="margin-top:10px"></div>
+   </div>
+   <!-- Step 4 -->
+   <div id="siwP4" style="display:none">
+    <div class="siw-res-hd" id="siwResHd"></div>
+    <div class="siw-prog" id="siwProgBar" style="display:none"><div class="siw-prog-fill" id="siwProgFill" style="width:0%"></div></div>
+    <div id="siwProgTxt" style="font-size:11px;color:#64748b;text-align:center;margin-bottom:10px;display:none"></div>
+    <div class="siw-res-stats" id="siwResStats"></div>
+    <div id="siwResTbl" style="overflow-x:auto;max-height:340px;overflow-y:auto"></div>
+   </div>
+  </div>
+  <!-- Footer -->
+  <div class="siw-ft">
+   <button class="siw-btn siw-btn-g" id="siwBtnBack" onclick="siwBack()" style="display:none"><i class="fas fa-arrow-left"></i> ย้อนกลับ</button>
+   <button class="siw-btn siw-btn-g" id="siwBtnCancel" onclick="siwClose()">ยกเลิก</button>
+   <button class="siw-btn siw-btn-p" id="siwBtnNext" onclick="siwNext()" disabled><i class="fas fa-arrow-right"></i> ถัดไป</button>
+   <button class="siw-btn siw-btn-ok" id="siwBtnImport" onclick="siwDoImport()" style="display:none"><i class="fas fa-file-import"></i> นำเข้าข้อมูล</button>
+   <button class="siw-btn siw-btn-g" id="siwBtnExport" onclick="siwExportResults()" style="display:none"><i class="fas fa-file-excel" style="color:#16a34a"></i> ส่งออกผลลัพธ์</button>
+   <button class="siw-btn siw-btn-p" id="siwBtnDone" onclick="siwClose();loadData();" style="display:none"><i class="fas fa-check"></i> เสร็จสิ้น</button>
+  </div>
+ </div>
+</div>
 <?php Layout::endContent(); ?>
 
 <script>
@@ -1748,7 +2078,25 @@ const typeLabels={bottle:'Bottle',vial:'Vial',flask:'Flask',canister:'Canister',
 
 const ghsTinyIcons={compressed_gas:'fa-wind',flammable:'fa-fire-flame-curved',oxidizing:'fa-circle-radiation',toxic:'fa-skull-crossbones',corrosive:'fa-flask-vial',irritant:'fa-exclamation-triangle',environmental:'fa-leaf',health_hazard:'fa-heart-crack',explosive:'fa-explosion'};
 const ghsTinyColors={compressed_gas:'#d97706',flammable:'#dc2626',oxidizing:'#d97706',toxic:'#991b1b',corrosive:'#7c3aed',irritant:'#f59e0b',environmental:'#16a34a',health_hazard:'#dc2626',explosive:'#ea580c'};
+// GHSxx numeric codes → canonical descriptive keys
+const ghsCodeMap={
+    // GHSxx numeric codes
+    GHS01:'explosive',GHS02:'flammable',GHS03:'oxidizing',GHS04:'compressed_gas',
+    GHS05:'corrosive',GHS06:'toxic',GHS07:'irritant',GHS08:'health_hazard',GHS09:'environmental',
+    // Descriptive aliases stored by some DB entries
+    gas_pressure:'compressed_gas',gas_cylinder:'compressed_gas',
+    flame:'flammable',flame_over_circle:'oxidizing',
+    skull_crossbones:'toxic',corrosion:'corrosive',
+    exclamation_mark:'irritant',health_hazard:'health_hazard',
+    environment:'environmental',exploding_bomb:'explosive',
+};
 const ghsLabelsMap={compressed_gas:T('ก๊าซอัด','Compressed Gas'),flammable:T('ไวไฟ','Flammable'),oxidizing:T('วัตถุออกซิไดซ์','Oxidizing'),toxic:T('พิษเฉียบพลัน','Toxic'),corrosive:T('กัดกร่อน','Corrosive'),irritant:T('ระคายเคือง','Irritant'),environmental:T('อันตรายต่อสิ่งแวดล้อม','Environmental Hazard'),health_hazard:T('อันตรายต่อสุขภาพ','Health Hazard'),explosive:T('วัตถุระเบิด','Explosive')};
+// Extend all lookup maps so both 'GHS04' and 'compressed_gas' work transparently
+(function(){Object.entries(ghsCodeMap).forEach(([code,name])=>{
+    ghsTinyIcons[code]  = ghsTinyIcons[name];
+    ghsTinyColors[code] = ghsTinyColors[name];
+    ghsLabelsMap[code]  = ghsLabelsMap[name]||code;
+});})();
 
 /* ═════════════════════════════════════════
    INIT
@@ -2255,13 +2603,14 @@ async function openDetail(id){
         const hasPT=!!c.pending_transfer_id;
         const isPTInitiator=hasPT&&c.pending_transfer_by===UID;
 
-        // GHS diamonds
-        const ghsHtml=hazards.length?`<div class="ghs-row">${hazards.map(hp=>
-            `<div class="ghs-diamond ghs-${hp}" title="${ghsLabelsMap[hp]||hp}">
+        // GHS diamonds — normalise GHSxx codes to canonical names for CSS class
+        const ghsHtml=hazards.length?`<div class="ghs-row">${hazards.map(hp=>{
+            const cn=ghsCodeMap[hp]||hp;
+            return `<div class="ghs-diamond ghs-${cn}" title="${ghsLabelsMap[hp]||hp}">
                 <div class="ghs-diamond-inner"><i class="fas ${ghsTinyIcons[hp]||'fa-exclamation'}"></i></div>
                 <div class="ghs-tooltip">${ghsLabelsMap[hp]||hp}</div>
-            </div>`
-        ).join('')}</div>`:'';
+            </div>`;
+        }).join('')}</div>`:'';
 
         // Signal word
         const signalHtml=c.signal_word?
@@ -2511,7 +2860,7 @@ async function openDetail(id){
                     <a href="/v1/ar/view_ar.php?id=${c.id}" target="_blank" class="dm-quick-btn" title="AR View">
                         <i class="fas fa-vr-cardboard" style="color:#0d9488"></i> AR View
                     </a>
-                    ${ar.has_model?`<button class="dm-quick-btn" onclick="window.open('/v1/pages/viewer3d.php?src=${encodeURIComponent(ar.model_url||'')}&title=${encodeURIComponent(c.chemical_name||'')}','_blank')" title="3D View">
+                    ${ar.has_model?`<button class="dm-quick-btn" onclick="window.open('${ar.model_type==='embed' ? ar.model_url : '/v1/pages/viewer3d.php?src='+encodeURIComponent(ar.model_url||'')+'&title='+encodeURIComponent(c.chemical_name||'')}','_blank')" title="3D View">
                         <i class="fas fa-cube" style="color:#6C5CE7"></i> 3D View
                     </button>`:''}
                     ${c.sds_url?`<a href="${c.sds_url}" target="_blank" class="dm-quick-btn" title="SDS">
@@ -3613,8 +3962,8 @@ async function doPrintSingleLabel(id){
         
         await loadExternalLibs();
         setTimeout(()=>{
-            renderQRCode('qrLabel_'+r.id, window.location.origin+'/v1/ar/view_ar.php?id='+r.id, 70);
-            renderBarcode('barcode_'+r.id, r.bottle_code||('ID'+r.id));
+            renderQRCode('qrLabel_'+r.id, window.location.origin+'/v1/ar/view_ar.php?id='+r.id, 120);
+            renderBarcode('barcode_'+r.id, r.bottle_code||('ID'+r.id), {height:62,width:1.8});
         },200);
     }catch(e){
         toast(T('❌ ไม่สามารถสร้างฉลากได้','❌ Cannot generate label'),'err');
@@ -4031,34 +4380,37 @@ function generateLabelHtml(r){
     </div>`;
 
     // ── Expiry ──
-    let expClass='nodate', expText=T('ไม่ระบุวันหมดอายุ','No expiry');
+    let expClass='nodate', expText=T('ไม่ระบุวันหมดอายุ','No expiry'), expIcon='fa-calendar';
     if(r.expiry_date){
         const days=Math.round((new Date(r.expiry_date)-new Date())/86400000);
         expClass=days<0?'danger':days<90?'warn':'fresh';
-        expText=(days<0?'⚠ ':'')+(L==='th'?'หมดอายุ':'Exp')+': '+fmtDate(r.expiry_date)+(days>=0&&days<90?` (${days}d)`:'');
+        expIcon=days<0?'fa-circle-exclamation':days<90?'fa-hourglass-half':'fa-calendar-check';
+        expText=(L==='th'?'หมดอายุ':'Exp')+': '+fmtDate(r.expiry_date)+(days>=0&&days<365?` (${days}d)`:'');
     }
-    const metaHtml=`<div class="stk-label-metarow">
-        <span class="stk-label-exp ${expClass}">${expText}</span>
-        ${r.owner_name?`<span class="stk-label-owner"><i class="fas fa-user"></i>${esc(r.owner_name)}</span>`:''}
-    </div>`;
 
-    // ── Batch/Lot ──
-    const batchParts=[];
-    if(r.batch_number) batchParts.push('Batch: '+esc(r.batch_number));
-    if(r.lot_number)   batchParts.push('Lot: '+esc(r.lot_number));
-    if(r.lab_name)     batchParts.push(esc(r.lab_name));
-    const batchHtml=batchParts.length?`<div class="stk-label-batch">${batchParts.join(' · ')}</div>`:'';
-
-    // ── Location ──
+    // ── Info band (expiry + owner + batch + location) ──
     const locText=cfg.showLoc?(r.location_text||r.building_name||''):r.lab_name||'';
+    const infoParts=[];
+    infoParts.push(`<span class="stk-label-exp ${expClass}"><i class="fas ${expIcon}"></i>${expText}</span>`);
+    if(r.owner_name) infoParts.push(`<span class="stk-label-ib-sep">·</span><span class="stk-label-ib-item"><i class="fas fa-user"></i>${esc(r.owner_name)}</span>`);
+    const batchParts=[];
+    if(r.batch_number) batchParts.push('Batch:'+esc(r.batch_number));
+    if(r.lot_number)   batchParts.push('Lot:'+esc(r.lot_number));
+    if(batchParts.length) infoParts.push(`<span class="stk-label-ib-sep">·</span><span class="stk-label-ib-item" style="font-family:monospace">${batchParts.join(' ')}</span>`);
+    if(locText) infoParts.push(`<span class="stk-label-ib-sep">·</span><span class="stk-label-ib-item"><i class="fas fa-map-marker-alt"></i>${esc(locText)}</span>`);
+    const infoBandHtml=`<div class="stk-label-infoband">${infoParts.join('')}</div>`;
 
     // ── Codes ──
     const showCodes=cfg.showQR||cfg.showBar;
     const codesHtml=showCodes?`<div class="stk-label-codes">
-        ${cfg.showQR?`<div class="stk-label-qr" id="qrLabel_${r.id}"></div>`:''}
+        ${cfg.showQR?`<div class="stk-label-qr">
+            <div id="qrLabel_${r.id}"></div>
+            <div class="stk-label-qr-hint"><i class="fas fa-cube"></i>${T('สแกน AR · 3D','Scan AR · 3D')}</div>
+        </div>`:''}
         ${cfg.showBar?`<div class="stk-label-barcode">
             <svg id="barcode_${r.id}"></svg>
             <div class="stk-label-barcode-text">${esc(r.bottle_code||r.qr_code||'ID'+r.id)}</div>
+            <div class="stk-label-barcode-hint"><i class="fas fa-barcode"></i>${T('สแกนเพื่อทำธุรกรรม','Scan for Transaction')}</div>
         </div>`:''}
     </div>`:'';
 
@@ -4077,14 +4429,14 @@ function generateLabelHtml(r){
             ${formulaHtml}
             ${propsHtml}
             ${qtyRowHtml}
-            ${metaHtml}
-            ${batchHtml}
         </div>
+        ${infoBandHtml}
         ${codesHtml}
         <div class="stk-label-footer">
             <span><i class="fas fa-calendar-alt" style="margin-right:2px;opacity:.5"></i>${now}</span>
             <span style="font-family:monospace">ID:${r.id}</span>
-            <span><i class="fas fa-qrcode" style="margin-right:2px;opacity:.5"></i>${T('แสกน QR → AR/3D','Scan QR → AR/3D')}</span>
+            <span style="display:flex;align-items:center;gap:3px"><i class="fas fa-qrcode" style="opacity:.5"></i>${T('AR/3D','AR/3D')}</span>
+            <span style="display:flex;align-items:center;gap:3px"><i class="fas fa-barcode" style="opacity:.5"></i>${T('ธุรกรรม','Txn')}</span>
         </div>
     </div>`;
 }
@@ -4160,8 +4512,8 @@ async function doPrintLabels(mode){
         await loadExternalLibs();
         setTimeout(()=>{
             detailedItems.forEach(r=>{
-                renderQRCode('qrLabel_'+r.id, window.location.origin+'/v1/ar/view_ar.php?id='+r.id, 70);
-                renderBarcode('barcode_'+r.id, r.bottle_code||('ID'+r.id));
+                renderQRCode('qrLabel_'+r.id, window.location.origin+'/v1/ar/view_ar.php?id='+r.id, 120);
+                renderBarcode('barcode_'+r.id, r.bottle_code||('ID'+r.id), {height:62,width:1.8});
             });
         },200);
     }catch(e){
@@ -4212,7 +4564,7 @@ function printLabels(){
     const pageMargin=isThermal?'0':'8mm';
     const colGap=isThermal?0:4;
     const w=window.open('','_blank','width=900,height=700');
-    const codeH=Math.round(cfg.labelH*0.28);
+    const codeH=Math.round(cfg.labelH*0.42);
     w.document.write(`<html><head><meta charset="utf-8"><title>${T('ฉลากสารเคมี','Chemical Labels')}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -4246,28 +4598,31 @@ function printLabels(){
     .stk-label-props{display:flex;flex-wrap:wrap;gap:0.5mm;margin-bottom:0.6mm}
     .stk-label-prop{background:#f8fafc;border:0.2mm solid #e2e8f0;border-radius:0.4mm;padding:0.15mm 0.7mm;font-size:1.4mm;color:#64748b}
     .stk-label-prop b{color:#1e293b;font-weight:700}
-    .stk-label-qtyrow{display:flex;align-items:center;gap:1mm;margin-bottom:0.5mm}
+    .stk-label-qtyrow{display:flex;align-items:center;gap:1mm;margin-bottom:0}
     .stk-label-qty{font-size:1.7mm;font-weight:800;color:#1e293b;white-space:nowrap}
     .stk-label-pbar{flex:1;height:1.2mm;background:#e2e8f0;border-radius:0.6mm;overflow:hidden}
     .stk-label-pfill{height:100%;border-radius:0.6mm}
     .stk-label-pct{font-size:1.7mm;font-weight:900;min-width:4.5mm;text-align:right}
-    .stk-label-metarow{display:flex;align-items:center;gap:1.5mm;flex-wrap:wrap;margin-bottom:0.4mm}
-    .stk-label-exp{font-size:1.4mm;font-weight:700;padding:0.2mm 0.9mm;border-radius:0.4mm}
+    /* ── Info band ── */
+    .stk-label-infoband{display:flex;flex-wrap:wrap;align-items:center;gap:0.5mm 1.5mm;padding:0.8mm 1.5mm;border-top:0.25mm solid #e2e8f0;border-bottom:0.4mm solid #1e293b;background:#f8fafc;flex-shrink:0}
+    .stk-label-exp{font-size:1.4mm;font-weight:700;padding:0.25mm 1mm;border-radius:0.5mm;display:inline-flex;align-items:center;gap:0.4mm}
     .stk-label-exp.fresh{background:#f0fdf4;color:#15803d;border:0.2mm solid #bbf7d0}
     .stk-label-exp.warn{background:#fef3c7;color:#b45309;border:0.2mm solid #fde68a}
     .stk-label-exp.danger{background:#fef2f2;color:#dc2626;border:0.2mm solid #fecaca}
     .stk-label-exp.nodate{background:#f1f5f9;color:#94a3b8;border:0.2mm solid #e2e8f0}
-    .stk-label-owner{font-size:1.4mm;color:#475569}
-    .stk-label-batch{font-size:1.3mm;color:#94a3b8;font-family:'Courier New',monospace;margin-top:auto;padding-top:0.3mm}
+    .stk-label-ib-item{font-size:1.35mm;color:#475569;display:inline-flex;align-items:center;gap:0.4mm}
+    .stk-label-ib-sep{color:#cbd5e1;font-size:1.4mm}
     /* ── Codes ── */
-    .stk-label-codes{display:${cfg.showQR||cfg.showBar?'flex':'none'};align-items:stretch;border-top:0.3mm solid #e2e8f0;background:#fafafa;flex-shrink:0;height:${codeH}mm;overflow:hidden}
-    .stk-label-qr{width:${codeH}mm;height:${codeH}mm;flex-shrink:0;display:${cfg.showQR?'flex':'none'};align-items:center;justify-content:center;border-right:0.3mm solid #e2e8f0;padding:0.5mm;background:#fff}
-    .stk-label-qr canvas,.stk-label-qr img,.stk-label-qr svg{max-width:100%;max-height:100%}
-    .stk-label-barcode{flex:1;display:${cfg.showBar?'flex':'none'};flex-direction:column;align-items:center;justify-content:center;padding:0.5mm 1mm;overflow:hidden}
-    .stk-label-barcode svg{max-width:100%;height:${Math.round(cfg.labelH*0.16)}mm!important}
-    .stk-label-barcode-text{font-size:1.3mm;letter-spacing:.3px;color:#334155;font-family:'Courier New',monospace;font-weight:700;margin-top:0.3mm}
+    .stk-label-codes{display:${cfg.showQR||cfg.showBar?'flex':'none'};align-items:stretch;border-top:0;background:#fff;flex-shrink:0;height:${codeH}mm;overflow:hidden}
+    .stk-label-qr{width:${codeH}mm;flex-shrink:0;display:${cfg.showQR?'flex':'none'};flex-direction:column;align-items:center;justify-content:center;gap:0.5mm;border-right:0.3mm solid #e2e8f0;padding:0.8mm 0.6mm 0.6mm;background:#fff}
+    .stk-label-qr canvas,.stk-label-qr img,.stk-label-qr svg{max-width:100%;max-height:calc(100% - 3mm)}
+    .stk-label-qr-hint{font-size:1.2mm;color:#6d28d9;font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:0.4mm;white-space:nowrap}
+    .stk-label-barcode{flex:1;display:${cfg.showBar?'flex':'none'};flex-direction:column;align-items:center;justify-content:center;padding:1mm 1.5mm;overflow:hidden;gap:0.6mm}
+    .stk-label-barcode svg{max-width:100%;height:${Math.round(cfg.labelH*0.22)}mm!important}
+    .stk-label-barcode-text{font-size:1.5mm;letter-spacing:.4px;color:#334155;font-family:'Courier New',monospace;font-weight:700;text-align:center}
+    .stk-label-barcode-hint{font-size:1.2mm;color:#0369a1;font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:0.4mm;white-space:nowrap}
     /* ── Footer ── */
-    .stk-label-footer{display:flex;justify-content:space-between;align-items:center;padding:0.5mm 1.5mm;background:#f8fafc;border-top:0.3mm dashed #cbd5e1;font-size:1.3mm;color:#94a3b8;flex-shrink:0}
+    .stk-label-footer{display:flex;justify-content:space-between;align-items:center;padding:0.5mm 1.5mm;background:#f1f5f9;border-top:0.3mm dashed #cbd5e1;font-size:1.2mm;color:#94a3b8;flex-shrink:0}
     @page{size:${pageW}mm ${pageH}mm;margin:${pageMargin}}
     @media print{body{padding:0}.stk-label{border-color:#000}}
     </style></head><body><div class="grid">`+grid.innerHTML+`</div></body></html>`);
@@ -5486,7 +5841,896 @@ async function submitRequestDonation(){
         }else throw new Error(res.error||res.message||'Error');
     }catch(e){toast(e.message,'err');}
 }
+
+/* ═══════════════════════════════════════════════
+   Chemical Import Wizard (CIW)
+   ═══════════════════════════════════════════════ */
+const CIW = {
+    step: 1,
+    file: null,
+    headers: [],
+    rows: [],
+    mapping: {},
+    built: [],
+    tabFilter: 'all',
+    importing: false,
+    results: null,
+    resFilter: 'all',
+    resShowAll: false,
+};
+
+/* Field definitions: key, label_th, label_en, required, hints (keywords to auto-detect column) */
+const CIW_FIELDS = [
+    {k:'bottle_code',      th:'รหัสขวด',            en:'Bottle Code',           req:false, hints:['รหัสขวด','bottle','code']},
+    {k:'chemical_name',    th:'ชื่อสารเคมี',         en:'Chemical Name',         req:true,  hints:['ชื่อสาร','chemical','สาร']},
+    {k:'cas_number',       th:'CAS / Catalogue No.', en:'CAS / Catalogue',       req:false, hints:['cas','catalogue','cat no']},
+    {k:'grade',            th:'เกรด',               en:'Grade',                 req:false, hints:['เกรด','grade']},
+    {k:'initial_quantity', th:'ขนาดบรรจุ',          en:'Package Size',          req:true,  hints:['ขนาดบรรจุ','initial','size','ขนาด']},
+    {k:'current_quantity', th:'ปริมาณคงเหลือ',      en:'Remaining Qty',         req:false, hints:['คงเหลือ','remain','current']},
+    {k:'quantity_unit',    th:'หน่วยบรรจุ',          en:'Unit',                  req:false, hints:['หน่วยบรรจุ','unit','หน่วย']},
+    {k:'owner_name',       th:'ชื่อผู้เพิ่มขวด',    en:'Owner Name',            req:false, hints:['ผู้เพิ่ม','owner','เพิ่มขวด']},
+    {k:'received_date',    th:'เวลาเพิ่มขวด',       en:'Date Added',            req:false, hints:['เวลาเพิ่ม','received','date added','วันที่']},
+    {k:'building_name',    th:'ชื่ออาคาร',           en:'Building',              req:false, hints:['อาคาร','building']},
+    {k:'room_name',        th:'ชื่อห้อง',            en:'Room Name',             req:false, hints:['ชื่อห้อง','room name','room']},
+    {k:'room_code',        th:'เลขทะเบียนห้อง',     en:'Room Code',             req:false, hints:['ทะเบียนห้อง','room code']},
+    {k:'cabinet_name',     th:'ชื่อตู้เก็บขวด',     en:'Cabinet',               req:false, hints:['ตู้เก็บ','cabinet']},
+    {k:'shelf_name',       th:'ชั้นเก็บขวด',         en:'Shelf',                 req:false, hints:['ชั้นเก็บ','shelf']},
+    {k:'slot_name',        th:'ช่องเก็บขวด',         en:'Slot',                  req:false, hints:['ช่องเก็บ','slot']},
+    {k:'manufacturer',     th:'ชื่อผู้ผลิต',         en:'Manufacturer',          req:false, hints:['ผู้ผลิต','manufacturer','mfr']},
+    {k:'supplier',         th:'ชื่อผู้ขาย',          en:'Supplier',              req:false, hints:['ผู้ขาย','supplier','vendor']},
+    {k:'invoice_number',   th:'Invoice No.',         en:'Invoice No.',           req:false, hints:['invoice']},
+    {k:'cost',             th:'ราคา',               en:'Cost / Price',          req:false, hints:['ราคา','cost','price']},
+    {k:'notes',            th:'หมายเหตุ',            en:'Notes / Remarks',       req:false, hints:['หมายเหตุ','note','remark']},
+    {k:'funding_source',   th:'แหล่งทุน',            en:'Funding Source',        req:false, hints:['แหล่งทุน','funding']},
+    {k:'project_name',     th:'โครงการ',             en:'Project',               req:false, hints:['โครงการ','project']},
+    {k:'un_class',         th:'UN class',            en:'UN Hazard Class',       req:false, hints:['un class','un ','อันตราย']},
+    {k:'ghs_hazard',       th:'GHS',                en:'GHS Hazard',            req:false, hints:['ghs']},
+    {k:'expiry_date',      th:'วันหมดอายุ',          en:'Expiry Date',           req:false, hints:['หมดอายุ','expiry','expire']},
+];
+
+function ciwOpen(){
+    Object.assign(CIW,{step:1,file:null,headers:[],rows:[],mapping:{},built:[],tabFilter:'all',importing:false,results:null,resFilter:'all',resShowAll:false});
+    _ciwRenderStep();
+    document.getElementById('ciwOv').classList.add('open');
+}
+function ciwClose(){
+    document.getElementById('ciwOv').classList.remove('open');
+}
+function _ciwRenderStep(){
+    const s=CIW.step;
+    ['ciwP1','ciwP2','ciwP3','ciwP4'].forEach((id,i)=>{
+        document.getElementById(id).style.display=(i===s-1)?'':'none';
+    });
+    ['ciwS1','ciwS2','ciwS3','ciwS4'].forEach((id,i)=>{
+        const el=document.getElementById(id);
+        el.className='ciw-step'+(i<s-1?' done':i===s-1?' active':'');
+    });
+    const subs=['อัปโหลดไฟล์ Excel (.xlsx) เพื่อนำเข้าข้อมูล','ตรวจสอบและจับคู่คอลัมน์กับฟิลด์ในระบบ','ตรวจสอบข้อมูลก่อนนำเข้าจริง','ผลลัพธ์การนำเข้าข้อมูล'];
+    document.getElementById('ciwHdSub').textContent=subs[s-1];
+    // footer buttons
+    document.getElementById('ciwBtnBack').style.display=s>1&&s<4?'':'none';
+    document.getElementById('ciwBtnCancel').style.display=s<4?'':'none';
+    document.getElementById('ciwBtnNext').style.display=(s===1||s===2)?'':'none';
+    document.getElementById('ciwBtnImport').style.display=s===3?'':'none';
+    document.getElementById('ciwBtnExportRes').style.display=s===4?'':'none';
+    document.getElementById('ciwBtnDone').style.display=s===4?'':'none';
+    document.getElementById('ciwBtnNext').disabled=(s===1&&!CIW.file);
+}
+
+function ciwNext(){
+    if(CIW.step===1){_ciwParseFile();}
+    else if(CIW.step===2){_ciwBuild();CIW.step=3;_ciwRenderPreview();}
+}
+function ciwBack(){
+    if(CIW.step>1&&CIW.step<4){CIW.step--;_ciwRenderStep();}
+}
+
+/* ── File handling ── */
+function ciwDrag(e,over){e.preventDefault();document.getElementById('ciwDrop').classList.toggle('over',over);}
+function ciwDropFile(e){e.preventDefault();document.getElementById('ciwDrop').classList.remove('over');const f=e.dataTransfer.files[0];if(f)ciwOnFile(f);}
+function ciwOnFile(f){
+    if(!f)return;
+    const maxMB=10;
+    if(f.size>maxMB*1024*1024){alert('ไฟล์ใหญ่เกิน '+maxMB+' MB');return;}
+    CIW.file=f;
+    document.getElementById('ciwFCard').style.display='flex';
+    document.getElementById('ciwFName').textContent=f.name;
+    document.getElementById('ciwFMeta').textContent=(f.size/1024).toFixed(1)+' KB · '+new Date(f.lastModified).toLocaleDateString('th-TH');
+    document.getElementById('ciwBtnNext').disabled=false;
+}
+function ciwClearFile(){
+    CIW.file=null;
+    document.getElementById('ciwFCard').style.display='none';
+    document.getElementById('ciwFile').value='';
+    document.getElementById('ciwBtnNext').disabled=true;
+}
+
+/* ── Parse XLSX (SheetJS) ── */
+async function _ciwParseFile(){
+    if(!CIW.file)return;
+    try{
+        const buf=await CIW.file.arrayBuffer();
+        const wb=XLSX.read(buf,{type:'array',cellDates:true});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const arr=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+        // Find header row: first row with >= 3 non-empty cells
+        let hdrIdx=0;
+        for(let i=0;i<Math.min(5,arr.length);i++){
+            const nonEmpty=arr[i].filter(v=>String(v).trim()!=='').length;
+            if(nonEmpty>=3){hdrIdx=i;break;}
+        }
+        CIW.headers=arr[hdrIdx].map(v=>String(v).trim());
+        CIW.rows=arr.slice(hdrIdx+1).filter(r=>r.some(v=>String(v).trim()!==''));
+        CIW.step=2;
+        _ciwAutoMap();
+        _ciwRenderMapping();
+    }catch(e){alert('อ่านไฟล์ไม่ได้: '+e.message);}
+}
+
+/* ── Auto-mapping ── */
+function _ciwAutoMap(){
+    CIW.mapping={};
+    CIW_FIELDS.forEach(f=>{
+        let best=-1;
+        CIW.headers.forEach((h,i)=>{
+            const hl=h.toLowerCase();
+            const match=f.hints.some(hint=>hl.includes(hint.toLowerCase()));
+            if(match&&best===-1)best=i;
+        });
+        CIW.mapping[f.k]=best;
+    });
+}
+
+/* ── Render mapping step ── */
+function _ciwRenderMapping(){
+    const grid=document.getElementById('ciwMapGrid');
+    const sample=CIW.rows[0]||[];
+    let html='<div class="ciw-map-lbl">ฟิลด์ในระบบ</div><div class="ciw-map-lbl">คอลัมน์จากไฟล์</div>';
+    CIW_FIELDS.forEach(f=>{
+        const sel=CIW.mapping[f.k];
+        const sampleVal=sel>=0?String(sample[sel]||'').slice(0,50):'—';
+        html+=`<div class="ciw-map-item">
+            <span class="ciw-map-field">${f.th}<span class="ciw-map-req">${f.req?'*':''}</span></span>
+            <span style="font-size:10px;color:#94a3b8">${f.en}</span>
+        </div>
+        <div class="ciw-map-item">
+            <select class="ciw-map-sel" data-field="${f.k}" onchange="CIW.mapping[this.dataset.field]=parseInt(this.value);_ciwUpdateSample(this)">
+                <option value="-1">— ไม่ใช้ —</option>
+                ${CIW.headers.map((h,i)=>`<option value="${i}"${sel===i?' selected':''}>${h}</option>`).join('')}
+            </select>
+            <span class="ciw-map-sample" id="ciw_smp_${f.k}">${sampleVal}</span>
+        </div>`;
+    });
+    grid.innerHTML=html;
+    _ciwRenderStep();
+}
+function _ciwUpdateSample(sel){
+    const idx=parseInt(sel.value);
+    const sample=CIW.rows[0]||[];
+    const val=idx>=0?String(sample[idx]||'').slice(0,50):'—';
+    document.getElementById('ciw_smp_'+sel.dataset.field).textContent=val;
+}
+
+/* ── Build rows from mapping ── */
+function _ciwBuild(){
+    const m=CIW.mapping;
+    const getV=(row,k)=>{
+        const idx=m[k];
+        if(idx==null||idx<0)return '';
+        const v=row[idx];
+        if(v==null)return '';
+        if(v instanceof Date)return v.toISOString().split('T')[0];
+        return String(v).trim();
+    };
+    CIW.built=CIW.rows.map((row,ri)=>{
+        const name=getV(row,'chemical_name');
+        const qty=parseFloat(getV(row,'initial_quantity'))||0;
+        let status='new';
+        let err='';
+        if(!name)err='ไม่มีชื่อสารเคมี';
+        else if(qty<=0)err='ขนาดบรรจุต้องมากกว่า 0';
+        if(err)status='err';
+        return {
+            _row:ri+1,status,err,
+            bottle_code:    getV(row,'bottle_code'),
+            chemical_name:  name,
+            cas_number:     getV(row,'cas_number'),
+            grade:          getV(row,'grade'),
+            initial_quantity: qty||undefined,
+            current_quantity: parseFloat(getV(row,'current_quantity'))||undefined,
+            quantity_unit:  getV(row,'quantity_unit')||'mL',
+            owner_name:     getV(row,'owner_name'),
+            received_date:  getV(row,'received_date'),
+            building_name:  getV(row,'building_name'),
+            room_name:      getV(row,'room_name'),
+            room_code:      getV(row,'room_code'),
+            cabinet_name:   getV(row,'cabinet_name'),
+            shelf_name:     getV(row,'shelf_name'),
+            slot_name:      getV(row,'slot_name'),
+            manufacturer:   getV(row,'manufacturer'),
+            supplier:       getV(row,'supplier'),
+            invoice_number: getV(row,'invoice_number'),
+            cost:           parseFloat(getV(row,'cost'))||undefined,
+            notes:          getV(row,'notes'),
+            funding_source: getV(row,'funding_source'),
+            project_name:   getV(row,'project_name'),
+            un_class:       getV(row,'un_class'),
+            ghs_hazard:     getV(row,'ghs_hazard'),
+            expiry_date:    getV(row,'expiry_date'),
+        };
+    });
+}
+
+/* ── Preview step ── */
+function _ciwRenderPreview(){
+    _ciwRenderStep();
+    const b=CIW.built;
+    const total=b.length, errs=b.filter(r=>r.status==='err').length, ok=total-errs;
+    document.getElementById('ciwSum').innerHTML=`
+        <div class="ciw-sum-c"><div class="ciw-sum-n">${total}</div><div class="ciw-sum-l">รายการทั้งหมด</div></div>
+        <div class="ciw-sum-c ok"><div class="ciw-sum-n">${ok}</div><div class="ciw-sum-l">พร้อมนำเข้า</div></div>
+        <div class="ciw-sum-c err"><div class="ciw-sum-n">${errs}</div><div class="ciw-sum-l">มีข้อผิดพลาด</div></div>`;
+    CIW.tabFilter='all';
+    _ciwTabs();
+    _ciwTable();
+    document.getElementById('ciwBtnImport').disabled=(ok===0);
+}
+function _ciwTabs(){
+    const b=CIW.built;
+    const tabs=[
+        {k:'all',  label:'ทั้งหมด ('+b.length+')'},
+        {k:'new',  label:'ใหม่ ('+b.filter(r=>r.status==='new').length+')'},
+        {k:'err',  label:'ผิดพลาด ('+b.filter(r=>r.status==='err').length+')'},
+    ];
+    document.getElementById('ciwTabs').innerHTML=tabs.map(t=>
+        `<button class="ciw-ftab${CIW.tabFilter===t.k?' active':''}" onclick="CIW.tabFilter='${t.k}';_ciwTabs();_ciwTable()">${t.label}</button>`
+    ).join('');
+}
+function _ciwTable(){
+    const f=CIW.tabFilter;
+    const rows=CIW.built.filter(r=>f==='all'||r.status===f);
+    const esc=v=>String(v||'').replace(/</g,'&lt;');
+    let html=`<table class="ciw-tbl"><thead><tr>
+        <th>#</th><th>สถานะ</th><th>ชื่อสารเคมี</th><th>CAS</th><th>เกรด</th><th>ขนาด</th><th>หน่วย</th><th>ห้อง</th><th>ตู้</th><th>ผู้ผลิต</th>
+    </tr></thead><tbody>`;
+    if(!rows.length){html+='<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:20px">ไม่มีข้อมูล</td></tr>';}
+    rows.forEach(r=>{
+        const badge=r.status==='err'
+            ?`<span class="ciw-badge err"><i class="fas fa-times"></i> ผิดพลาด</span>`
+            :`<span class="ciw-badge new"><i class="fas fa-plus"></i> ใหม่</span>`;
+        const errMsg=r.err?`<br><small style="color:#ef4444">${esc(r.err)}</small>`:'';
+        html+=`<tr>
+            <td>${r._row}</td><td>${badge}${errMsg}</td>
+            <td title="${esc(r.chemical_name)}">${esc(r.chemical_name).slice(0,30)}</td>
+            <td>${esc(r.cas_number)}</td>
+            <td>${esc(r.grade)}</td>
+            <td>${r.initial_quantity||''}</td>
+            <td>${esc(r.quantity_unit)}</td>
+            <td title="${esc(r.room_name)}">${esc(r.room_name).slice(0,20)}</td>
+            <td title="${esc(r.cabinet_name)}">${esc(r.cabinet_name).slice(0,20)}</td>
+            <td title="${esc(r.manufacturer)}">${esc(r.manufacturer).slice(0,20)}</td>
+        </tr>`;
+    });
+    html+='</tbody></table>';
+    document.getElementById('ciwTblW').innerHTML=html;
+}
+
+/* ── Import ── */
+async function ciwDoImport(){
+    if(CIW.importing)return;
+    const toImport=CIW.built.filter(r=>r.status!=='err');
+    if(!toImport.length){alert('ไม่มีรายการที่นำเข้าได้');return;}
+    CIW.importing=true;
+    CIW.step=4;
+    _ciwRenderStep();
+    document.getElementById('ciwResHd').innerHTML=`<div class="ciw-res-ic"><i class="fas fa-spinner fa-spin"></i></div><div><b>กำลังนำเข้าข้อมูล...</b><br><small style="color:#64748b">กรุณารอสักครู่ อย่าปิดหน้าต่างนี้</small></div>`;
+    document.getElementById('ciwProgBar').style.display='block';
+    document.getElementById('ciwProgTxt').style.display='block';
+    document.getElementById('ciwResStats').innerHTML='';
+    document.getElementById('ciwResTbl').innerHTML='';
+    const BATCH=20;
+    let created=0,skipped=0,errors=0;
+    const resultRows=[];
+    for(let i=0;i<toImport.length;i+=BATCH){
+        const chunk=toImport.slice(i,i+BATCH);
+        const pct=Math.round(((i)/toImport.length)*100);
+        document.getElementById('ciwProgFill').style.width=pct+'%';
+        document.getElementById('ciwProgTxt').textContent=`กำลังนำเข้า ${Math.min(i+BATCH,toImport.length)} / ${toImport.length} รายการ...`;
+        try{
+            const res=await fetch('/v1/api/stock_import.php?action=import_json',{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({rows:chunk})
+            }).then(r=>r.json());
+            if(res.success&&res.results){
+                res.results.forEach(r=>{
+                    if(r.status==='created')created++;
+                    else if(r.status==='skipped')skipped++;
+                    else errors++;
+                    resultRows.push(r);
+                });
+            }else{
+                chunk.forEach(r=>{errors++;resultRows.push({row:r._row,chemical:r.chemical_name,status:'error',reason:res.error||'API error'});});
+            }
+        }catch(e){
+            chunk.forEach(r=>{errors++;resultRows.push({row:r._row,chemical:r.chemical_name,status:'error',reason:e.message});});
+        }
+    }
+    document.getElementById('ciwProgFill').style.width='100%';
+    CIW.importing=false;
+    CIW.results={created,skipped,errors,rows:resultRows};
+    _ciwRenderResults();
+}
+
+function _ciwRenderResults(){
+    const {created,skipped,errors,rows}=CIW.results;
+    const total=created+skipped+errors;
+    document.getElementById('ciwProgBar').style.display='none';
+    document.getElementById('ciwProgTxt').style.display='none';
+    CIW.resFilter='all';
+    CIW.resShowAll=false;
+
+    const allOk=errors===0&&skipped===0;
+    const hasErr=errors>0;
+    const ic=allOk?'check-circle':hasErr?'exclamation-circle':'info-circle';
+    const icClr=allOk?'#16a34a':hasErr?'#ef4444':'#f59e0b';
+    const title=allOk?'นำเข้าข้อมูลสำเร็จทั้งหมด!'
+        :hasErr?'นำเข้าเสร็จสิ้น — มีบางรายการผิดพลาด'
+        :'นำเข้าเสร็จสิ้น — บางรายการถูกข้ามเพราะซ้ำ';
+
+    document.getElementById('ciwResHd').innerHTML=`
+        <div class="ciw-res-ic"><i class="fas fa-${ic}" style="color:${icClr};font-size:28px"></i></div>
+        <div style="flex:1">
+            <b style="font-size:15px;color:#1e293b">${title}</b><br>
+            <small style="color:#64748b">ทั้งหมด ${total} รายการ · สำเร็จ ${created} · ข้าม ${skipped} · ผิดพลาด ${errors}</small>
+        </div>
+        <button class="ciw-btn" style="background:#f1f5f9;color:#475569;font-size:12px;padding:7px 12px;flex-shrink:0" onclick="_ciwResExport()" title="ส่งออกผลลัพธ์เป็น Excel">
+            <i class="fas fa-file-excel" style="color:#16a34a"></i> ส่งออกผลลัพธ์
+        </button>`;
+
+    // Clickable stat cards
+    document.getElementById('ciwResStats').innerHTML=`
+        <div class="ciw-res-stat ciw-res-flt${CIW.resFilter==='all'?' active':''}" onclick="_ciwResSetFilter('all')" style="cursor:pointer">
+            <div class="ciw-res-sn">${total}</div><div class="ciw-res-sl">ทั้งหมด</div>
+        </div>
+        <div class="ciw-res-stat ciw-res-flt${CIW.resFilter==='created'?' active':''}" onclick="_ciwResSetFilter('created')" style="cursor:pointer">
+            <div class="ciw-res-sn ok">${created}</div><div class="ciw-res-sl">นำเข้าสำเร็จ</div>
+        </div>
+        <div class="ciw-res-stat ciw-res-flt${CIW.resFilter==='skipped'?' active':''}" onclick="_ciwResSetFilter('skipped')" style="cursor:pointer">
+            <div class="ciw-res-sn skip">${skipped}</div><div class="ciw-res-sl">ข้ามแล้ว (ซ้ำ)</div>
+        </div>
+        <div class="ciw-res-stat ciw-res-flt${CIW.resFilter==='error'?' active':''}" onclick="_ciwResSetFilter('error')" style="cursor:pointer">
+            <div class="ciw-res-sn err">${errors}</div><div class="ciw-res-sl">ผิดพลาด</div>
+        </div>`;
+
+    _ciwResTable();
+    _ciwRenderStep();
+}
+
+function _ciwResSetFilter(f){
+    CIW.resFilter=f;
+    CIW.resShowAll=false;
+    // Update stat card highlight
+    document.querySelectorAll('.ciw-res-flt').forEach((el,i)=>{
+        const keys=['all','created','skipped','error'];
+        el.classList.toggle('active', keys[i]===f);
+    });
+    _ciwResTable();
+}
+
+function _ciwResTable(){
+    const f=CIW.resFilter;
+    const all=CIW.results.rows;
+    const filtered=f==='all'?all:all.filter(r=>r.status===f);
+    const LIMIT=200;
+    const showAll=CIW.resShowAll;
+    const visible=showAll?filtered:filtered.slice(0,LIMIT);
+    const hidden=filtered.length-visible.length;
+
+    const esc=v=>String(v||'').replace(/</g,'&lt;');
+    let html=`<table class="ciw-tbl">
+        <thead><tr>
+            <th style="width:40px">#แถว</th>
+            <th style="width:90px">สถานะ</th>
+            <th>ชื่อสารเคมี</th>
+            <th style="width:140px">รหัสขวด</th>
+            <th>รายละเอียด / สาเหตุ</th>
+        </tr></thead><tbody>`;
+
+    if(!visible.length){
+        html+=`<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:24px">
+            <i class="fas fa-inbox" style="font-size:20px;display:block;margin-bottom:6px"></i>ไม่มีรายการ</td></tr>`;
+    }
+    visible.forEach(r=>{
+        const isCre=r.status==='created', isSkip=r.status==='skipped', isErr=r.status==='error';
+        const badge=isCre
+            ?`<span class="ciw-badge new"><i class="fas fa-check"></i> สำเร็จ</span>`
+            :isSkip
+            ?`<span class="ciw-badge dup"><i class="fas fa-minus"></i> ข้าม</span>`
+            :`<span class="ciw-badge err"><i class="fas fa-times"></i> ผิดพลาด</span>`;
+        const reasonClr=isErr?'#dc2626':isSkip?'#b45309':'#94a3b8';
+        const reason=esc(r.reason||'');
+        const nameCell=esc(r.chemical||r.chemical_name||'');
+        html+=`<tr${isErr?' style="background:#fff8f8"':isSkip?' style="background:#fffbeb"':''}>
+            <td style="color:#94a3b8">${r.row||''}</td>
+            <td>${badge}</td>
+            <td title="${nameCell}" style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${nameCell}</td>
+            <td style="font-family:monospace;font-size:11px;color:#475569">${esc(r.bottle_code||'')}</td>
+            <td style="color:${reasonClr};font-size:11px;white-space:normal">${reason}</td>
+        </tr>`;
+    });
+
+    if(hidden>0){
+        html+=`<tr><td colspan="5" style="text-align:center;padding:14px;border-top:2px dashed #e2e8f0">
+            <button onclick="_ciwResShowAll()" style="background:none;border:1.5px solid #3b82f6;color:#3b82f6;border-radius:8px;padding:7px 20px;cursor:pointer;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px">
+                <i class="fas fa-list"></i> ดูทั้งหมด ${filtered.length.toLocaleString()} รายการ
+                <span style="background:#3b82f6;color:#fff;border-radius:99px;padding:1px 8px;font-size:11px">${hidden} รายการที่ซ่อนอยู่</span>
+            </button>
+        </td></tr>`;
+    }
+
+    html+='</tbody></table>';
+    document.getElementById('ciwResTbl').innerHTML=html;
+}
+
+function _ciwResShowAll(){
+    CIW.resShowAll=true;
+    _ciwResTable();
+}
+
+function _ciwResExport(){
+    if(typeof XLSX==='undefined'){alert('กำลังโหลด SheetJS...');return;}
+    const rows=CIW.results.rows;
+    const header=['แถว','สถานะ','ชื่อสารเคมี','รหัสขวด','รายละเอียด / สาเหตุ'];
+    const statusLabel={created:'สำเร็จ',skipped:'ข้ามแล้ว (ซ้ำ)',error:'ผิดพลาด'};
+    const data=[header,...rows.map(r=>[
+        r.row||'',
+        statusLabel[r.status]||r.status,
+        r.chemical||r.chemical_name||'',
+        r.bottle_code||'',
+        r.reason||'',
+    ])];
+    const ws=XLSX.utils.aoa_to_sheet(data);
+    ws['!cols']=[{wch:6},{wch:14},{wch:36},{wch:18},{wch:60}];
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'ผลลัพธ์การนำเข้า');
+    XLSX.writeFile(wb,'import_results_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+/* ── Export XLSX ── */
+function exportStockXLSX(){
+    if(typeof XLSX==='undefined'){alert('กำลังโหลด SheetJS...');return;}
+    const cols=[
+        ['bottle_code','รหัสขวด'],['chemical_name','ชื่อสารเคมี'],['cas_number','CAS No.'],
+        ['grade','เกรด'],['initial_quantity','ขนาดบรรจุ'],['current_quantity','ปริมาณคงเหลือ'],
+        ['quantity_unit','หน่วย'],['building_name','อาคาร'],['room_name','ห้อง'],
+        ['cabinet_name','ตู้'],['manufacturer_name','ผู้ผลิต'],['received_date','วันที่รับ'],
+        ['expiry_date','วันหมดอายุ'],['cost','ราคา'],['invoice_number','Invoice No.'],
+        ['notes','หมายเหตุ'],['status','สถานะ']
+    ];
+    const rows=DATA||[];
+    const header=cols.map(c=>c[1]);
+    const data=[header,...rows.map(r=>cols.map(c=>r[c[0]]??''))];
+    const ws=XLSX.utils.aoa_to_sheet(data);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Chemical Stock');
+    XLSX.writeFile(wb,'chemical_stock_export.xlsx');
+}
+/* ════════════════════════════════════════════════════════════════════
+   Smart Lab Import Wizard (SIW)
+   CSV: 2-row header, strip "XXX" prefix from bottle_code
+   ════════════════════════════════════════════════════════════════════ */
+
+const SIW_MONTHS={'ม.ค.':1,'ก.พ.':2,'มี.ค.':3,'เม.ย.':4,'พ.ค.':5,'มิ.ย.':6,
+                  'ก.ค.':7,'ส.ค.':8,'ก.ย.':9,'ต.ค.':10,'พ.ย.':11,'ธ.ค.':12};
+
+const SIW={step:1,file:null,rows:[],parsed:[],rowFilter:'all',
+           importing:false,results:null,serverLoaded:false};
+
+/* ── Helpers ── */
+function _siwParseDate(s){
+    if(!s||!s.trim()) return null;
+    // Format: "17-ธ.ค.-69"
+    const m=s.trim().match(/^(\d{1,2})-([ก-๛.]+)-(\d{2,4})$/);
+    if(!m) return null;
+    const day=parseInt(m[1]);
+    const mon=SIW_MONTHS[m[2]];
+    if(!mon) return null;
+    const yr2=parseInt(m[3]);
+    const yrAD=(yr2<100)?(yr2+1957):(yr2>2400?yr2-543:yr2); // 69→2026, 2569→2026
+    return `${yrAD}-${String(mon).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+}
+
+function _siwParseQty(s){
+    if(!s||!s.trim()) return {qty:0,unit:''};
+    const clean=s.trim().replace(/,/g,'').replace(/\.$/,'');
+    const m=clean.match(/^([\d.]+)\s*([a-zA-Z]*)/);
+    if(!m) return {qty:0,unit:''};
+    return {qty:parseFloat(m[1])||0, unit:m[2]||''};
+}
+
+function _siwRoomCode(labText, bottleCode){
+    // 1) Parenthesized code: "(F05202A)"
+    const m=(labText||'').match(/\(([A-Z][0-9A-Z]{5,7})\)/);
+    if(m) return {code:m[1], fromBottle:false};
+    // 2) Fallback: extract from bottle code prefix (e.g. "F10205A6900002" → "F10205A")
+    const bc=(bottleCode||'').trim();
+    const bm=bc.match(/^([A-Z]\d{4,5}[A-Z])\d+$/);
+    if(bm) return {code:bm[1], fromBottle:true};
+    return {code:'', fromBottle:false};
+}
+
+function _siwCleanCode(s){
+    s=(s||'').trim();
+    // Strip "XXX" prefix from Smart lab codes
+    return s.startsWith('XXX')?s.slice(3):s;
+}
+
+/* ── CSV Parser (handles quoted fields, 2-row header) ── */
+function _siwParseCSV(text){
+    const lines=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+    // Skip BOM
+    if(lines[0]&&lines[0].charCodeAt(0)===0xFEFF) lines[0]=lines[0].slice(1);
+    // Parse a single CSV line handling quoted fields
+    function parseLine(line){
+        const fields=[]; let cur='',inQ=false;
+        for(let i=0;i<line.length;i++){
+            const c=line[i];
+            if(c==='"'){inQ=!inQ;}
+            else if(c===','&&!inQ){fields.push(cur.trim());cur='';}
+            else cur+=c;
+        }
+        fields.push(cur.trim());
+        return fields;
+    }
+    // Skip 2 header rows
+    const data=[];
+    for(let i=2;i<lines.length;i++){
+        const l=lines[i].trim();
+        if(!l) continue;
+        const f=parseLine(l);
+        if(!f[0]) continue; // skip empty code rows
+        const _code=_siwCleanCode(f[0]||'');
+        const _labText=(f[6]||'').trim();
+        const _labResult=_siwRoomCode(_labText, _code);
+        data.push({
+            code:  _code,
+            name:  (f[1]||'').replace(/^"|"$/g,'').trim(),
+            cas:   (f[2]||'').trim(),
+            dateIn:_siwParseDate((f[3]||'').trim()),
+            dateEx:_siwParseDate((f[4]||'').trim()),
+            dateOp:_siwParseDate((f[5]||'').trim()),
+            labRaw:_labText,
+            labCode:_labResult.code,
+            _labFromCode:_labResult.fromBottle,
+            qtyIn: _siwParseQty(f[7]||''),
+            qtyOut:_siwParseQty(f[8]||''),
+            qtyCur:_siwParseQty(f[14]||''),
+            _raw:  f,
+        });
+    }
+    return data;
+}
+
+/* ── Validate parsed rows ── */
+function _siwBuildParsed(){
+    SIW.parsed=SIW.rows.map((r,i)=>{
+        const warns=[];
+        if(!r.name)    warns.push('ไม่มีชื่อสาร');
+        if(!r.code)    warns.push('ไม่มีรหัสขวด');
+        if(!r.labCode) warns.push('ไม่พบรหัสห้อง — ข้อมูลห้อง: "'+r.labRaw+'"');
+        else if(r._labFromCode) warns.push('รหัสห้อง '+r.labCode+' อ่านจากรหัสขวด');
+        // Room pre-check result from server (present when loaded via siwLoadServer)
+        if(r.labCode&&r._roomFound===false) warns.push('ไม่พบห้อง "'+r.labCode+'" ในระบบ');
+        else if(r._roomStrategy==='name_tail') warns.push('จับคู่ห้องแบบประมาณ — โปรดตรวจสอบ: '+(r._roomName||''));
+        if(r._duplicate) warns.push('รหัสขวดนี้มีในระบบแล้ว');
+        if(!r.dateIn)  warns.push('วันที่รับเข้าไม่ถูกต้อง');
+        const status=(!r.name||!r.code)?'er':warns.length?'wa':'ok';
+        return {...r, _idx:i+1, _warn:warns.join(' | '), _status:status};
+    });
+}
+
+/* ── Open / Close ── */
+function siwOpen(){
+    Object.assign(SIW,{step:1,file:null,rows:[],parsed:[],rowFilter:'all',
+        importing:false,results:null,serverLoaded:false,overwrite:false});
+    _siwRenderStep();
+    document.getElementById('siwOv').classList.add('open');
+}
+function siwClose(){document.getElementById('siwOv').classList.remove('open');}
+
+/* ── Step rendering ── */
+function _siwRenderStep(){
+    const s=SIW.step;
+    ['siwP1','siwP2','siwP3','siwP4'].forEach((id,i)=>{document.getElementById(id).style.display=i===s-1?'':'none';});
+    ['siwS1','siwS2','siwS3','siwS4'].forEach((id,i)=>{
+        const el=document.getElementById(id);
+        el.classList.toggle('active',i===s-1);
+        el.classList.toggle('done',i<s-1);
+    });
+    const subs=['เลือกไฟล์ CSV จาก Smart lab','ตรวจสอบและกรองข้อมูล','ยืนยันก่อนนำเข้าจริง','สรุปผลการนำเข้า'];
+    document.getElementById('siwHdSub').textContent=subs[s-1];
+    const show=(id,v)=>document.getElementById(id).style.display=v?'':'none';
+    show('siwBtnBack',  s>1&&s<4);
+    show('siwBtnCancel',s<4);
+    show('siwBtnNext',  s===1||s===2);
+    show('siwBtnImport',s===3);
+    show('siwBtnExport',s===4);
+    show('siwBtnDone',  s===4);
+    document.getElementById('siwBtnNext').disabled=(s===1&&!SIW.file&&!SIW.serverLoaded);
+    if(s===2){
+        const hasOk=SIW.parsed.some(r=>r._status!=='er');
+        document.getElementById('siwBtnNext').disabled=!hasOk;
+    }
+}
+
+function siwNext(){
+    if(SIW.step===1) _siwParseAndGo();
+    else if(SIW.step===2){SIW.step=3;_siwRenderStep();_siwRenderConfirm();}
+}
+function siwBack(){if(SIW.step>1&&SIW.step<4){SIW.step--;_siwRenderStep();}}
+
+/* ── File handling ── */
+function siwDrag(e,over){e.preventDefault();document.getElementById('siwDrop').classList.toggle('over',over);}
+function siwDropFile(e){e.preventDefault();siwDrag(e,false);if(e.dataTransfer.files[0])siwOnFile(e.dataTransfer.files[0]);}
+function siwOnFile(f){
+    if(!f) return;
+    SIW.file=f; SIW.serverLoaded=false;
+    document.getElementById('siwFCard').style.display='flex';
+    document.getElementById('siwFName').textContent=f.name;
+    document.getElementById('siwFMeta').textContent=(f.size/1024).toFixed(1)+' KB';
+    document.getElementById('siwBtnNext').disabled=false;
+}
+function siwClearFile(){
+    SIW.file=null; SIW.serverLoaded=false;
+    document.getElementById('siwFCard').style.display='none';
+    document.getElementById('siwBtnNext').disabled=true;
+}
+async function siwLoadServer(){
+    try{
+        const res=await fetch('/v1/api/smartlab_import.php?action=load_csv').then(r=>r.json());
+        if(!res.success) throw new Error(res.error||'โหลดไม่ได้');
+        SIW.rows=res.rows; SIW.serverLoaded=true; SIW.file=null;
+        _siwBuildParsed();
+        SIW.step=2; _siwRenderReview();
+    }catch(e){alert('Error: '+e.message);}
+}
+
+async function _siwParseAndGo(){
+    if(SIW.serverLoaded&&SIW.rows.length){
+        _siwBuildParsed(); SIW.step=2; _siwRenderReview(); return;
+    }
+    if(!SIW.file) return;
+    const text=await SIW.file.text();
+    SIW.rows=_siwParseCSV(text);
+    if(!SIW.rows.length){alert('ไม่พบข้อมูลในไฟล์');return;}
+    _siwBuildParsed();
+    SIW.step=2; _siwRenderReview();
+}
+
+/* ── Step 2: Review ── */
+function _siwRenderReview(){
+    _siwRenderStep();
+    const p=SIW.parsed;
+    const ok=p.filter(r=>r._status==='ok').length;
+    const wa=p.filter(r=>r._status==='wa').length;
+    const er=p.filter(r=>r._status==='er').length;
+    document.getElementById('siwSmr').innerHTML=`
+        <div class="siw-smr-c"><div class="siw-smr-n bl">${p.length}</div><div class="siw-smr-l">รายการทั้งหมด</div></div>
+        <div class="siw-smr-c"><div class="siw-smr-n ok">${ok}</div><div class="siw-smr-l">พร้อมนำเข้า</div></div>
+        <div class="siw-smr-c"><div class="siw-smr-n wa">${wa}</div><div class="siw-smr-l">มีคำเตือน</div></div>
+        <div class="siw-smr-c"><div class="siw-smr-n er">${er}</div><div class="siw-smr-l">ข้อผิดพลาด</div></div>`;
+    SIW.rowFilter='all';
+    _siwRowTabs(); _siwRowTable();
+}
+
+function _siwRowTabs(){
+    const p=SIW.parsed, f=SIW.rowFilter;
+    const cnt={all:p.length,ok:p.filter(r=>r._status==='ok').length,
+               wa:p.filter(r=>r._status==='wa').length,er:p.filter(r=>r._status==='er').length};
+    const tabs=[
+        {k:'all',l:`ทั้งหมด (${cnt.all})`,  ac:'#2563eb'},
+        {k:'ok', l:`พร้อม (${cnt.ok})`,      ac:'#16a34a'},
+        {k:'wa', l:`คำเตือน (${cnt.wa})`,    ac:'#d97706'},
+        {k:'er', l:`ผิดพลาด (${cnt.er})`,    ac:'#dc2626'},
+    ];
+    document.getElementById('siwRowTabs').innerHTML=tabs.map(t=>{
+        const act=f===t.k;
+        return `<button style="padding:4px 10px;border-radius:6px;border:1.5px solid ${act?t.ac:'#e2e8f0'};background:${act?t.ac:'#fff'};color:${act?'#fff':'#64748b'};font-size:11px;cursor:pointer;font-weight:600" onclick="SIW.rowFilter='${t.k}';_siwRowTabs();_siwRowTable()">${t.l}</button>`;
+    }).join('');
+}
+
+function _siwRowTable(){
+    const f=SIW.rowFilter;
+    const rows=(f==='all'?SIW.parsed:SIW.parsed.filter(r=>r._status===f)).slice(0,300);
+    const e=v=>String(v||'').replace(/</g,'&lt;');
+    let h=`<table class="siw-tbl"><thead><tr>
+        <th>#</th><th>สถานะ</th><th>รหัสขวด</th><th>ชื่อสารเคมี</th><th>CAS</th>
+        <th>ห้อง</th><th>รับเข้า</th><th>คงเหลือ</th><th>วันที่รับ</th><th>หมดอายุ</th>
+    </tr></thead><tbody>`;
+    rows.forEach(r=>{
+        const badge=r._status==='ok'
+            ?`<span class="siw-badge ok"><i class="fas fa-check"></i> OK</span>`
+            :r._status==='wa'
+            ?`<span class="siw-badge wa"><i class="fas fa-exclamation-triangle"></i> เตือน</span>`
+            :`<span class="siw-badge er"><i class="fas fa-times"></i> ผิดพลาด</span>`;
+        const warn=r._warn?`<br><small style="color:#d97706;font-size:10px">${e(r._warn)}</small>`:'';
+        const qIn=r.qtyIn.qty?`${r.qtyIn.qty.toLocaleString()} ${r.qtyIn.unit}`:'—';
+        const qCur=r.qtyCur.qty?`${r.qtyCur.qty.toLocaleString()} ${r.qtyCur.unit}`:'—';
+        h+=`<tr${r._status==='er'?' style="background:#fff8f8"':''}>
+            <td style="color:#94a3b8;font-size:10px">${r._idx}</td>
+            <td>${badge}${warn}</td>
+            <td><span class="siw-code">${e(r.code)}</span></td>
+            <td title="${e(r.name)}" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e(r.name)}</td>
+            <td style="font-size:10px;color:#64748b">${e(r.cas||'—')}</td>
+            <td>${(()=>{
+                if(!r.labCode) return `<span class="siw-code" style="background:#fee2e2;color:#dc2626" title="${e(r.labRaw)}">${e(r.labRaw.slice(0,12)||'—')}</span>`;
+                // Colour: red=not found, amber=from bottle or fuzzy, green=confirmed
+                const notFound=r._roomFound===false;
+                const fuzzy=r._roomStrategy==='name_tail';
+                const fromBtl=r._labFromCode&&!notFound;
+                const bg=notFound?'#fee2e2':fuzzy?'#fef9c3':fromBtl?'#fef3c7':'#ecfdf5';
+                const fg=notFound?'#dc2626':fuzzy?'#854d0e':fromBtl?'#92400e':'#065f46';
+                const icon=notFound?'<i class="fas fa-times-circle" style="font-size:9px"></i>':fuzzy?'<i class="fas fa-question-circle" style="font-size:9px"></i>':fromBtl?'<i class="fas fa-link" style="font-size:9px;opacity:.7"></i>':'';
+                const tip=r._roomName?e(r._roomName):e(r.labRaw);
+                const lbl=r._roomName?e(r._roomName.slice(0,18)):e(r.labCode);
+                return `<span class="siw-code" style="background:${bg};color:${fg};max-width:130px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle" title="${tip}">${e(r.labCode)} ${icon}<br><small style="font-size:9px;opacity:.8">${lbl}</small></span>`;
+            })()}</td>
+            <td style="white-space:nowrap;color:#1e40af;font-weight:600">${qIn}</td>
+            <td style="white-space:nowrap;color:#16a34a;font-weight:600">${qCur}</td>
+            <td style="font-size:10px;color:#64748b">${r.dateIn||'—'}</td>
+            <td style="font-size:10px;color:${r.dateEx&&new Date(r.dateEx)<new Date()?'#dc2626':'#64748b'}">${r.dateEx||'—'}</td>
+        </tr>`;
+    });
+    if(!rows.length) h+=`<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:24px"><i class="fas fa-inbox" style="display:block;font-size:20px;margin-bottom:6px"></i>ไม่มีรายการ</td></tr>`;
+    if(SIW.parsed.filter(r=>f==='all'?true:r._status===f).length>300)
+        h+=`<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:10px;font-size:11px">แสดง 300 รายการแรก จากทั้งหมด ${SIW.parsed.filter(r=>f==='all'?true:r._status===f).length} รายการ</td></tr>`;
+    h+='</tbody></table>';
+    document.getElementById('siwRowTbl').innerHTML=h;
+    document.getElementById('siwRowCount').textContent='แสดง '+Math.min(rows.length,300)+' รายการ';
+}
+
+/* ── Step 3: Confirm ── */
+function _siwRenderConfirm(){
+    const valid=SIW.parsed.filter(r=>r._status!=='er');
+    const ok=SIW.parsed.filter(r=>r._status==='ok').length;
+    const wa=SIW.parsed.filter(r=>r._status==='wa').length;
+    const chems=new Set(valid.map(r=>r.name.toLowerCase())).size;
+    const rooms=new Set(valid.map(r=>r.labCode).filter(Boolean)).size;
+    const expired=valid.filter(r=>r.dateEx&&new Date(r.dateEx)<new Date()).length;
+    const dups=valid.filter(r=>r._duplicate).length;
+    document.getElementById('siwConf').innerHTML=`
+        <div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:10px"><i class="fas fa-clipboard-check" style="margin-right:6px"></i>สรุปข้อมูลที่จะนำเข้า</div>
+        <div class="siw-conf-row"><span class="siw-conf-key">จำนวนขวดทั้งหมด</span><span class="siw-conf-val">${valid.length.toLocaleString()} ขวด</span></div>
+        <div class="siw-conf-row"><span class="siw-conf-key">พร้อมนำเข้า</span><span class="siw-conf-val" style="color:#16a34a">${ok} รายการ</span></div>
+        <div class="siw-conf-row"><span class="siw-conf-key">มีคำเตือน (นำเข้าได้)</span><span class="siw-conf-val" style="color:#d97706">${wa} รายการ</span></div>
+        <div class="siw-conf-row"><span class="siw-conf-key">สารเคมีที่ไม่ซ้ำ</span><span class="siw-conf-val">${chems} ชนิด</span></div>
+        <div class="siw-conf-row"><span class="siw-conf-key">ห้องปฏิบัติการ</span><span class="siw-conf-val">${rooms} ห้อง</span></div>
+        ${dups?`<div class="siw-conf-row"><span class="siw-conf-key" style="color:#d97706">รหัสขวดซ้ำในระบบ</span><span class="siw-conf-val" style="color:#d97706">${dups} ขวด</span></div>`:''}
+        ${expired?`<div class="siw-conf-row"><span class="siw-conf-key" style="color:#dc2626">หมดอายุแล้ว</span><span class="siw-conf-val" style="color:#dc2626">${expired} ขวด (จะนำเข้าพร้อมระบุว่าหมดอายุ)</span></div>`:''}`;
+    const dupBlock=dups?`
+        <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:14px;font-size:12px;color:#9a3412;margin-bottom:8px">
+          <div style="font-weight:700;margin-bottom:8px"><i class="fas fa-triangle-exclamation" style="margin-right:6px;color:#f97316"></i>พบขวดที่รหัสซ้ำกับในระบบ ${dups} ขวด</div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none">
+            <input type="checkbox" id="siwCbOverwrite" style="width:15px;height:15px;accent-color:#ea580c;cursor:pointer">
+            <span>เขียนทับข้อมูลขวดเดิมในระบบด้วยข้อมูลจาก Smart lab</span>
+          </label>
+          <div style="color:#b45309;font-size:11px;margin-top:6px;padding-left:23px">
+            <i class="fas fa-circle-info" style="margin-right:4px"></i>หากไม่ติ๊ก จะ<b>ข้าม</b>ขวดที่ซ้ำโดยไม่แก้ไขข้อมูลเดิม
+          </div>
+        </div>`:'';
+    document.getElementById('siwP3Warn').innerHTML=dupBlock+`
+        <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:12px;font-size:12px;color:#92400e">
+        <i class="fas fa-triangle-exclamation" style="margin-right:6px"></i>
+        ระบบจะ <b>ค้นหาสารที่มีอยู่แล้ว</b> หากไม่มีจะสร้างใหม่${dups?'':' และจะ <b>ข้ามขวดที่รหัสซ้ำ</b> กับในระบบโดยอัตโนมัติ'}
+        </div>`;
+    document.getElementById('siwBtnImport').disabled=valid.length===0;
+}
+
+/* ── Step 4: Import ── */
+async function siwDoImport(){
+    if(SIW.importing) return;
+    const toImport=SIW.parsed.filter(r=>r._status!=='er');
+    if(!toImport.length){alert('ไม่มีรายการที่นำเข้าได้');return;}
+    SIW.overwrite=document.getElementById('siwCbOverwrite')?.checked??false;
+    SIW.importing=true; SIW.step=4;
+    _siwRenderStep();
+    document.getElementById('siwResHd').innerHTML=`<i class="fas fa-spinner fa-spin" style="font-size:22px;color:#059669"></i><div><b>กำลังนำเข้าข้อมูล...</b><br><small style="color:#64748b">กรุณารอ อย่าปิดหน้าต่างนี้</small></div>`;
+    document.getElementById('siwProgBar').style.display='block';
+    document.getElementById('siwProgTxt').style.display='block';
+    const BATCH=20;
+    let created=0,overwritten=0,skipped=0,errors=0; const resultRows=[];
+    for(let i=0;i<toImport.length;i+=BATCH){
+        const chunk=toImport.slice(i,i+BATCH);
+        const pct=Math.round((i/toImport.length)*100);
+        document.getElementById('siwProgFill').style.width=pct+'%';
+        document.getElementById('siwProgTxt').textContent=`นำเข้า ${Math.min(i+BATCH,toImport.length)} / ${toImport.length} รายการ...`;
+        try{
+            const res=await fetch('/v1/api/smartlab_import.php?action=import_json',{
+                method:'POST',headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({rows:chunk,overwrite:SIW.overwrite})
+            }).then(r=>r.json());
+            if(res.success&&res.results){
+                res.results.forEach(r=>{
+                    if(r.status==='created') created++;
+                    else if(r.status==='overwritten') overwritten++;
+                    else if(r.status==='skipped') skipped++;
+                    else errors++;
+                    resultRows.push(r);
+                });
+            } else {
+                chunk.forEach(r=>{errors++;resultRows.push({code:r.code,name:r.name,status:'error',reason:res.error||'API error'});});
+            }
+        }catch(e){
+            chunk.forEach(r=>{errors++;resultRows.push({code:r.code,name:r.name,status:'error',reason:e.message});});
+        }
+    }
+    document.getElementById('siwProgFill').style.width='100%';
+    SIW.importing=false;
+    SIW.results={created,overwritten,skipped,errors,rows:resultRows};
+    _siwRenderResults();
+}
+
+function _siwRenderResults(){
+    document.getElementById('siwProgBar').style.display='none';
+    document.getElementById('siwProgTxt').style.display='none';
+    const {created,overwritten,skipped,errors,rows}=SIW.results;
+    const allOk=errors===0;
+    const owTxt=overwritten?` · เขียนทับ ${overwritten}`:'';
+    document.getElementById('siwResHd').innerHTML=`
+        <i class="fas fa-${allOk?'check-circle':'exclamation-circle'}" style="font-size:26px;color:${allOk?'#16a34a':'#f59e0b'}"></i>
+        <div style="flex:1"><b style="font-size:14px">${allOk?'นำเข้าสำเร็จ!':'นำเข้าเสร็จสิ้น (บางรายการมีปัญหา)'}</b><br>
+        <small style="color:#64748b">สร้าง ${created.toLocaleString()}${owTxt} · ข้าม ${skipped} · ผิดพลาด ${errors} รายการ</small></div>
+        <button class="siw-btn siw-btn-g" onclick="siwExportResults()" style="font-size:11px;padding:6px 10px"><i class="fas fa-file-excel" style="color:#16a34a"></i> ส่งออก</button>`;
+    document.getElementById('siwResStats').innerHTML=`
+        <div class="siw-res-stat"><div class="siw-res-sn ok">${created.toLocaleString()}</div><div class="siw-res-sl">สร้างใหม่</div></div>
+        ${overwritten?`<div class="siw-res-stat"><div class="siw-res-sn" style="background:#f97316;color:#fff">${overwritten}</div><div class="siw-res-sl">เขียนทับ</div></div>`:''}
+        <div class="siw-res-stat"><div class="siw-res-sn sk">${skipped}</div><div class="siw-res-sl">ข้ามแล้ว</div></div>
+        <div class="siw-res-stat"><div class="siw-res-sn er">${errors}</div><div class="siw-res-sl">ผิดพลาด</div></div>`;
+    const e=v=>String(v||'').replace(/</g,'&lt;');
+    const LIMIT=200;
+    let h=`<table class="siw-tbl"><thead><tr><th>#</th><th>สถานะ</th><th>รหัสขวด</th><th>ชื่อสารเคมี</th><th>ห้อง</th><th>สาเหตุ</th></tr></thead><tbody>`;
+    rows.slice(0,LIMIT).forEach((r,i)=>{
+        const badge=r.status==='created'
+            ?`<span class="siw-badge ok"><i class="fas fa-check"></i> สร้างแล้ว</span>`
+            :r.status==='overwritten'
+            ?`<span class="siw-badge" style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa"><i class="fas fa-pen"></i> เขียนทับ</span>`
+            :r.status==='skipped'
+            ?`<span class="siw-badge sk"><i class="fas fa-minus"></i> ข้าม</span>`
+            :`<span class="siw-badge er"><i class="fas fa-times"></i> ผิดพลาด</span>`;
+        const roomCell=r.room
+            ?`<span class="siw-code" style="background:#ecfdf5;color:#065f46;max-width:120px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${e(r.room)}">${e(r.room.slice(0,16))}</span>`
+            :`<span style="color:#94a3b8;font-size:10px">—</span>`;
+        h+=`<tr${r.status==='error'?' style="background:#fff8f8"':r.status==='overwritten'?' style="background:#fff7ed"':''}>
+            <td style="color:#94a3b8;font-size:10px">${i+1}</td><td>${badge}</td>
+            <td><span class="siw-code">${e(r.code)}</span></td>
+            <td title="${e(r.name)}" style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${e(r.name)}</td>
+            <td>${roomCell}</td>
+            <td style="color:#dc2626;font-size:11px">${e(r.reason||'')}</td>
+        </tr>`;
+    });
+    if(rows.length>LIMIT) h+=`<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:10px;font-size:11px">และอีก ${rows.length-LIMIT} รายการ — กด "ส่งออก" เพื่อดูทั้งหมด</td></tr>`;
+    h+='</tbody></table>';
+    document.getElementById('siwResTbl').innerHTML=h;
+    _siwRenderStep();
+}
+
+/* ── Export Results ── */
+function siwExportResults(){
+    if(typeof XLSX==='undefined'){alert('กำลังโหลด SheetJS...');return;}
+    if(!SIW.results){alert('ยังไม่มีผลลัพธ์');return;}
+    const rows=SIW.results.rows;
+    const sl={'created':'สร้างแล้ว','overwritten':'เขียนทับ','skipped':'ข้ามแล้ว','error':'ผิดพลาด'};
+    const header=['ลำดับ','รหัสขวด','ชื่อสารเคมี','ห้อง','สถานะ','สาเหตุ'];
+    const data=[header,...rows.map((r,i)=>[i+1,r.code||'',r.name||'',r.room||'',sl[r.status]||r.status,r.reason||''])];
+    const ws=XLSX.utils.aoa_to_sheet(data);
+    ws['!cols']=[{wch:6},{wch:18},{wch:40},{wch:30},{wch:12},{wch:40}];
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'ผลลัพธ์การนำเข้า Smart lab');
+    XLSX.writeFile(wb,'smartlab_import_results_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
 </script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <!-- Donation Modal Overlay -->
 <div class="dnModal-ov" id="dnOv" onclick="if(event.target===this)closeDnModal()"></div>
 </body></html>

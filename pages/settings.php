@@ -8,6 +8,24 @@ if ($user['role_name'] !== 'admin')    { header('Location: /v1/');              
 $lang = I18n::getCurrentLang();
 $TH   = ($lang === 'th');
 
+// Auto-provision logo_icon in system_settings if not present
+$_logoRow = Database::fetch("SELECT setting_value FROM system_settings WHERE setting_key = 'logo_icon' LIMIT 1");
+if (!$_logoRow) {
+    try {
+        Database::insert('system_settings', [
+            'setting_key'   => 'logo_icon',
+            'setting_value' => 'fa-flask-vial',
+            'setting_type'  => 'string',
+            'category'      => 'appearance',
+            'label'         => 'Logo Icon',
+            'description'   => 'FontAwesome icon class สำหรับโลโก้ใน sidebar',
+        ]);
+    } catch (Exception $_e) { /* already exists */ }
+    $currentLogoIcon = 'fa-flask-vial';
+} else {
+    $currentLogoIcon = $_logoRow['setting_value'] ?: 'fa-flask-vial';
+}
+
 Layout::head($TH ? 'ตั้งค่าระบบ' : 'System Settings');
 ?>
 <style>
@@ -262,6 +280,11 @@ Layout::head($TH ? 'ตั้งค่าระบบ' : 'System Settings');
             <div class="st-nav-item" data-panel="iframe" onclick="switchPanel('iframe')">
                 <div class="st-nav-ic" style="background:#ede9fe;color:#7c3aed"><i class="fas fa-cube"></i></div>
                 <span class="st-nav-label">3D / Iframe</span>
+                <span class="st-nav-dirty"></span>
+            </div>
+            <div class="st-nav-item" data-panel="appearance" onclick="switchPanel('appearance')">
+                <div class="st-nav-ic" style="background:#fff7ed;color:#ea580c"><i class="fas fa-palette"></i></div>
+                <span class="st-nav-label"><?= $TH ? 'รูปลักษณ์' : 'Appearance' ?></span>
                 <span class="st-nav-dirty"></span>
             </div>
             <div class="st-nav-sep"></div>
@@ -539,6 +562,62 @@ Layout::head($TH ? 'ตั้งค่าระบบ' : 'System Settings');
             </div>
         </div>
 
+        <!-- ── APPEARANCE ────────────────────────────────────────── -->
+        <div class="st-panel" id="panel-appearance">
+            <div class="st-card" id="card-appearance">
+                <div class="st-card-hdr">
+                    <div class="st-card-hdr-ic" style="background:#fff7ed;color:#ea580c"><i class="fas fa-palette"></i></div>
+                    <span class="st-card-hdr-title"><?= $TH ? 'รูปลักษณ์ระบบ' : 'Appearance' ?></span>
+                    <span class="st-card-hdr-badge" id="badge-appearance">
+                        <i class="fas fa-circle" style="font-size:6px"></i> <?= $TH ? 'มีการเปลี่ยนแปลง' : 'Unsaved' ?>
+                    </span>
+                </div>
+                <div class="st-card-body">
+                    <!-- Logo Icon -->
+                    <div class="st-row" style="flex-direction:column;align-items:flex-start;gap:16px;padding-bottom:16px">
+                        <div class="st-row-info">
+                            <div class="st-row-label"><i class="fas fa-icons" style="color:#ea580c"></i><?= $TH ? 'ไอคอนโลโก้ระบบ' : 'System Logo Icon' ?></div>
+                            <div class="st-row-desc"><?= $TH ? 'ไอคอน FontAwesome ที่แสดงบน sidebar มุมบนซ้าย — เปลี่ยนแล้วอัปเดตทันที' : 'FontAwesome icon displayed in the top-left sidebar logo — updates live' ?></div>
+                        </div>
+                        <div style="display:flex;gap:20px;align-items:flex-start;width:100%">
+                            <!-- Live preview -->
+                            <div style="flex-shrink:0">
+                                <div style="font-size:10px;font-weight:700;color:var(--c3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px"><?= $TH ? 'ตัวอย่าง' : 'Preview' ?></div>
+                                <div style="display:flex;align-items:center;gap:10px;background:#2d2d2d;padding:10px 14px;border-radius:10px;width:fit-content">
+                                    <div id="stLogoPreview" style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#f97316,#fb923c);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;box-shadow:0 2px 8px rgba(249,115,22,.4);flex-shrink:0">
+                                        <i id="stLogoPreviewIcon" class="fas <?= htmlspecialchars($currentLogoIcon) ?>"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:12px;font-weight:700;color:#fff;line-height:1.2"><span style="color:#f97316">SUT</span> chemBot</div>
+                                        <div style="font-size:9px;color:#888">Chemical Management</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Picker -->
+                            <div style="flex:1;min-width:0">
+                                <div style="font-size:10px;font-weight:700;color:var(--c3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px"><?= $TH ? 'เลือกไอคอน (คลิก)' : 'Pick an icon (click)' ?></div>
+                                <div id="stIconGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:5px;max-height:210px;overflow-y:auto;padding:8px;border:1.5px solid var(--border);border-radius:10px;background:#fafafa"></div>
+                                <div style="margin-top:10px;display:flex;gap:7px;align-items:center">
+                                    <input type="text" id="stIconInput" class="st-input" value="<?= htmlspecialchars($currentLogoIcon) ?>"
+                                        placeholder="fa-flask-vial" style="flex:1;font-family:monospace;font-size:12px"
+                                        oninput="applyIconInput()">
+                                    <div style="font-size:10.5px;color:var(--c3);white-space:nowrap"><?= $TH ? 'พิมพ์ class เอง' : 'Custom class' ?></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="st-foot">
+                    <span class="st-foot-hint show" id="foot-hint-appearance" style="opacity:0">
+                        <i class="fas fa-circle-dot" style="font-size:7px"></i> <?= $TH ? 'มีการเปลี่ยนแปลง' : 'Unsaved changes' ?>
+                    </span>
+                    <button class="st-save-btn" id="save-btn-appearance" onclick="doSaveAppearance()">
+                        <i class="fas fa-floppy-disk"></i> <?= $TH ? 'บันทึก' : 'Save' ?>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- ── LOCKED ACCOUNTS ───────────────────────────────────── -->
         <div class="st-panel" id="panel-locked">
             <div class="st-card">
@@ -590,15 +669,16 @@ const TH = <?= $TH ? 'true' : 'false' ?>;
 
 /* ─── Section config ─────────────────────────────────────────────────── */
 const SECS = {
-    security: { label: TH?'ความปลอดภัย':'Security',       saveLabel: TH?'บันทึกความปลอดภัย':'Save Security' },
-    general:  { label: TH?'ทั่วไป':'General',              saveLabel: TH?'บันทึกทั่วไป':'Save General'      },
-    iframe:   { label: 'Iframe / 3D Config',               saveLabel: TH?'บันทึก Iframe Config':'Save Iframe Config' },
+    security:   { label: TH?'ความปลอดภัย':'Security',       saveLabel: TH?'บันทึกความปลอดภัย':'Save Security' },
+    general:    { label: TH?'ทั่วไป':'General',              saveLabel: TH?'บันทึกทั่วไป':'Save General'      },
+    iframe:     { label: 'Iframe / 3D Config',               saveLabel: TH?'บันทึก Iframe Config':'Save Iframe Config' },
+    appearance: { label: TH?'รูปลักษณ์':'Appearance',        saveLabel: TH?'บันทึกรูปลักษณ์':'Save Appearance' },
 };
 /* Maps data-key "3d_iframe" from API → our section "iframe" */
 const KEY_TO_SEC = { '3d_iframe': 'iframe' };
 
 let origVals  = {};
-let secDirty  = { security: false, general: false, iframe: false };
+let secDirty  = { security: false, general: false, iframe: false, appearance: false };
 let modalCb   = null;
 
 /* ─── Panel switching ────────────────────────────────────────────────── */
@@ -666,6 +746,7 @@ async function loadSettings() {
         Object.keys(secDirty).forEach(s => { secDirty[s] = false; refreshDirty(s); });
         syncLockoutSub();
         syncDemoLabel();
+        if (flat['logo_icon']) applyLogoIcon(flat['logo_icon'], false);
     } catch(e) { console.error('loadSettings', e); }
 }
 
@@ -934,7 +1015,88 @@ function copyParsed() {
 /* ─── Helpers ────────────────────────────────────────────────────────── */
 function esc(s) { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; }
 
+/* ─── Appearance / Logo Icon ─────────────────────────────────────────── */
+const LOGO_ICONS = [
+    // Lab & Science
+    'fa-flask-vial','fa-flask','fa-vials','fa-microscope','fa-atom',
+    'fa-dna','fa-pills','fa-syringe','fa-stethoscope','fa-disease',
+    // Hazard & Safety
+    'fa-biohazard','fa-radiation','fa-skull-crossbones','fa-fire-flame-curved',
+    'fa-temperature-high','fa-wind','fa-droplet','fa-snowflake',
+    // Nature
+    'fa-leaf','fa-seedling','fa-recycle','fa-tree',
+    // Institution
+    'fa-graduation-cap','fa-building','fa-hospital','fa-building-columns','fa-landmark',
+    // Tech & General
+    'fa-gear','fa-gears','fa-shield-alt','fa-infinity','fa-bolt','fa-rocket',
+    'fa-cube','fa-cubes','fa-database','fa-network-wired','fa-star','fa-gem',
+    'fa-satellite','fa-circle-nodes','fa-microchip',
+];
+
+let _curIcon = '<?= htmlspecialchars($currentLogoIcon) ?>';
+
+function buildIconGrid() {
+    const grid = document.getElementById('stIconGrid');
+    if (!grid) return;
+    grid.innerHTML = LOGO_ICONS.map(ic => {
+        const sel = ic === _curIcon;
+        return `<button onclick="selectIcon('${ic}')" title="${ic}"
+            style="width:38px;height:38px;border-radius:8px;
+                   border:2px solid ${sel?'var(--st)':'transparent'};
+                   background:${sel?'var(--st-l)':'#fff'};
+                   cursor:pointer;display:flex;align-items:center;justify-content:center;
+                   font-size:15px;color:${sel?'var(--st)':'var(--c2)'};
+                   transition:all .12s;box-shadow:${sel?'0 0 0 2px rgba(109,40,217,.15)':'none'}">
+            <i class="fas ${ic}"></i></button>`;
+    }).join('');
+}
+
+function applyLogoIcon(ic, markDirty=true) {
+    _curIcon = ic;
+    const prev = document.getElementById('stLogoPreviewIcon');
+    const inp  = document.getElementById('stIconInput');
+    if (prev) prev.className = 'fas ' + ic;
+    if (inp && document.activeElement !== inp) inp.value = ic;
+    buildIconGrid();
+    if (markDirty) {
+        secDirty.appearance = true;
+        refreshDirty('appearance');
+    }
+}
+
+function selectIcon(ic) { applyLogoIcon(ic, true); }
+
+function applyIconInput() {
+    let v = (document.getElementById('stIconInput')?.value || '').trim();
+    if (!v) return;
+    if (!v.startsWith('fa-')) v = 'fa-' + v;
+    applyLogoIcon(v, true);
+}
+
+async function doSaveAppearance() {
+    const ic  = _curIcon || 'fa-flask-vial';
+    const btn = document.getElementById('save-btn-appearance');
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${TH?'กำลังบันทึก...':'Saving...'}`;
+    try {
+        const d = await apiFetch('/v1/api/settings.php', { method: 'POST', body: JSON.stringify({ logo_icon: ic }) });
+        if (!d.success) throw new Error(d.error || 'Save failed');
+        // Update live sidebar icon without page reload
+        document.querySelectorAll('.sb-logo-icon i').forEach(el => el.className = 'fas ' + ic);
+        origVals['logo_icon'] = ic;
+        secDirty.appearance = false;
+        refreshDirty('appearance');
+        stToast(TH ? 'บันทึกไอคอนโลโก้เรียบร้อย' : 'Logo icon saved', 'ok');
+    } catch(e) {
+        stToast(e.message, 'err');
+    } finally {
+        btn.disabled = false; btn.innerHTML = orig;
+    }
+}
+
 /* ─── Init ───────────────────────────────────────────────────────────── */
+buildIconGrid();
 loadSettings();
 </script>
 

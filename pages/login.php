@@ -14,6 +14,9 @@ $lang = I18n::getCurrentLang();
 $demoSetting = Database::fetch("SELECT setting_value FROM system_settings WHERE setting_key = :k", [':k' => 'demo_accounts_enabled']);
 $demoEnabled = $demoSetting && in_array($demoSetting['setting_value'], ['1', 'true']);
 
+$_liRow   = Database::fetch("SELECT setting_value FROM system_settings WHERE setting_key = 'logo_icon' LIMIT 1");
+$logoIcon = ($_liRow && $_liRow['setting_value']) ? htmlspecialchars($_liRow['setting_value']) : 'fa-flask-vial';
+
 $allUsers = [];
 if ($demoEnabled) {
     $allUsers = Database::fetchAll("
@@ -1231,7 +1234,7 @@ body{min-height:100vh;background:var(--chat-bg);font-family:'Inter','Noto Sans T
 <!-- ═══ SIDEBAR ═══ -->
 <aside class="sb" id="sidebar">
     <div class="sb-logo">
-        <div class="sb-logo-icon"><i class="fas fa-flask-vial"></i></div>
+        <div class="sb-logo-icon"><i class="fas <?= $logoIcon ?>"></i></div>
         <div class="sb-logo-text">
             <h1>SUT ChemBot</h1>
             <p>AI Chemical Search Assistant</p>
@@ -1334,7 +1337,7 @@ body{min-height:100vh;background:var(--chat-bg);font-family:'Inter','Noto Sans T
             <!-- Welcome hero text -->
             <div style="text-align:center;padding:60px 20px 40px;">
                 <div style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--accent),#fb923c);display:inline-flex;align-items:center;justify-content:center;font-size:28px;color:#fff;margin-bottom:20px;box-shadow:0 8px 28px rgba(249,115,22,.28)">
-                    <i class="fas fa-flask-vial"></i>
+                    <i class="fas <?= $logoIcon ?>"></i>
                 </div>
                 <h2 style="font-size:26px;font-weight:800;color:var(--c1);margin-bottom:8px"><?php echo $lang==='th'?'มีอะไรให้ฉันช่วยไหมคะ?':'How can I help you today?'; ?></h2>
                 <p style="font-size:14px;color:var(--c3);max-width:440px;margin:0 auto;line-height:1.6"><?php echo $lang==='th'?'ค้นหาสารเคมี ดูข้อมูลความปลอดภัย ตรวจสอบที่จัดเก็บ และอื่นๆ อีกมากมาย':'Search chemicals, view safety data, check storage locations, and much more.'; ?></p>

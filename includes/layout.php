@@ -516,7 +516,14 @@ class Layout {
     
     <aside class="sb" id="sidebar">
         <div class="sb-logo">
-            <div class="sb-logo-icon" onclick="toggleSidebarCollapse()" title="ยุบ/แสดงเมนู"><i class="fas fa-flask-vial"></i></div>
+            <?php
+            static $_sbLogoIcon = null;
+            if ($_sbLogoIcon === null) {
+                $__r = Database::fetch("SELECT setting_value FROM system_settings WHERE setting_key = 'logo_icon' LIMIT 1");
+                $_sbLogoIcon = ($__r && $__r['setting_value']) ? htmlspecialchars($__r['setting_value']) : 'fa-flask-vial';
+            }
+            ?>
+            <div class="sb-logo-icon" onclick="toggleSidebarCollapse()" title="ยุบ/แสดงเมนู"><i class="fas <?= $_sbLogoIcon ?>"></i></div>
             <div class="sb-logo-text-wrap"><div class="sb-logo-text"><span style="color:#f97316">SUT</span> chemBot</div><div class="sb-logo-sub">Chemical Management</div></div>
         </div>
         <nav class="sb-nav">

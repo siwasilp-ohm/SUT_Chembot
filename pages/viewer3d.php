@@ -12,6 +12,12 @@ $modelId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $title = isset($_GET['title']) ? htmlspecialchars($_GET['title']) : 'โมเดล 3D';
 $transparent = !empty($_GET['transparent']);
 $embed = !empty($_GET['embed']); // minimal UI mode for iframe embedding
+
+// If src is an external embed URL (not a GLB/GLTF file), redirect directly to it
+if ($src && preg_match('/^https?:\/\//i', $src) && !preg_match('/\.(glb|gltf)(\?.*)?$/i', $src)) {
+    header('Location: ' . $src);
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="th">

@@ -319,6 +319,31 @@
         .ar-kv .kv-v.yellow{color:#fde68a}
         .ar-kv .kv-v.red{color:#f87171}
 
+        /* ═══ SDS File Cards (dark theme) ═══ */
+        .ar-sds-list{padding:0 24px 16px;display:flex;flex-direction:column;gap:10px}
+        .ar-sds-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden;transition:border-color .2s,background .2s}
+        .ar-sds-card:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12)}
+        .ar-sds-main{display:flex;align-items:center;gap:12px;padding:12px 14px}
+        .ar-sds-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+        .ar-sds-info{flex:1;min-width:0}
+        .ar-sds-name{font-size:12.5px;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+        .ar-sds-meta{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+        .ar-sds-badge{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:5px;letter-spacing:.3px}
+        .ar-sds-acts{display:flex;gap:6px;flex-shrink:0}
+        .ar-sds-btn{width:32px;height:32px;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-size:12px;text-decoration:none;cursor:pointer;transition:all .2s}
+        .ar-sds-btn:hover{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.2)}
+        .ar-sds-expiry{padding:8px 14px 10px;border-top:1px solid rgba(255,255,255,.05)}
+        .ar-sds-exp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+        .ar-sds-exp-lbl{font-size:9.5px;color:rgba(255,255,255,.35);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+        .ar-sds-exp-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:6px;letter-spacing:.3px}
+        .ar-sds-bar-wrap{height:4px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-bottom:5px}
+        .ar-sds-bar{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+        .ar-sds-dates{display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,.3)}
+        .ar-sds-empty{text-align:center;padding:32px 24px;color:rgba(255,255,255,.25)}
+        .ar-sds-empty i{font-size:32px;display:block;margin-bottom:10px;opacity:.35}
+        .ar-sds-empty p{font-size:12px;font-weight:600;margin:0 0 4px}
+        .ar-sds-empty span{font-size:10.5px}
+
         /* Landscape orientation adjustments */
         @media (orientation: landscape) and (max-height: 500px) {
             .ar-card{max-height:80vh;overflow-y:auto}
@@ -435,6 +460,20 @@ if (!$container) {
 // Parse data
 $hazardPictograms = json_decode($container['hazard_pictograms'] ?? '[]', true);
 if (!is_array($hazardPictograms)) $hazardPictograms = [];
+
+// Normalize GHSxx codes → descriptive canonical keys (same as stock.php ghsCodeMap)
+$_ghsCodeMap = [
+    'GHS01'=>'explosive','GHS02'=>'flammable','GHS03'=>'oxidizing','GHS04'=>'compressed_gas',
+    'GHS05'=>'corrosive','GHS06'=>'toxic','GHS07'=>'irritant','GHS08'=>'health_hazard','GHS09'=>'environmental',
+    'gas_pressure'=>'compressed_gas','gas_cylinder'=>'compressed_gas',
+    'flame'=>'flammable','flame_over_circle'=>'oxidizing',
+    'skull_crossbones'=>'toxic','corrosion'=>'corrosive',
+    'exclamation_mark'=>'irritant','environment'=>'environmental','exploding_bomb'=>'explosive',
+];
+$hazardPictograms = array_values(array_unique(array_map(
+    function($p) use ($_ghsCodeMap) { return $_ghsCodeMap[$p] ?? $p; },
+    $hazardPictograms
+)));
 $ghsClassifications = json_decode($container['ghs_classifications'] ?? '[]', true);
 if (!is_array($ghsClassifications)) $ghsClassifications = [];
 $remainingPercent = (float)($container['remaining_percentage'] ?? 100);
@@ -469,6 +508,24 @@ $mfrName = $container['manufacturer_name'] ?? '';
 $cabinetName = $container['cabinet_name'] ?? '';
 $sdsUrl = $container['chem_sds_url'] ?? '';
 $chemDescription = $container['chem_description'] ?? '';
+
+// ═══ Fetch SDS files from chemical_sds_files ═══
+$sdsFiles = [];
+$chemicalDbId = (!$isStock && !empty($container['chemical_id'])) ? (int)$container['chemical_id'] : null;
+if (!$chemicalDbId && $casNumber) {
+    $chemRow = Database::fetch("SELECT id FROM chemicals WHERE cas_number = :cas LIMIT 1", [':cas' => $casNumber]);
+    if ($chemRow) $chemicalDbId = (int)$chemRow['id'];
+}
+if ($chemicalDbId) {
+    $sdsFiles = Database::fetchAll(
+        "SELECT sf.*, u.first_name, u.last_name
+         FROM chemical_sds_files sf
+         LEFT JOIN users u ON sf.uploaded_by = u.id
+         WHERE sf.chemical_id = :id
+         ORDER BY sf.is_primary DESC, sf.created_at DESC",
+        [':id' => $chemicalDbId]
+    );
+}
 $qualityStatus = $container['quality_status'] ?? '';
 $invoiceNumber = $container['invoice_number'] ?? '';
 $expiryDate = $container['expiry_date'] ?? '';
@@ -493,34 +550,23 @@ if (!empty($container['container_3d_model'])) {
 }
 
 // 2. Look up packaging_3d_models by container_type + material
+// Uses same query logic as containers.php getARData() to stay in sync
 if (!$modelUrl) {
-    // Try exact match on type + material first
-    $model3d = null;
-    if (!empty($containerMaterial)) {
-        $model3d = Database::fetch(
-            "SELECT * FROM packaging_3d_models 
-             WHERE container_type = :t 
-             AND container_material = :m
-             AND is_active = 1
-             ORDER BY is_default DESC, id DESC LIMIT 1",
-            [':t' => $containerType, ':m' => $containerMaterial]
-        );
-    }
-    // Fallback: try just by type (any material or null)
+    $model3d = Database::fetch(
+        "SELECT * FROM packaging_3d_models
+         WHERE container_type = :t
+         AND (container_material = :m OR container_material IS NULL OR container_material = '')
+         AND is_active = 1
+         ORDER BY is_default DESC LIMIT 1",
+        [':t' => $containerType, ':m' => $containerMaterial ?: '']
+    );
+    // Fallback: any active model for this container type
     if (!$model3d) {
         $model3d = Database::fetch(
-            "SELECT * FROM packaging_3d_models 
-             WHERE container_type = :t AND is_active = 1 
-             ORDER BY is_default DESC, id DESC LIMIT 1",
+            "SELECT * FROM packaging_3d_models
+             WHERE container_type = :t AND is_active = 1
+             ORDER BY is_default DESC LIMIT 1",
             [':t' => $containerType]
-        );
-    }
-    // Last fallback: any default model
-    if (!$model3d) {
-        $model3d = Database::fetch(
-            "SELECT * FROM packaging_3d_models 
-             WHERE is_active = 1 AND is_default = 1 
-             ORDER BY id DESC LIMIT 1"
         );
     }
     if ($model3d) {
@@ -923,23 +969,95 @@ $typeBg = ['bottle'=>'rgba(99,102,241,.15)','vial'=>'rgba(168,85,247,.15)','flas
         </div>
         <?php endif; ?>
 
-        <?php if ($sdsUrl): ?>
-        <div class="ar-sec-hdr"><i class="fas fa-file-pdf"></i> เอกสารความปลอดภัย</div>
-        <div style="padding:0 24px 16px">
-            <a href="<?php echo htmlspecialchars($sdsUrl); ?>" target="_blank"
-               style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:12px;color:#fca5a5;text-decoration:none;font-weight:700;font-size:13px;transition:background .2s"
-               onmouseover="this.style.background='rgba(239,68,68,.18)'" onmouseout="this.style.background='rgba(239,68,68,.1)'">
-                <i class="fas fa-file-pdf" style="font-size:20px;color:#f87171"></i>
-                <div>
-                    <div>Safety Data Sheet (SDS)</div>
-                    <div style="font-size:10px;opacity:.6;font-weight:500;margin-top:2px">คลิกเพื่อดาวน์โหลดเอกสาร PDF</div>
+        <?php
+        // ─── SDS & Safety Documents ───
+        $_typeIcon = ['sds'=>'fa-file-pdf','datasheet'=>'fa-file-alt','msds'=>'fa-file-medical','certificate'=>'fa-certificate','other'=>'fa-file'];
+        $_typeColor = ['sds'=>'#f87171','datasheet'=>'#60a5fa','msds'=>'#c084fc','certificate'=>'#4ade80','other'=>'#94a3b8'];
+        $_typeLbl = ['sds'=>'SDS','datasheet'=>'Datasheet','msds'=>'MSDS','certificate'=>'Certificate','other'=>'File'];
+        $hasSdsSection = count($sdsFiles) > 0 || $sdsUrl;
+        ?>
+        <?php if ($hasSdsSection): ?>
+        <div class="ar-sec-hdr"><i class="fas fa-file-shield"></i> เอกสารความปลอดภัย
+            <?php if (count($sdsFiles)): ?><span style="margin-left:auto;font-size:9px;background:rgba(99,102,241,.25);color:#a5b4fc;padding:2px 8px;border-radius:8px;font-weight:700;text-transform:none;letter-spacing:0"><?php echo count($sdsFiles); ?> ไฟล์</span><?php endif; ?>
+        </div>
+        <div class="ar-sds-list">
+        <?php if (count($sdsFiles) > 0): ?>
+            <?php foreach ($sdsFiles as $sf):
+                $ft = $sf['file_type'] ?? 'other';
+                $tic = $_typeIcon[$ft] ?? 'fa-file';
+                $tc = $_typeColor[$ft] ?? '#94a3b8';
+                $tlbl = $_typeLbl[$ft] ?? strtoupper($ft);
+                $now_ts = time();
+                $issueTs = !empty($sf['issue_date']) ? strtotime($sf['issue_date']) : null;
+                $expiryTs = !empty($sf['expiry_date']) ? strtotime($sf['expiry_date']) : null;
+                $daysLeft = $expiryTs ? (int)ceil(($expiryTs - $now_ts) / 86400) : null;
+                $totalDays = ($issueTs && $expiryTs) ? max(1, (int)ceil(($expiryTs - $issueTs) / 86400)) : 1825;
+                $elapsed = $issueTs ? max(0,(int)ceil(($now_ts - $issueTs)/86400)) : 0;
+                $pct = min(100, max(0, round($elapsed / $totalDays * 100)));
+                if ($daysLeft === null) { $badgeText='มีผลบังคับ';$barColor='#4ade80';$badgeBg='rgba(34,197,94,.2)';$badgeFg='#4ade80'; }
+                elseif ($daysLeft < 0) { $badgeText='หมดอายุแล้ว';$barColor='#f87171';$badgeBg='rgba(239,68,68,.2)';$badgeFg='#f87171'; }
+                elseif ($daysLeft <= 90) { $badgeText='เหลือ '.$daysLeft.' วัน';$barColor='#fbbf24';$badgeBg='rgba(245,158,11,.2)';$badgeFg='#fbbf24'; }
+                else { $badgeText='เหลือ '.$daysLeft.' วัน';$barColor='#4ade80';$badgeBg='rgba(34,197,94,.2)';$badgeFg='#4ade80'; }
+                $fmtDate = function($ts) { return $ts ? date('d M Y', $ts) : '—'; };
+                $uploader = trim(($sf['first_name']??'').' '.($sf['last_name']??'')) ?: null;
+            ?>
+            <div class="ar-sds-card">
+                <div class="ar-sds-main">
+                    <div class="ar-sds-icon" style="background:<?php echo $tc; ?>18;color:<?php echo $tc; ?>"><i class="fas <?php echo $tic; ?>"></i></div>
+                    <div class="ar-sds-info">
+                        <div class="ar-sds-name"><?php echo htmlspecialchars($sf['title'] ?? 'ไม่มีชื่อ'); ?></div>
+                        <div class="ar-sds-meta">
+                            <span class="ar-sds-badge" style="background:<?php echo $tc; ?>18;color:<?php echo $tc; ?>"><?php echo $tlbl; ?></span>
+                            <?php if (!empty($sf['language'])): ?><span class="ar-sds-badge" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.5)"><?php echo strtoupper($sf['language']); ?></span><?php endif; ?>
+                            <?php if (!empty($sf['is_primary']) && $sf['is_primary']): ?><span class="ar-sds-badge" style="background:rgba(99,102,241,.2);color:#a5b4fc"><i class="fas fa-star" style="font-size:7px"></i> หลัก</span><?php endif; ?>
+                            <?php if ($uploader): ?><span style="font-size:9px;color:rgba(255,255,255,.3)"><i class="fas fa-user" style="font-size:8px"></i> <?php echo htmlspecialchars($uploader); ?></span><?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="ar-sds-acts">
+                        <?php if (!empty($sf['file_path'])): ?>
+                        <a href="<?php echo htmlspecialchars($sf['file_path']); ?>" target="_blank" class="ar-sds-btn" title="ดาวน์โหลด"><i class="fas fa-download"></i></a>
+                        <?php endif; ?>
+                        <?php if (!empty($sf['file_url'])): ?>
+                        <a href="<?php echo htmlspecialchars($sf['file_url']); ?>" target="_blank" class="ar-sds-btn" title="เปิดลิงก์"><i class="fas fa-arrow-up-right-from-square"></i></a>
+                        <?php endif; ?>
+                    </div>
                 </div>
-                <i class="fas fa-arrow-up-right-from-square" style="margin-left:auto;font-size:12px;opacity:.5"></i>
-            </a>
+                <?php if ($issueTs || $expiryTs): ?>
+                <div class="ar-sds-expiry">
+                    <div class="ar-sds-exp-row">
+                        <span class="ar-sds-exp-lbl"><i class="fas fa-calendar-check" style="margin-right:4px;color:<?php echo $barColor; ?>"></i>อายุเอกสาร</span>
+                        <span class="ar-sds-exp-badge" style="background:<?php echo $badgeBg; ?>;color:<?php echo $badgeFg; ?>"><?php echo htmlspecialchars($badgeText); ?></span>
+                    </div>
+                    <div class="ar-sds-bar-wrap"><div class="ar-sds-bar" style="width:<?php echo $pct; ?>%;background:<?php echo $barColor; ?>"></div></div>
+                    <div class="ar-sds-dates">
+                        <span><?php echo $fmtDate($issueTs); ?></span>
+                        <span><?php echo $fmtDate($expiryTs); ?></span>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
+        <?php elseif ($sdsUrl): ?>
+            <div class="ar-sds-card">
+                <div class="ar-sds-main">
+                    <div class="ar-sds-icon" style="background:rgba(248,113,113,.15);color:#f87171"><i class="fas fa-file-pdf"></i></div>
+                    <div class="ar-sds-info">
+                        <div class="ar-sds-name">Safety Data Sheet (SDS)</div>
+                        <div class="ar-sds-meta">
+                            <span class="ar-sds-badge" style="background:rgba(248,113,113,.15);color:#f87171">SDS</span>
+                            <span style="font-size:9px;color:rgba(255,255,255,.3)">ลิงก์ภายนอก</span>
+                        </div>
+                    </div>
+                    <div class="ar-sds-acts">
+                        <a href="<?php echo htmlspecialchars($sdsUrl); ?>" target="_blank" class="ar-sds-btn" title="เปิดเอกสาร"><i class="fas fa-arrow-up-right-from-square"></i></a>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
         </div>
         <?php endif; ?>
 
-        <?php if (!$signalWord && count($hazardPictograms) === 0): ?>
+        <?php if (!$signalWord && count($hazardPictograms) === 0 && !$hasSdsSection): ?>
         <div style="padding:40px 24px;text-align:center;color:rgba(255,255,255,.25)">
             <i class="fas fa-shield-halved" style="font-size:36px;margin-bottom:12px;display:block;opacity:.4"></i>
             <div style="font-size:13px;font-weight:600">ไม่มีข้อมูลความเป็นอันตราย</div>

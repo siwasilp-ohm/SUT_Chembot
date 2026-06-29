@@ -5,6 +5,9 @@ if (!$user) { header('Location: /v1/pages/login.php'); exit; }
 
 $lang = I18n::getCurrentLang();
 $th   = $lang === 'th';
+
+$_daRow   = Database::fetch("SELECT setting_value FROM system_settings WHERE setting_key = 'logo_icon' LIMIT 1");
+$logoIcon = ($_daRow && $_daRow['setting_value']) ? htmlspecialchars($_daRow['setting_value']) : 'fa-flask-vial';
 $role = $user['role_name'] ?? 'user';
 
 $displayName = trim((string)(!empty($user['full_name_th'])
@@ -717,7 +720,7 @@ html,body{overflow:hidden;height:100%}
     <!-- Welcome Screen -->
     <div id="welcomeScreen">
         <div class="welcome">
-            <div class="welcome-logo"><i class="fas fa-flask-vial"></i></div>
+            <div class="welcome-logo"><i class="fas <?= $logoIcon ?>"></i></div>
             <h2 class="welcome-title"><?php echo $th ? 'มีอะไรให้ฉันช่วยไหมคะ?' : 'How can I help you today?'; ?></h2>
             <div class="role-badge <?php echo $isAdmin ? 'admin' : ($isManager ? 'manager' : 'user'); ?>">
                 <i class="fas <?php echo $isAdmin ? 'fa-crown' : ($isManager ? 'fa-microscope' : 'fa-user'); ?>"></i>

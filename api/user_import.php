@@ -119,6 +119,99 @@ try {
         exit;
 
     // ═══════════════════════════════════════════════════
+    // IMPORT JSON: Receive parsed rows from client (XLSX/CSV via SheetJS)
+    // ═══════════════════════════════════════════════════
+    case 'import_json':
+        if ($method !== 'POST') throw new Exception('Method not allowed');
+        $payload = json_decode(file_get_contents('php://input'), true);
+        if (!is_array($payload['rows'] ?? null)) throw new Exception('Invalid payload');
+
+        $rows          = $payload['rows'];
+        $updateExisting = !empty($payload['update_existing']);
+
+        $defaultRole = Database::fetch("SELECT id FROM roles WHERE name='user' LIMIT 1");
+        if (!$defaultRole) throw new Exception('Default role not found');
+        $roleId = (int)$defaultRole['id'];
+
+        $stats   = ['total' => 0, 'created' => 0, 'skipped' => 0, 'errors' => 0];
+        $results = [];
+
+        foreach ($rows as $i => $row) {
+            $stats['total']++;
+            $username = trim($row['username'] ?? '');
+            try {
+                if (empty($username)) throw new Exception('รหัสพนักงาน (username) ต้องไม่ว่าง');
+
+                $email    = trim($row['email'] ?? '');
+                if (empty($email)) $email = $username . '@sut.ac.th';
+
+                $fullName  = trim($row['fullname']   ?? '');
+                $firstName = trim($row['first_name'] ?? '');
+                $lastName  = trim($row['last_name']  ?? '');
+                if (empty($firstName)) $firstName = $username;
+
+                $existing = Database::fetch("SELECT id FROM users WHERE username = :u", [':u' => $username]);
+
+                if ($existing && !$updateExisting) {
+                    $stats['skipped']++;
+                    $results[] = ['row' => $i + 1, 'username' => $username, 'status' => 'skipped', 'reason' => 'username ซ้ำ'];
+                    continue;
+                }
+
+                if ($existing && $updateExisting) {
+                    Database::update('users', array_filter([
+                        'full_name_th' => $fullName ?: null,
+                        'first_name'   => $firstName,
+                        'last_name'    => $lastName,
+                        'phone'        => $row['phone'] ?? null,
+                        'department'   => ($row['department'] ?? '') ?: ($row['section'] ?? null),
+                        'position'     => $row['position'] ?? null,
+                    ], fn($v) => $v !== null), 'id = :id', [':id' => $existing['id']]);
+                    $stats['created']++;
+                    $results[] = ['row' => $i + 1, 'username' => $username, 'status' => 'updated'];
+                    continue;
+                }
+
+                // Email uniqueness: auto-suffix if conflict
+                if (Database::fetch("SELECT id FROM users WHERE email = :e", [':e' => $email])) {
+                    $email = $username . '_' . substr(md5(microtime()), 0, 4) . '@sut.ac.th';
+                }
+
+                Database::beginTransaction();
+                try {
+                    $newId = Database::insert('users', [
+                        'organization_id'  => 1,
+                        'role_id'          => $roleId,
+                        'username'         => $username,
+                        'email'            => $email,
+                        'password_hash'    => password_hash($username, PASSWORD_DEFAULT),
+                        'full_name_th'     => $fullName ?: null,
+                        'first_name'       => $firstName,
+                        'last_name'        => $lastName,
+                        'phone'            => $row['phone'] ?? null,
+                        'department'       => ($row['department'] ?? '') ?: ($row['section'] ?? null),
+                        'position'         => $row['position'] ?? null,
+                        'is_active'        => 1,
+                        'theme_preference' => 'auto',
+                        'language'         => 'th',
+                    ]);
+                    Database::insert('notification_settings', ['user_id' => $newId]);
+                    Database::commit();
+                } catch (Exception $e) { Database::rollback(); throw $e; }
+
+                $stats['created']++;
+                $results[] = ['row' => $i + 1, 'username' => $username, 'status' => 'created'];
+
+            } catch (Exception $e) {
+                $stats['errors']++;
+                $results[] = ['row' => $i + 1, 'username' => $username, 'status' => 'error', 'reason' => $e->getMessage()];
+            }
+        }
+
+        echo json_encode(['success' => true, 'stats' => $stats, 'results' => $results]);
+        break;
+
+    // ═══════════════════════════════════════════════════
     // IMPORT PREVIEW: Parse CSV and show preview
     // ═══════════════════════════════════════════════════
     case 'import_preview':

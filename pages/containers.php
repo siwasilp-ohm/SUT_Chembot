@@ -406,6 +406,83 @@ Layout::head($lang==='th' ? 'จัดการขวดสารเคมี' :
     .ctn-cc,.ctn-co{display:none}
     .ctn-md{width:100%;max-width:100%;border-radius:14px 14px 0 0;max-height:95vh;margin-top:auto}
 }
+
+/* ═══════════════════════════════════════════════
+   Procurement Import Wizard  (.piw-*)
+   ═══════════════════════════════════════════════ */
+.piw-ov{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);z-index:9800;display:none;align-items:center;justify-content:center;padding:16px}
+.piw-ov.open{display:flex}
+.piw-box{background:#fff;border-radius:18px;width:100%;max-width:940px;max-height:93vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.22);overflow:hidden}
+.piw-hd{background:linear-gradient(135deg,#0f4c8a,#2563eb);color:#fff;padding:18px 22px;display:flex;align-items:center;gap:12px}
+.piw-hd-ic{width:40px;height:40px;background:rgba(255,255,255,.18);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.piw-hd-txt h3{margin:0;font-size:15px;font-weight:700}
+.piw-hd-txt p{margin:2px 0 0;font-size:11px;opacity:.82}
+.piw-hd-x{margin-left:auto;background:rgba(255,255,255,.18);border:none;color:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+.piw-hd-x:hover{background:rgba(255,255,255,.3)}
+.piw-steps{display:flex;padding:14px 22px 0;border-bottom:1px solid #f1f5f9}
+.piw-step{flex:1;display:flex;flex-direction:column;align-items:center;padding-bottom:10px;position:relative}
+.piw-step:not(:last-child)::after{content:'';position:absolute;top:13px;left:calc(50% + 17px);right:calc(-50% + 17px);height:2px;background:#e2e8f0}
+.piw-step.done:not(:last-child)::after,.piw-step.active:not(:last-child)::after{background:#2563eb}
+.piw-sn{width:26px;height:26px;border-radius:50%;background:#e2e8f0;color:#94a3b8;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-bottom:4px;transition:.2s;position:relative;z-index:1}
+.piw-step.active .piw-sn{background:#2563eb;color:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.22)}
+.piw-step.done .piw-sn{background:#10b981;color:#fff}
+.piw-sa{font-size:10px;color:#94a3b8;text-align:center;white-space:nowrap}
+.piw-step.active .piw-sa{color:#2563eb;font-weight:600}
+.piw-step.done .piw-sa{color:#10b981}
+.piw-bd{flex:1;overflow-y:auto;padding:18px 22px}
+.piw-ft{padding:12px 22px;border-top:1px solid #f1f5f9;display:flex;gap:8px;justify-content:flex-end;background:#fafafa;flex-shrink:0}
+/* Upload step */
+.piw-drop{border:2px dashed #cbd5e1;border-radius:14px;padding:32px 24px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+.piw-drop:hover,.piw-drop.over{border-color:#2563eb;background:#eff6ff}
+.piw-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.piw-drop-ic{font-size:32px;color:#93c5fd;margin-bottom:8px}
+.piw-drop-t{font-size:13px;font-weight:600;color:#334155;margin:0 0 4px}
+.piw-drop-s{font-size:11px;color:#94a3b8;margin:0}
+.piw-fcard{display:flex;align-items:center;gap:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 14px;margin-top:10px}
+.piw-fcard-ic{font-size:20px;color:#16a34a}
+.piw-fcard-name{font-size:12px;font-weight:600;color:#15803d;margin:0}
+.piw-fcard-meta{font-size:10px;color:#86efac;margin:1px 0 0}
+.piw-srv{background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:12px 16px;margin-top:10px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.piw-srv:hover{background:#dbeafe}
+.piw-srv-ic{font-size:20px;color:#2563eb}
+.piw-srv-txt h4{font-size:12px;font-weight:700;color:#1e40af;margin:0}
+.piw-srv-txt p{font-size:10px;color:#60a5fa;margin:2px 0 0}
+/* Summary bar */
+.piw-smr{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.piw-smr-c{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:9px;text-align:center}
+.piw-smr-n{font-size:18px;font-weight:700;color:#334155}
+.piw-smr-l{font-size:10px;color:#94a3b8}
+.piw-smr-n.bl{color:#2563eb}
+.piw-smr-n.ok{color:#16a34a}
+.piw-smr-n.wa{color:#f59e0b}
+.piw-smr-n.er{color:#ef4444}
+/* Tables */
+.piw-tbl-w{overflow-x:auto;border-radius:8px;border:1px solid #e2e8f0;max-height:340px;overflow-y:auto}
+.piw-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.piw-tbl th{background:#f8fafc;padding:8px 10px;text-align:left;font-weight:600;color:#64748b;white-space:nowrap;border-bottom:1px solid #e2e8f0;position:sticky;top:0}
+.piw-tbl td{padding:6px 10px;border-bottom:1px solid #f1f5f9;color:#334155;white-space:nowrap}
+.piw-tbl tr:last-child td{border-bottom:none}
+.piw-tbl tr:hover td{background:#f8fafc}
+.piw-badge{display:inline-flex;align-items:center;gap:2px;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+.piw-badge.ok{background:#dcfce7;color:#16a34a}
+.piw-badge.wa{background:#fef3c7;color:#d97706}
+.piw-badge.er{background:#fee2e2;color:#dc2626}
+.piw-code{font-family:monospace;font-size:10px;background:#f1f5f9;padding:1px 5px;border-radius:4px;color:#334155}
+/* Progress */
+.piw-prog{height:5px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-bottom:4px}
+.piw-prog-b{height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:99px;transition:width .3s}
+.piw-prog-t{font-size:11px;color:#64748b;text-align:right;margin-bottom:10px}
+/* Buttons */
+.piw-btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:.15s}
+.piw-btn-p{background:#2563eb;color:#fff}.piw-btn-p:hover{background:#1d4ed8}
+.piw-btn-p:disabled{background:#93c5fd;cursor:not-allowed}
+.piw-btn-g{background:#f1f5f9;color:#475569}.piw-btn-g:hover{background:#e2e8f0}
+.piw-btn-ok{background:#16a34a;color:#fff}.piw-btn-ok:hover{background:#15803d}
+.piw-res-stat{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:.15s}
+.piw-res-stat:hover{border-color:#94a3b8}.piw-res-stat.active{border-color:#2563eb;background:#eff6ff}
+.piw-res-sn{font-size:20px;font-weight:700;color:#334155}
+.piw-res-sl{font-size:10px;color:#94a3b8}
+.piw-res-sn.ok{color:#16a34a}.piw-res-sn.sk{color:#f59e0b}.piw-res-sn.er{color:#ef4444}
 </style>
 <body>
 <?php Layout::sidebar('containers'); Layout::beginContent(); ?>
@@ -650,6 +727,7 @@ Layout::head($lang==='th' ? 'จัดการขวดสารเคมี' :
             <button onclick="switchView('analytics',this)" title="Analytics"><i class="fas fa-chart-bar"></i></button>
         </div>
         <?php if ($canEdit): ?>
+        <button class="ctn-btn" style="background:#0f4c8a;color:#fff" onclick="piwOpen()"><i class="fas fa-file-import"></i> <?php echo $lang==='th'?'นำเข้าจากจัดซื้อ':'Import Procurement'; ?></button>
         <a href="/v1/pages/containers.php?action=add" class="ctn-btn ctn-btn-p"><i class="fas fa-plus"></i> <?php echo $lang==='th'?'เพิ่มขวด':'Add Bottle'; ?></a>
         <?php endif; ?>
     </div>
@@ -716,6 +794,92 @@ Layout::head($lang==='th' ? 'จัดการขวดสารเคมี' :
 <div class="ctn-toast" id="toast"></div>
 
 <?php endif; ?>
+
+<!-- ═══ Procurement Import Wizard ═══ -->
+<div class="piw-ov" id="piwOv" onclick="if(event.target===this)piwClose()">
+ <div class="piw-box">
+  <!-- Header -->
+  <div class="piw-hd">
+   <div class="piw-hd-ic"><i class="fas fa-file-import"></i></div>
+   <div class="piw-hd-txt">
+    <h3><?php echo $lang==='th'?'นำเข้าข้อมูลจากจัดซื้อ':'Import from Procurement'; ?></h3>
+    <p id="piwHdSub"><?php echo $lang==='th'?'อัปโหลดไฟล์ CSV จากระบบพัสดุเพื่อสร้างขวดสารเคมีพร้อมกัน':'Upload procurement CSV to batch-create chemical containers'; ?></p>
+   </div>
+   <button class="piw-hd-x" onclick="piwClose()"><i class="fas fa-times"></i></button>
+  </div>
+  <!-- Steps -->
+  <div class="piw-steps">
+   <div class="piw-step active" id="piwS1"><div class="piw-sn">1</div><div class="piw-sa"><?php echo $lang==='th'?'อัปโหลด':'Upload'; ?></div></div>
+   <div class="piw-step" id="piwS2"><div class="piw-sn">2</div><div class="piw-sa"><?php echo $lang==='th'?'ตรวจสอบ':'Review'; ?></div></div>
+   <div class="piw-step" id="piwS3"><div class="piw-sn">3</div><div class="piw-sa"><?php echo $lang==='th'?'ดูตัวอย่างขวด':'Preview Bottles'; ?></div></div>
+   <div class="piw-step" id="piwS4"><div class="piw-sn">4</div><div class="piw-sa"><?php echo $lang==='th'?'ผลลัพธ์':'Results'; ?></div></div>
+  </div>
+  <!-- Body -->
+  <div class="piw-bd" id="piwBody">
+   <!-- Step 1 -->
+   <div id="piwP1">
+    <div class="piw-drop" id="piwDrop" ondragover="piwDrag(event,true)" ondragleave="piwDrag(event,false)" ondrop="piwDropFile(event)">
+     <input type="file" id="piwFile" accept=".csv,.xlsx,.xls" onchange="piwOnFile(this.files[0])">
+     <div class="piw-drop-ic"><i class="fas fa-cloud-upload-alt"></i></div>
+     <p class="piw-drop-t"><?php echo $lang==='th'?'ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือก':'Drag & drop file here, or click to browse'; ?></p>
+     <p class="piw-drop-s"><?php echo $lang==='th'?'รองรับ .csv · ข้อมูลจาก ระบบพัสดุ SUT':'Supports .csv from SUT Procurement System'; ?></p>
+    </div>
+    <div class="piw-fcard" id="piwFCard" style="display:none">
+     <div class="piw-fcard-ic"><i class="fas fa-file-csv"></i></div>
+     <div style="flex:1"><p class="piw-fcard-name" id="piwFName">—</p><p class="piw-fcard-meta" id="piwFMeta">—</p></div>
+     <button style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px" onclick="piwClearFile()"><i class="fas fa-times-circle"></i></button>
+    </div>
+    <div class="piw-srv" onclick="piwLoadServer()">
+     <div class="piw-srv-ic"><i class="fas fa-server"></i></div>
+     <div class="piw-srv-txt">
+      <h4><?php echo $lang==='th'?'โหลดจาก Server (provide.csv)':'Load from Server (provide.csv)'; ?></h4>
+      <p><?php echo $lang==='th'?'ใช้ไฟล์ล่าสุดจาก /v1/import/provide.csv':'Use latest file from /v1/import/provide.csv'; ?></p>
+     </div>
+     <i class="fas fa-chevron-right" style="margin-left:auto;color:#93c5fd"></i>
+    </div>
+    <div style="margin-top:12px;display:flex;justify-content:flex-end">
+     <button class="piw-btn piw-btn-g" onclick="piwExportTemplate()"><i class="fas fa-file-excel" style="color:#16a34a"></i> <?php echo $lang==='th'?'ดาวน์โหลด Template XLSX':'Download Template XLSX'; ?></button>
+    </div>
+   </div>
+   <!-- Step 2 -->
+   <div id="piwP2" style="display:none">
+    <div class="piw-smr" id="piwSmr"></div>
+    <div style="margin-bottom:8px;display:flex;gap:6px;align-items:center">
+     <span style="font-size:12px;font-weight:600;color:#334155"><?php echo $lang==='th'?'รายการจัดซื้อ':'Procurement Rows'; ?></span>
+     <span style="font-size:11px;color:#94a3b8" id="piwRowCount"></span>
+     <div style="margin-left:auto;display:flex;gap:5px" id="piwRowTabs"></div>
+    </div>
+    <div class="piw-tbl-w" id="piwRowTbl"></div>
+   </div>
+   <!-- Step 3 -->
+   <div id="piwP3" style="display:none">
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#1e40af;display:flex;gap:8px;align-items:center">
+     <i class="fas fa-info-circle"></i>
+     <span id="piwPreviewInfo"><?php echo $lang==='th'?'กำลังโหลดรหัสขวดจากระบบ...':'Loading bottle codes from system...'; ?></span>
+    </div>
+    <div class="piw-tbl-w" id="piwBottleTbl"></div>
+   </div>
+   <!-- Step 4 -->
+   <div id="piwP4" style="display:none">
+    <div id="piwResHd" style="display:flex;align-items:center;gap:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;margin-bottom:12px"></div>
+    <div class="piw-prog" id="piwProgBar" style="display:none"><div class="piw-prog-b" id="piwProgFill" style="width:0%"></div></div>
+    <p class="piw-prog-t" id="piwProgTxt" style="display:none"></p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px" id="piwResStats"></div>
+    <div class="piw-tbl-w" id="piwResTbl"></div>
+   </div>
+  </div>
+  <!-- Footer -->
+  <div class="piw-ft">
+   <button class="piw-btn piw-btn-g" id="piwBtnBack" onclick="piwBack()" style="display:none"><i class="fas fa-arrow-left"></i> <?php echo $lang==='th'?'ย้อนกลับ':'Back'; ?></button>
+   <button class="piw-btn piw-btn-g" id="piwBtnCancel" onclick="piwClose()"><?php echo $lang==='th'?'ยกเลิก':'Cancel'; ?></button>
+   <button class="piw-btn piw-btn-p" id="piwBtnNext" onclick="piwNext()" disabled><i class="fas fa-arrow-right"></i> <?php echo $lang==='th'?'ถัดไป':'Next'; ?></button>
+   <button class="piw-btn piw-btn-p" id="piwBtnPreview" onclick="PIW.step=3;piwPreviewBottles()" style="display:none"><i class="fas fa-eye"></i> <?php echo $lang==='th'?'ดูตัวอย่างรหัสขวด':'Preview Bottles'; ?></button>
+   <button class="piw-btn piw-btn-ok" id="piwBtnImport" onclick="piwDoImport()" style="display:none"><i class="fas fa-file-import"></i> <?php echo $lang==='th'?'นำเข้าข้อมูล':'Import Data'; ?></button>
+   <button class="piw-btn piw-btn-g" id="piwBtnExport" onclick="piwExportResults()" style="display:none"><i class="fas fa-file-excel" style="color:#16a34a"></i> <?php echo $lang==='th'?'ส่งออกผลลัพธ์':'Export Results'; ?></button>
+   <button class="piw-btn piw-btn-p" id="piwBtnDone" onclick="piwClose();loadData();" style="display:none"><i class="fas fa-check"></i> <?php echo $lang==='th'?'เสร็จสิ้น':'Done'; ?></button>
+  </div>
+ </div>
+</div>
 
 <?php Layout::endContent(); ?>
 <script>
@@ -1550,5 +1714,544 @@ loadData();
 loadBuildingFilter();
 
 <?php endif; ?>
+
+/* ═══════════════════════════════════════════════
+   Procurement Import Wizard (PIW)
+   ═══════════════════════════════════════════════ */
+const PIW={
+    step:1, file:null, rows:[], parsed:[],
+    rowFilter:'all', bottlePreviews:[], importing:false,
+    results:null, resFilter:'all', resShowAll:false,
+    serverLoaded:false,
+};
+
+// Container type normalisation — maps Thai/English typ → internal DB enum
+const PIW_CTYPE={
+    // ขวด / bottle
+    'ขวด':'bottle','ขวด ':'bottle','ขวด (BOT)':'bottle','ขวด (Bot)':'bottle',
+    'bot':'bottle','Bot':'bottle','BOT':'bottle','btl':'bottle',
+    'BT':'bottle','bottle':'bottle','Bottle':'bottle','BOTTLE':'bottle',
+    // หลอด / vial
+    'หลอด':'vial','vial':'vial','Vial':'vial','VIAL':'vial',
+    // SYR / syringe → ampoule
+    'SYR':'ampoule','syringe':'ampoule','Syringe':'ampoule',
+    // กล่อง / box
+    'กล่อง':'other','box':'other','Box':'other','BOX':'other',
+    // ถุง / bag / กระสอบ
+    'ถุง':'bag','bag':'bag','Bag':'bag','กระสอบ':'bag',
+    // ถัง / canister / gallon
+    'ถัง':'canister','แกลลอน':'canister','ปิ๊บ':'canister','ปี๊บ':'canister','ปีบ':'canister',
+    // ท่อ / cylinder / tube
+    'ท่อ':'cylinder','cylinder':'cylinder','Cylinder':'cylinder','CYLINDER':'cylinder',
+    // pack / kit / ชุด / each — single-unit or set
+    'แพ็ค':'other','แพ็ก':'other','pack':'other','Pack':'other','pkg':'other','PK':'other','PAC':'other',
+    'ชุด':'other','kit':'other','Kit':'other','KIT':'other',
+    'EA':'other','ea':'other','each':'other','Each':'other',
+    // weight/volume as type (bulk entry) — treat as 1 container
+    'kg':'other','KG':'other','กิโลกรัม':'other','ลิตร':'other','L':'other','liter':'other',
+    'ไส้':'other','งาน':'other',
+};
+
+// Types where num means total weight/vol, not container count → create 1 container
+const PIW_BULK_TYPE=new Set(['kg','KG','กิโลกรัม','ลิตร','L','liter','งาน']);
+
+/* ── Exclusion rules — rows matching ANY rule go to "คัดกรอง" tab ── */
+const PIW_EXCL_RULES=[
+    {test:r=>(r.typ||'').trim()==='งาน',
+     reason:'บรรจุภัณฑ์เป็น "งาน" — รายการจัดจ้าง/บริการ'},
+    {test:r=>/ของเสีย/i.test(r.roomno||''),
+     reason:'ห้องเป็น "ของเสีย" — รายการกำจัดของเสีย/อันตราย'},
+    {test:r=>/^(ค่า|จัดจ้าง|จ้าง)/u.test((r.chename||'').trim()),
+     reason:'ชื่อรายการขึ้นต้น ค่า/จัดจ้าง/จ้าง — ค่าใช้จ่าย/บริการ'},
+    // หมายเหตุ: casno="อื่นๆ" ไม่ใช่เหตุผลคัดกรอง — สารที่ไม่รู้ CAS ก็ใช้ค่านี้
+    // ตรวจด้วย grade + chename แทน (ด้านล่างใน _piwBuildParsed)
+];
+
+function _piwExcl(r){
+    for(const rule of PIW_EXCL_RULES){
+        if(rule.test(r)) return {excluded:true,reason:rule.reason};
+    }
+    return {excluded:false,reason:''};
+}
+
+const PIW_COLS=['proid','st','budgetst','chename','casno','grade','tsize','typn',
+                'num','typ','distri','lab','roomno','term','remark','price','datein','person','did','status'];
+
+function piwOpen(){
+    Object.assign(PIW,{step:1,file:null,rows:[],parsed:[],rowFilter:'all',bottlePreviews:[],
+        importing:false,results:null,resFilter:'all',resShowAll:false,serverLoaded:false});
+    _piwRenderStep();
+    document.getElementById('piwOv').classList.add('open');
+}
+function piwClose(){document.getElementById('piwOv').classList.remove('open');}
+
+function _piwRenderStep(){
+    const s=PIW.step;
+    ['piwP1','piwP2','piwP3','piwP4'].forEach((id,i)=>{document.getElementById(id).style.display=i===s-1?'':'none';});
+    ['piwS1','piwS2','piwS3','piwS4'].forEach((id,i)=>{
+        document.getElementById(id).className='piw-step'+(i<s-1?' done':i===s-1?' active':'');
+    });
+    const subs=[
+        '<?php echo $lang==="th"?"อัปโหลดไฟล์ CSV จากระบบพัสดุ":"Upload CSV from Procurement System"; ?>',
+        '<?php echo $lang==="th"?"ตรวจสอบรายการจัดซื้อก่อนดำเนินการ":"Review procurement rows before proceeding"; ?>',
+        '<?php echo $lang==="th"?"ตรวจสอบรหัสขวดที่จะสร้างทั้งหมด":"Preview all bottle codes to be created"; ?>',
+        '<?php echo $lang==="th"?"ผลลัพธ์การนำเข้าข้อมูล":"Import results"; ?>',
+    ];
+    document.getElementById('piwHdSub').textContent=subs[s-1];
+    const show=(id,v)=>document.getElementById(id).style.display=v?'':'none';
+    show('piwBtnBack',   s>1&&s<4);
+    show('piwBtnCancel', s<4);
+    show('piwBtnNext',   s===1);           // step 1 เท่านั้น
+    show('piwBtnPreview',s===2);           // step 2: ปุ่มหลักไปยัง step 3
+    show('piwBtnImport', s===3);
+    show('piwBtnExport', s===4);
+    show('piwBtnDone',   s===4);
+    document.getElementById('piwBtnNext').disabled=(s===1&&!PIW.file&&!PIW.serverLoaded);
+    if(s===2){
+        const hasValid=PIW.parsed.some(r=>r._status!=='er');
+        document.getElementById('piwBtnPreview').disabled=!hasValid;
+    }
+}
+
+function piwNext(){
+    if(PIW.step===1) _piwParseAndGo();
+    else if(PIW.step===2){PIW.step=3;_piwRenderStep();piwPreviewBottles();}
+}
+function piwBack(){if(PIW.step>1&&PIW.step<4){PIW.step--;_piwRenderStep();}}
+
+/* ── File handling ── */
+function piwDrag(e,over){e.preventDefault();document.getElementById('piwDrop').classList.toggle('over',over);}
+function piwDropFile(e){e.preventDefault();document.getElementById('piwDrop').classList.remove('over');const f=e.dataTransfer.files[0];if(f)piwOnFile(f);}
+function piwOnFile(f){
+    if(!f)return;
+    PIW.file=f; PIW.serverLoaded=false;
+    document.getElementById('piwFCard').style.display='flex';
+    document.getElementById('piwFName').textContent=f.name;
+    document.getElementById('piwFMeta').textContent=(f.size/1024).toFixed(1)+' KB';
+    document.getElementById('piwBtnNext').disabled=false;
+}
+function piwClearFile(){
+    PIW.file=null; PIW.serverLoaded=false;
+    document.getElementById('piwFCard').style.display='none';
+    document.getElementById('piwFile').value='';
+    document.getElementById('piwBtnNext').disabled=true;
+}
+async function piwLoadServer(){
+    try{
+        const res=await fetch('/v1/api/procurement_import.php?action=load_csv').then(r=>r.json());
+        if(!res.success)throw new Error(res.error||'ไม่สามารถโหลดไฟล์จาก server ได้');
+        PIW.rows=res.rows; PIW.file=null; PIW.serverLoaded=true;
+        document.getElementById('piwFCard').style.display='flex';
+        document.getElementById('piwFCard').style.background='#eff6ff';
+        document.getElementById('piwFName').textContent='provide.csv (server)';
+        document.getElementById('piwFMeta').textContent=res.rows.length+' แถว';
+        document.getElementById('piwBtnNext').disabled=false;
+    }catch(e){alert('Error: '+e.message);}
+}
+
+/* ── CSV parse (client-side) ── */
+function _piwParseCSV(text){
+    const lines=text.split(/\r?\n/);
+    const parseRow=line=>{
+        const cells=[]; let cur='',inQ=false;
+        for(let i=0;i<line.length;i++){
+            const c=line[i];
+            if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+            else if(c===','&&!inQ){cells.push(cur.trim());cur='';}
+            else cur+=c;
+        }
+        cells.push(cur.trim()); return cells;
+    };
+    const hdr=parseRow(lines[0]).map(h=>h.replace(/^"|"$/g,''));
+    const rows=[];
+    for(let i=1;i<lines.length;i++){
+        if(!lines[i].trim())continue;
+        const vals=parseRow(lines[i]);
+        const obj={};
+        hdr.forEach((h,idx)=>{obj[h]=(vals[idx]||'').replace(/^"|"$/g,'');});
+        rows.push(obj);
+    }
+    return rows;
+}
+
+async function _piwParseAndGo(){
+    let rows=[];
+    if(PIW.serverLoaded){rows=PIW.rows;}
+    else if(PIW.file){
+        const text=await PIW.file.text();
+        rows=_piwParseCSV(text);
+    }
+    if(!rows.length){alert('ไม่พบข้อมูลในไฟล์');return;}
+    PIW.rows=rows;
+    _piwBuildParsed();
+    PIW.step=2;
+    _piwRenderReview();
+}
+
+const PIW_CAP=999; // hard cap per row
+
+function _isBulkType(typ){ return PIW_BULK_TYPE.has((typ||'').trim()); }
+
+function _numBottles(row){
+    const typ=(row.typ||'').trim();
+    // Bulk types (kg, ลิตร, …): always 1 container, num = total quantity
+    if(_isBulkType(typ)) return 1;
+    const n=parseInt(row.num)||1;
+    return Math.min(Math.max(n,1), PIW_CAP);
+}
+
+function _piwBuildParsed(){
+    PIW.parsed=PIW.rows.map((r,i)=>{
+        // ── ตรวจคัดกรองก่อน ───────────────────────────────────────────
+        const excl=_piwExcl(r);
+        if(excl.excluded){
+            return {...r, _idx:i+1, _numBottles:0, _rawNum:0, _warn:'',
+                    _status:'ex', _exReason:excl.reason,
+                    _fy:'', _prefix:'', _typName:(r.typ||'').trim(),
+                    _isBulk:false, _ctype:'other', _pkgLabel:'', _szStr:''};
+        }
+        // ─────────────────────────────────────────────────────────────
+        const typName=(r.typ||'ขวด').trim();
+        const isBulk=_isBulkType(typName);
+        const rawNum=parseInt(r.num)||1;
+        const numBottles=_numBottles(r);
+
+        // บรรจุภัณฑ์ label
+        const szStr=r.tsize?`${r.tsize} ${(r.typn||'').trim()}`.trimEnd():'';
+        let pkgLabel;
+        if(isBulk){
+            // e.g. "16000 kg (1 รายการ)"
+            pkgLabel=`${rawNum} ${typName} (1 รายการ)`;
+        } else {
+            pkgLabel=szStr?`${numBottles} ${typName} × ${szStr}`:`${numBottles} ${typName}`;
+        }
+
+        const fy=r.budgetst?(r.budgetst+'').slice(-2):(new Date().getFullYear()+543+'').slice(-2);
+
+        // prefix สำหรับรหัสขวด
+        let prefix;
+        if(r.roomno){
+            prefix=r.roomno.slice(0,7)+fy;
+        } else if(r.person){
+            // ไม่มีห้อง แต่มีผู้ดูแล: ใช้ P + employee_id (6 หลัก) + ปีงบ
+            prefix='P'+String(r.person).padStart(6,'0')+fy;
+        } else {
+            prefix='NOROO00'+fy;
+        }
+
+        const warns=[];
+        if(!r.chename) warns.push('ไม่มีชื่อสารเคมี');
+        if(!r.roomno){
+            if(r.person) warns.push(`ไม่มีรหัสห้อง — ผู้ดูแล ${r.person} จะกำหนดสถานที่เก็บเอง`);
+            else         warns.push('ไม่มีรหัสห้องและผู้ดูแล — จะนำเข้าโดยไม่ระบุสถานที่');
+        }
+        // casno="อื่นๆ" = สารจริงแต่ไม่ทราบ CAS — นำเข้าได้ แค่ warn
+        if((r.casno||'').trim()==='อื่นๆ')
+            warns.push(`CAS = "อื่นๆ" — ไม่ทราบเลข CAS จะนำเข้าโดยไม่ระบุ CAS (${(r.grade||'').trim()||'ไม่ระบุเกรด'})`);
+        if(!isBulk && rawNum>PIW_CAP) warns.push(`num=${rawNum} เกินขีดจำกัด ${PIW_CAP} — จะสร้าง ${PIW_CAP} รายการ`);
+        if(isBulk) warns.push(`typ="${typName}" เป็นหน่วยน้ำหนัก/ปริมาตร — จะสร้าง 1 รายการ (${rawNum} ${typName})`);
+
+        const warn=warns.join(' | ');
+        // error เฉพาะถ้าไม่มีชื่อสาร; ไม่มีห้องแค่ warning
+        const status=!r.chename?'er':warn?'wa':'ok';
+        return {...r, _idx:i+1, _numBottles:numBottles, _rawNum:rawNum, _warn:warn, _status:status,
+                _fy:fy, _prefix:prefix, _typName:typName, _isBulk:isBulk,
+                _ctype:PIW_CTYPE[typName]||'bottle', _pkgLabel:pkgLabel,
+                _szStr:szStr};
+    });
+}
+
+/* ── Step 2: Review ── */
+function _piwRenderReview(){
+    _piwRenderStep();
+    const p=PIW.parsed;
+    const ok=p.filter(r=>r._status==='ok').length;
+    const wa=p.filter(r=>r._status==='wa').length;
+    const er=p.filter(r=>r._status==='er').length;
+    const ex=p.filter(r=>r._status==='ex').length;
+    const total=p.filter(r=>r._status!=='ex').reduce((s,r)=>s+r._numBottles,0);
+    document.getElementById('piwSmr').innerHTML=`
+        <div class="piw-smr-c"><div class="piw-smr-n bl">${p.length}</div><div class="piw-smr-l">รายการทั้งหมด</div></div>
+        <div class="piw-smr-c"><div class="piw-smr-n ok">${ok+wa}</div><div class="piw-smr-l">นำเข้าได้</div></div>
+        <div class="piw-smr-c"><div class="piw-smr-n ok">${total.toLocaleString()}</div><div class="piw-smr-l">ขวดที่สร้าง</div></div>
+        <div class="piw-smr-c" style="cursor:pointer" onclick="PIW.rowFilter='ex';_piwRowTabs();_piwRowTable()">
+            <div class="piw-smr-n er">${ex}</div>
+            <div class="piw-smr-l" style="display:flex;align-items:center;gap:3px"><i class="fas fa-filter" style="color:#dc2626;font-size:9px"></i>คัดกรองออก</div>
+        </div>`;
+    PIW.rowFilter='all';
+    _piwRowTabs();
+    _piwRowTable();
+}
+function _piwRowTabs(){
+    const p=PIW.parsed, f=PIW.rowFilter;
+    const cnt={
+        all:p.length,
+        ok:p.filter(r=>r._status==='ok').length,
+        wa:p.filter(r=>r._status==='wa').length,
+        er:p.filter(r=>r._status==='er').length,
+        ex:p.filter(r=>r._status==='ex').length,
+    };
+    const tabs=[
+        {k:'all',l:`ทั้งหมด (${cnt.all})`,  ac:'#2563eb'},
+        {k:'ok', l:`พร้อม (${cnt.ok})`,      ac:'#16a34a'},
+        {k:'wa', l:`คำเตือน (${cnt.wa})`,    ac:'#d97706'},
+        {k:'er', l:`ผิดพลาด (${cnt.er})`,    ac:'#dc2626'},
+        {k:'ex', l:`คัดกรอง (${cnt.ex})`,    ac:'#7c3aed'},
+    ];
+    document.getElementById('piwRowTabs').innerHTML=tabs.map(t=>{
+        const act=f===t.k;
+        return `<button style="padding:4px 10px;border-radius:6px;border:1.5px solid ${act?t.ac:'#e2e8f0'};background:${act?t.ac:'#fff'};color:${act?'#fff':'#64748b'};font-size:11px;cursor:pointer;font-weight:600" onclick="PIW.rowFilter='${t.k}';_piwRowTabs();_piwRowTable()">${t.l}</button>`;
+    }).join('');
+}
+function _piwRowTable(){
+    const f=PIW.rowFilter;
+    const rows=(f==='all'?PIW.parsed.filter(r=>r._status!=='ex'):PIW.parsed.filter(r=>r._status===f)).slice(0,300);
+    const e=v=>String(v||'').replace(/</g,'&lt;');
+    let h=`<table class="piw-tbl"><thead><tr>
+        <th>#</th><th>สถานะ</th><th>ชื่อสารเคมี</th><th>CAS</th><th>เกรด</th>
+        <th>บรรจุภัณฑ์</th><th>ห้อง</th><th>ปีงบ</th><th>ราคา/หน่วย</th><th>ผู้ดูแล</th>
+    </tr></thead><tbody>`;
+    rows.forEach(r=>{
+        const isEx=(r._status==='ex');
+        const badge=isEx
+            ?`<span style="display:inline-flex;align-items:center;gap:3px;background:#f3e8ff;color:#7c3aed;border:1px solid #ddd6fe;border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700"><i class="fas fa-filter" style="font-size:9px"></i> คัดกรอง</span>`
+            :r._status==='ok'
+            ?`<span class="piw-badge ok"><i class="fas fa-check"></i> OK</span>`
+            :r._status==='wa'
+            ?`<span class="piw-badge wa"><i class="fas fa-exclamation"></i> เตือน</span>`
+            :`<span class="piw-badge er"><i class="fas fa-times"></i> ผิดพลาด</span>`;
+        const subMsg=isEx
+            ?`<br><small style="color:#7c3aed;font-size:10px"><i class="fas fa-ban"></i> ${e(r._exReason)}</small>`
+            :r._warn?`<br><small style="color:#d97706;font-size:10px">${e(r._warn)}</small>`:'';
+
+        // บรรจุภัณฑ์ cell
+        let pkgCell='—';
+        if(!isEx){
+            const typColor=r._isBulk?['#fef3c7','#92400e']:['#dbeafe','#1e40af'];
+            const typBadge=`<span style="display:inline-block;background:${typColor[0]};color:${typColor[1]};border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600">${e(r._typName)}</span>`;
+            let pkgTop,pkgBot;
+            if(r._isBulk){
+                pkgTop=`<span style="font-weight:700;color:#92400e;font-size:13px">${r._rawNum}</span> <span style="color:#92400e">${e(r._typName)}</span>`;
+                pkgBot=`<span style="color:#94a3b8">1 รายการ (bulk)</span>`;
+            } else {
+                pkgTop=`<span style="font-weight:700;color:#1e40af;font-size:13px">${r._numBottles}</span> <span style="color:#475569">${e(r._typName)}</span>`;
+                const tot=r.tsize&&r.typn?`= ${(parseFloat(r.tsize||0)*r._numBottles).toLocaleString('th-TH',{maximumFractionDigits:2})} ${e(r.typn)}`:'';
+                pkgBot=r._szStr?`${e(r._szStr)}/${e(r._typName)} <span style="color:#94a3b8">${tot}</span>`:'';
+            }
+            pkgCell=`<div style="display:flex;align-items:center;gap:4px;white-space:nowrap;margin-bottom:2px">${typBadge} ${pkgTop}</div><div style="font-size:10px;color:#64748b">${pkgBot}</div>`;
+        } else {
+            // excluded: show typ raw
+            pkgCell=`<span style="color:#94a3b8;font-size:11px">${e(r.typ||'—')}</span>`;
+        }
+
+        const rowStyle=isEx?' style="background:#faf5ff;opacity:.85"':
+                       r._status==='er'?' style="background:#fff8f8"':'';
+        h+=`<tr${rowStyle}>
+            <td style="color:#94a3b8">${r.proid||r._idx}</td>
+            <td>${badge}${subMsg}</td>
+            <td title="${e(r.chename)}" style="max-width:160px;overflow:hidden;text-overflow:ellipsis${isEx?';color:#94a3b8':''}">${e(r.chename)}</td>
+            <td style="font-size:10px;color:${isEx?'#c4b5fd':'#64748b'}">${e(r.casno==='-'?'—':r.casno)}</td>
+            <td style="color:${isEx?'#c4b5fd':'inherit'}">${e(r.grade)}</td>
+            <td style="vertical-align:top">${pkgCell}</td>
+            <td>${r.roomno?`<span class="piw-code"${isEx?' style="background:#f3e8ff;color:#7c3aed"':''}>${e(r.roomno)}</span>`:'—'}</td>
+            <td style="color:#64748b">${r._fy?'25'+r._fy:'—'}</td>
+            <td style="color:#16a34a">${r.price?Number(r.price).toLocaleString('th-TH',{minimumFractionDigits:2}):'—'}</td>
+            <td style="font-size:10px;color:#64748b">${e(r.person)}</td>
+        </tr>`;
+    });
+    if(!rows.length)h+=`<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:24px"><i class="fas fa-inbox" style="display:block;font-size:20px;margin-bottom:6px"></i>ไม่มีรายการ</td></tr>`;
+    h+='</tbody></table>';
+    document.getElementById('piwRowTbl').innerHTML=h;
+    document.getElementById('piwRowCount').textContent='แสดง '+rows.length+' รายการ';
+}
+
+/* ── Step 3: Preview bottles ── */
+async function piwPreviewBottles(){
+    _piwRenderStep();
+    const valid=PIW.parsed.filter(r=>r._status!=='er'&&r._status!=='ex');
+    if(!valid.length){document.getElementById('piwBottleTbl').innerHTML='<p style="color:#ef4444;padding:16px">ไม่มีรายการที่สามารถนำเข้าได้</p>';return;}
+
+    document.getElementById('piwPreviewInfo').textContent='กำลังตรวจสอบลำดับรหัสขวดจากระบบ...';
+    document.getElementById('piwBtnImport').disabled=true;
+
+    // Get unique prefixes + counts
+    const prefixMap={};
+    valid.forEach(r=>{prefixMap[r._prefix]=(prefixMap[r._prefix]||0)+r._numBottles;});
+
+    try{
+        const res=await fetch('/v1/api/procurement_import.php?action=preview',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({prefixes:prefixMap})
+        }).then(r=>r.json());
+        if(!res.success)throw new Error(res.error||'Error');
+
+        const nextSeq=res.next_seq; // {prefix: next_serial_int}
+        // Assign bottle codes to each valid row
+        const seqCur={...nextSeq};
+        PIW.bottlePreviews=[];
+        valid.forEach(row=>{
+            const pfx=row._prefix;
+            const start=seqCur[pfx]||1;
+            const codes=[];
+            for(let i=0;i<row._numBottles;i++){codes.push(pfx+String(start+i).padStart(5,'0'));}
+            seqCur[pfx]=(start+row._numBottles);
+            PIW.bottlePreviews.push({...row, _codes:codes});
+        });
+
+        const totalBottles=PIW.bottlePreviews.reduce((s,r)=>s+r._codes.length,0);
+        document.getElementById('piwPreviewInfo').textContent=
+            `พร้อมสร้าง ${PIW.bottlePreviews.length.toLocaleString()} รายการ รวม ${totalBottles.toLocaleString()} ขวด — รหัสขวดสร้างอัตโนมัติจากระบบ`;
+        document.getElementById('piwBtnImport').disabled=false;
+        _piwBottleTable();
+    }catch(e){
+        document.getElementById('piwPreviewInfo').textContent='เกิดข้อผิดพลาด: '+e.message;
+    }
+}
+
+function _piwBottleTable(){
+    const rows=PIW.bottlePreviews;
+    const e=v=>String(v||'').replace(/</g,'&lt;');
+    let h=`<table class="piw-tbl"><thead><tr>
+        <th>#</th><th>รหัสขวด</th><th>ชื่อสารเคมี</th>
+        <th>บรรจุภัณฑ์</th><th>ห้อง</th><th>เจ้าของ</th>
+    </tr></thead><tbody>`;
+    let seq=1;
+    rows.forEach(row=>{
+        const sz=row.tsize?`${e(row.tsize)} ${e(row.typn||'')}`.trimEnd():'—';
+        const typBadge=`<span style="display:inline-block;background:#dbeafe;color:#1e40af;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:600">${e(row._typName||row.typ||'ขวด')}</span>`;
+        const szCell=`<div style="display:flex;flex-direction:column;gap:1px">
+            <div style="display:flex;align-items:center;gap:4px">${typBadge}<span style="font-size:11px;font-weight:600;color:#0f172a">${sz}</span></div>
+            <div style="font-size:9px;color:#94a3b8">${e(row._pkgLabel||'')}</div>
+        </div>`;
+        row._codes.forEach((code,ci)=>{
+            h+=`<tr${ci===0?' style="border-top:2px solid #e2e8f0"':''}>
+                <td style="color:#94a3b8;font-size:10px">${seq++}</td>
+                <td><span class="piw-code" style="font-size:11px;background:#dbeafe;color:#1e40af">${e(code)}</span></td>
+                <td title="${e(row.chename)}" style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${e(row.chename)}</td>
+                <td style="white-space:nowrap">${ci===0?szCell:''}</td>
+                <td>${ci===0?`<span class="piw-code">${e(row.roomno)}</span>`:''}</td>
+                <td style="font-size:10px;color:#64748b">${ci===0?e(row.person):''}</td>
+            </tr>`;
+        });
+    });
+    if(!rows.length)h+=`<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:24px">ไม่มีข้อมูล</td></tr>`;
+    h+='</tbody></table>';
+    document.getElementById('piwBottleTbl').innerHTML=h;
+}
+
+/* ── Step 4: Import ── */
+async function piwDoImport(){
+    if(PIW.importing)return;
+    const toImport=PIW.bottlePreviews;
+    if(!toImport.length){alert('ไม่มีรายการที่นำเข้าได้');return;}
+    PIW.importing=true; PIW.step=4;
+    _piwRenderStep();
+    document.getElementById('piwResHd').innerHTML=`<i class="fas fa-spinner fa-spin" style="font-size:22px;color:#2563eb"></i><div><b>กำลังนำเข้าข้อมูล...</b><br><small style="color:#64748b">กรุณารอ อย่าปิดหน้าต่างนี้</small></div>`;
+    document.getElementById('piwProgBar').style.display='block';
+    document.getElementById('piwProgTxt').style.display='block';
+    const BATCH=10;
+    let created=0,skipped=0,errors=0; const resultRows=[];
+    for(let i=0;i<toImport.length;i+=BATCH){
+        const chunk=toImport.slice(i,i+BATCH);
+        const pct=Math.round((i/toImport.length)*100);
+        document.getElementById('piwProgFill').style.width=pct+'%';
+        document.getElementById('piwProgTxt').textContent=`นำเข้า ${Math.min(i+BATCH,toImport.length)} / ${toImport.length} รายการ...`;
+        try{
+            const res=await fetch('/v1/api/procurement_import.php?action=import_json',{
+                method:'POST',headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({rows:chunk})
+            }).then(r=>r.json());
+            if(res.success&&res.results){
+                res.results.forEach(r=>{
+                    if(r.status==='created'){created+=r.count||1;}
+                    else if(r.status==='skipped')skipped++;
+                    else errors++;
+                    resultRows.push(r);
+                });
+            }else{
+                chunk.forEach(r=>{errors++;resultRows.push({proid:r.proid,chename:r.chename,status:'error',reason:res.error||'API error'});});
+            }
+        }catch(e){
+            chunk.forEach(r=>{errors++;resultRows.push({proid:r.proid,chename:r.chename,status:'error',reason:e.message});});
+        }
+    }
+    document.getElementById('piwProgFill').style.width='100%';
+    PIW.importing=false;
+    PIW.results={created,skipped,errors,rows:resultRows};
+    _piwRenderResults();
+}
+
+function _piwRenderResults(){
+    document.getElementById('piwProgBar').style.display='none';
+    document.getElementById('piwProgTxt').style.display='none';
+    const {created,skipped,errors,rows}=PIW.results;
+    const allOk=errors===0;
+    document.getElementById('piwResHd').innerHTML=`
+        <i class="fas fa-${allOk?'check-circle':'exclamation-circle'}" style="font-size:26px;color:${allOk?'#16a34a':'#f59e0b'}"></i>
+        <div style="flex:1"><b style="font-size:14px">${allOk?'นำเข้าสำเร็จ!':'นำเข้าเสร็จสิ้น (บางรายการมีปัญหา)'}</b><br>
+        <small style="color:#64748b">สร้างขวด ${created.toLocaleString()} · ข้าม ${skipped} · ผิดพลาด ${errors} รายการ</small></div>
+        <button class="piw-btn piw-btn-g" onclick="piwExportResults()" style="font-size:11px;padding:6px 10px"><i class="fas fa-file-excel" style="color:#16a34a"></i> ส่งออก</button>`;
+    document.getElementById('piwResStats').innerHTML=`
+        <div class="piw-res-stat"><div class="piw-res-sn ok">${created.toLocaleString()}</div><div class="piw-res-sl">ขวดที่สร้าง</div></div>
+        <div class="piw-res-stat"><div class="piw-res-sn sk">${skipped}</div><div class="piw-res-sl">ข้ามแล้ว</div></div>
+        <div class="piw-res-stat"><div class="piw-res-sn er">${errors}</div><div class="piw-res-sl">ผิดพลาด</div></div>`;
+    const e=v=>String(v||'').replace(/</g,'&lt;');
+    const LIMIT=200; const visible=rows.slice(0,LIMIT);
+    let h=`<table class="piw-tbl"><thead><tr><th>#</th><th>สถานะ</th><th>ชื่อสาร</th><th>บรรจุภัณฑ์</th><th>รหัสขวดแรก–สุดท้าย</th><th>สาเหตุ</th></tr></thead><tbody>`;
+    visible.forEach(r=>{
+        const badge=r.status==='created'
+            ?`<span class="piw-badge ok"><i class="fas fa-check"></i> สำเร็จ</span>`
+            :r.status==='skipped'
+            ?`<span class="piw-badge wa"><i class="fas fa-minus"></i> ข้าม</span>`
+            :`<span class="piw-badge er"><i class="fas fa-times"></i> ผิดพลาด</span>`;
+        const codeRange=r.first_code&&r.last_code
+            ?`<span class="piw-code" style="font-size:10px">${e(r.first_code)}</span>${r.first_code!==r.last_code?`<span style="color:#94a3b8"> → </span><span class="piw-code" style="font-size:10px">${e(r.last_code)}</span>`:''}`
+            :'—';
+        const typBadge=r.typ?`<span style="display:inline-block;background:#dbeafe;color:#1e40af;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:600;margin-right:3px">${e(r.typ)}</span>`:'';
+        const pkgInfo=`${typBadge}<b style="color:#1e40af">${r.count||0}</b><span style="color:#64748b;font-size:10px">${r.tsize?` · ${e(r.tsize)} ${e(r.typn||'')}`.trimEnd():''}</span>`;
+        h+=`<tr${r.status==='error'?' style="background:#fff8f8"':r.status==='skipped'?' style="background:#fafafa"':''}>
+            <td style="color:#94a3b8;font-size:10px">${r.proid||''}</td><td>${badge}</td>
+            <td title="${e(r.chename)}" style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${e(r.chename)}</td>
+            <td style="white-space:nowrap">${pkgInfo}</td>
+            <td style="font-size:10px">${codeRange}</td>
+            <td style="color:#dc2626;font-size:11px;white-space:normal">${e(r.reason||'')}</td>
+        </tr>`;
+    });
+    if(rows.length>LIMIT)h+=`<tr><td colspan="6" style="text-align:center;padding:12px;border-top:2px dashed #e2e8f0">
+        <button onclick="this.closest('table').querySelectorAll('tr.piw-hidden').forEach(r=>r.style.display='');this.closest('tr').remove()"
+            style="background:none;border:1.5px solid #2563eb;color:#2563eb;border-radius:8px;padding:6px 16px;cursor:pointer;font-size:12px;font-weight:600">
+            <i class="fas fa-list"></i> ดูทั้งหมด ${rows.length.toLocaleString()} รายการ</button>
+    </td></tr>`;
+    h+='</tbody></table>';
+    document.getElementById('piwResTbl').innerHTML=h;
+    _piwRenderStep();
+}
+
+/* ── Export Template ── */
+function piwExportTemplate(){
+    if(typeof XLSX==='undefined'){alert('กำลังโหลด SheetJS...');return;}
+    const header=[PIW_COLS];
+    const ws=XLSX.utils.aoa_to_sheet(header);
+    ws['!cols']=PIW_COLS.map(()=>({wch:18}));
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Procurement Template');
+    XLSX.writeFile(wb,'procurement_template.xlsx');
+}
+
+/* ── Export Results ── */
+function piwExportResults(){
+    if(typeof XLSX==='undefined'){alert('กำลังโหลด SheetJS...');return;}
+    if(!PIW.results){alert('ยังไม่มีผลลัพธ์');return;}
+    const rows=PIW.results.rows;
+    const header=['proid','ชื่อสารเคมี','ชนิดบรรจุภัณฑ์','ขนาด','หน่วย','สถานะ','จำนวนขวดที่สร้าง','รหัสขวดแรก','รหัสขวดสุดท้าย','สาเหตุ'];
+    const sl={'created':'สำเร็จ','skipped':'ข้ามแล้ว','error':'ผิดพลาด'};
+    const data=[header,...rows.map(r=>[r.proid||'',r.chename||'',r.typ||'',r.tsize||'',r.typn||'',sl[r.status]||r.status,r.count||0,r.first_code||'',r.last_code||'',r.reason||''])];
+    const ws=XLSX.utils.aoa_to_sheet(data);
+    ws['!cols']=[{wch:8},{wch:40},{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:16},{wch:16},{wch:40}];
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'ผลลัพธ์การนำเข้า');
+    XLSX.writeFile(wb,'procurement_import_results_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
 </script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </body></html>

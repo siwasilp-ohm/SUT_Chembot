@@ -366,14 +366,160 @@ Layout::head($TH ? 'จัดการผู้ใช้' : 'User Management');
 @media(max-width:700px){
     .usr-hero-meta{display:none}
     .usr-grid{grid-template-columns:1fr}
-    .usr-t th:nth-child(4),.usr-t td:nth-child(4),
-    .usr-t th:nth-child(7),.usr-t td:nth-child(7){display:none}
+    .usr-t th:nth-child(5),.usr-t td:nth-child(5),
+    .usr-t th:nth-child(8),.usr-t td:nth-child(8){display:none}
 }
 @media(max-width:480px){
-    .usr-t th:nth-child(3),.usr-t td:nth-child(3),
-    .usr-t th:nth-child(5),.usr-t td:nth-child(5){display:none}
+    .usr-t th:nth-child(4),.usr-t td:nth-child(4),
+    .usr-t th:nth-child(6),.usr-t td:nth-child(6){display:none}
     .imp-stats{grid-template-columns:repeat(2,1fr)}
 }
+
+/* ── Import Wizard ── */
+.uiw-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:9100;display:flex;align-items:center;justify-content:center;padding:16px;animation:uiwFd .2s ease}
+@keyframes uiwFd{from{opacity:0}to{opacity:1}}
+.uiw-box{background:#fff;border-radius:20px;width:100%;max-width:920px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.22);overflow:hidden;animation:uiwUp .25s cubic-bezier(.22,1,.36,1)}
+@keyframes uiwUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.uiw-hd{background:linear-gradient(135deg,#1e1b4b 0%,#312e81 55%,#6366f1 100%);color:#fff;padding:17px 22px;display:flex;align-items:center;gap:13px;flex-shrink:0}
+.uiw-hd-ic{width:42px;height:42px;background:rgba(255,255,255,.18);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.uiw-hd h3{font-size:15px;font-weight:800;margin:0 0 2px}
+.uiw-hd p{font-size:11px;opacity:.8;margin:0}
+.uiw-hd-x{margin-left:auto;width:32px;height:32px;background:rgba(255,255,255,.15);border:none;border-radius:8px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background .15s;flex-shrink:0}
+.uiw-hd-x:hover{background:rgba(255,255,255,.3)}
+.uiw-steps{display:flex;padding:11px 22px;border-bottom:1.5px solid var(--border);background:#fafbff;flex-shrink:0;overflow-x:auto;gap:0}
+.uiw-step{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#94a3b8;white-space:nowrap}
+.uiw-step.done{color:#15803d}.uiw-step.active{color:#312e81}
+.uiw-sn{width:23px;height:23px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.uiw-step.done .uiw-sn{background:#15803d;border-color:#15803d;color:#fff}
+.uiw-step.active .uiw-sn{background:#312e81;border-color:#312e81;color:#fff}
+.uiw-sa{margin:0 10px;color:#d1d5db;font-size:9px;flex-shrink:0}
+.uiw-bd{flex:1;overflow-y:auto;padding:18px 22px;min-height:0}
+.uiw-ft{padding:12px 22px;border-top:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fafbff;flex-shrink:0}
+.uiw-drop{border:2.5px dashed #c7d2fe;border-radius:14px;padding:34px 20px;text-align:center;cursor:pointer;transition:all .15s;background:#fafbff}
+.uiw-drop:hover,.uiw-drop.ov{border-color:#6366f1;background:#f0f0ff}
+.uiw-drop-ic{font-size:36px;color:#6366f1;margin-bottom:10px}
+.uiw-drop h4{font-size:15px;font-weight:700;color:var(--c1);margin:0 0 5px}
+.uiw-drop p{font-size:12px;color:var(--c3);margin:0}
+.uiw-fcard{background:#f0f0ff;border:1.5px solid #c7d2fe;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:13px;margin-top:12px}
+.uiw-fic{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0}
+.uiw-map-grid{display:grid;grid-template-columns:1fr 26px 1fr;gap:7px 5px;align-items:center;margin-bottom:6px}
+.uiw-map-src{background:#f8fafc;border:1.5px solid var(--border);border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;color:var(--c1);min-height:34px;display:flex;align-items:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uiw-map-arr{color:#6366f1;font-size:12px;text-align:center}
+.uiw-map-sel{padding:7px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;color:var(--c1);background:#fff;cursor:pointer;width:100%}
+.uiw-map-sel:focus{outline:none;border-color:#6366f1}
+.uiw-sample-box{background:#f0f4ff;border:1.5px solid #e0e7ff;border-radius:10px;padding:10px 13px;margin-top:12px}
+.uiw-sample-title{font-size:10px;font-weight:700;color:#312e81;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px}
+.uiw-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:13px}
+.uiw-sum-c{background:#f8fafc;border:1.5px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.uiw-sum-v{font-size:22px;font-weight:900;line-height:1}
+.uiw-sum-l{font-size:9px;color:var(--c3);margin-top:3px;text-transform:uppercase;letter-spacing:.3px}
+.uiw-ftabs{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.uiw-ftab{padding:4px 12px;border-radius:100px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--c3);transition:all .12s}
+.uiw-ftab.on{background:#6366f1;color:#fff;border-color:#6366f1}
+.uiw-tbl-w{max-height:320px;overflow-y:auto;border:1.5px solid var(--border);border-radius:10px}
+.uiw-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.uiw-tbl th{padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:var(--c3);font-weight:700;border-bottom:2px solid var(--border);white-space:nowrap;text-align:left;position:sticky;top:0;background:#f8fafc;z-index:1}
+.uiw-tbl td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.uiw-tbl tr:last-child td{border-bottom:none}
+.uiw-tbl tr:hover td{background:#fafbff}
+.uiw-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;white-space:nowrap}
+.uiw-new{background:#dcfce7;color:#15803d}.uiw-dup{background:#fef9c3;color:#854d0e}.uiw-err{background:#fee2e2;color:#b91c1c}
+.uiw-res-hd{text-align:center;padding:14px 0 6px}
+.uiw-res-ic{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px}
+.uiw-prog{background:#e2e8f0;border-radius:100px;height:8px;overflow:hidden;margin:10px 0}
+.uiw-prog-bar{height:100%;border-radius:100px;background:linear-gradient(90deg,#6366f1,#818cf8);transition:width .5s ease}
+.uiw-res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.uiw-res-c{background:#f8fafc;border:1.5px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.uiw-res-v{font-size:24px;font-weight:900;line-height:1}
+.uiw-res-l{font-size:10px;color:var(--c3);margin-top:3px;text-transform:uppercase;letter-spacing:.3px}
+
+/* ── Bulk Selection ── */
+.usr-cb{width:16px;height:16px;accent-color:#6366f1;cursor:pointer;display:block}
+.usr-t thead th.cb-col,.usr-t tbody td.cb-col{width:38px;padding-left:10px;padding-right:4px;text-align:center}
+.usr-t tbody tr.sel-row{background:#eeeeff!important}
+.usr-t tbody tr.sel-row:hover{background:#e6e5ff!important}
+.usr-card.sel-card{border-color:#6366f1!important;box-shadow:0 0 0 2px #6366f1!important;background:#f5f3ff!important}
+.card-cb-ov{position:absolute;top:10px;right:10px;z-index:5;display:flex;align-items:center;justify-content:center}
+.card-cb-ov input{width:16px;height:16px;accent-color:#6366f1;cursor:pointer}
+
+/* ── Floating Bulk Bar ── */
+.bulk-bar{position:fixed;bottom:-90px;left:50%;transform:translateX(-50%);background:#1e1b4b;color:#fff;border-radius:16px;padding:10px 16px;display:flex;align-items:center;gap:8px;box-shadow:0 8px 40px rgba(0,0,0,.3),0 0 0 1.5px rgba(99,102,241,.5);z-index:8900;transition:bottom .3s cubic-bezier(.34,1.56,.64,1);width:min(700px,92vw);flex-wrap:wrap}
+.bulk-bar.show{bottom:24px}
+.bulk-cnt{background:rgba(255,255,255,.12);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.bulk-cnt .n{font-size:18px;font-weight:900;color:#a5b4fc;line-height:1}
+.bulk-sep{width:1px;height:26px;background:rgba(255,255,255,.18);flex-shrink:0}
+.bulk-acts{display:flex;gap:5px;flex-wrap:wrap;align-items:center;flex:1}
+.blk{padding:7px 12px;border:none;border-radius:9px;font-size:11.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:inherit;transition:all .12s;white-space:nowrap}
+.blk-role{background:rgba(165,180,252,.18);color:#c7d2fe}.blk-role:hover{background:#6366f1;color:#fff}
+.blk-on{background:rgba(134,239,172,.15);color:#86efac}.blk-on:hover{background:#16a34a;color:#fff}
+.blk-off{background:rgba(252,165,165,.12);color:#fca5a5}.blk-off:hover{background:#b91c1c;color:#fff}
+.blk-room{background:rgba(147,197,253,.15);color:#93c5fd}.blk-room:hover{background:#1d4ed8;color:#fff}
+.blk-del{background:rgba(252,165,165,.14);color:#fca5a5}.blk-del:hover{background:#7f1d1d;color:#fff}
+.blk-clr{background:none;border:1.5px solid rgba(255,255,255,.22);color:rgba(255,255,255,.65);padding:6px 10px}.blk-clr:hover{border-color:rgba(255,255,255,.6);color:#fff}
+
+/* ── Bulk Room Banner ── */
+.rm-bulk-banner{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fde68a;border-radius:12px;padding:10px 14px;margin-bottom:12px}
+.rm-bulk-hd{font-size:11px;font-weight:700;color:#92400e;display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.rm-bulk-avatars{display:flex;flex-wrap:wrap;gap:6px}
+.rm-bulk-chip{display:flex;align-items:center;gap:5px;padding:3px 9px 3px 4px;background:#fff;border:1.5px solid #fde68a;border-radius:20px;font-size:11px;font-weight:600;color:#78350f;white-space:nowrap}
+.rm-bulk-chip.primary-user{border-color:#6366f1;background:#f0f0ff;color:#4338ca}
+.rm-bulk-av-mini{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden}
+.rm-bulk-ft{font-size:10px;color:#a16207;margin-top:8px;display:flex;align-items:flex-start;gap:4px;line-height:1.5}
+
+/* ── Bulk Confirm Modal ── */
+.bkc-ov{position:fixed;inset:0;background:rgba(15,10,40,.55);backdrop-filter:blur(5px);z-index:9600;display:none;align-items:center;justify-content:center;padding:16px}
+.bkc-ov.show{display:flex}
+.bkc-box{background:#fff;border-radius:22px;width:96%;max-width:430px;box-shadow:0 28px 70px rgba(0,0,0,.26);animation:usrMdIn .24s cubic-bezier(.34,1.56,.64,1);overflow:hidden}
+.bkc-hd{padding:26px 24px 0;text-align:center}
+.bkc-ic{width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px;transition:transform .2s}
+.bkc-ov.show .bkc-ic{animation:bkcPop .35s cubic-bezier(.34,1.56,.64,1) .1s both}
+@keyframes bkcPop{from{transform:scale(0)}to{transform:scale(1)}}
+.bkc-title{font-size:18px;font-weight:800;color:var(--c1);margin:0 0 5px}
+.bkc-desc{font-size:12px;color:var(--c3);margin:0 0 16px;line-height:1.6}
+.bkc-users{max-height:230px;overflow-y:auto;border-top:1.5px solid var(--border);border-bottom:1.5px solid var(--border)}
+.bkc-user{display:flex;align-items:center;gap:10px;padding:10px 24px;border-bottom:1px solid #f5f7fa}
+.bkc-user:last-child{border-bottom:none}
+.bkc-user:hover{background:#fafbff}
+.bkc-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.bkc-uname{font-size:12.5px;font-weight:700;color:var(--c1)}
+.bkc-usub{font-size:10px;color:var(--c3);margin-top:2px;display:flex;align-items:center;gap:5px}
+.bkc-type-wrap{padding:16px 24px 0}
+.bkc-type-lbl{font-size:11px;color:var(--c3);margin-bottom:7px;font-weight:500}
+.bkc-type-inp{width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:10px;font-size:13px;font-family:'Courier New',monospace;font-weight:700;color:var(--c1);letter-spacing:2px;text-transform:uppercase;transition:border .15s;box-sizing:border-box;background:#fafafa}
+.bkc-type-inp:focus{outline:none;border-color:#6366f1;background:#fff}
+.bkc-type-inp.match{border-color:#dc2626!important;background:#fff8f8!important;color:#dc2626}
+.bkc-ft{padding:18px 24px 22px;display:flex;gap:8px;justify-content:flex-end}
+
+/* ── Bulk Role Picker ── */
+.brp-ov{position:fixed;inset:0;background:rgba(0,0,0,.48);backdrop-filter:blur(3px);z-index:9400;display:none;align-items:center;justify-content:center}
+.brp-ov.show{display:flex}
+.brp-box{background:#fff;border-radius:18px;width:96%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.22);animation:usrMdIn .22s ease;overflow:hidden}
+.brp-hd{padding:16px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#f5f3ff,#eef2ff)}
+.brp-hd h3{font-size:14px;font-weight:700;color:var(--c1);margin:0;flex:1}
+.brp-hd-ic{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;flex-shrink:0}
+.brp-bd{padding:14px 20px 6px}
+.brp-sub{font-size:11px;color:var(--c3);margin-bottom:12px;padding:8px 12px;background:#f8fafc;border-radius:8px;display:flex;align-items:center;gap:6px}
+.brp-sub i{color:#6366f1}
+.brp-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.brp-role{width:100%;padding:11px 14px;border:2px solid #e8edf5;border-radius:12px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;font-family:inherit;transition:all .15s;text-align:left}
+.brp-role:hover{border-color:#a5b4fc;background:#f5f3ff}
+.brp-role.picked{border-color:#6366f1;background:#ede9fe;box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+.brp-ric{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.brp-rname{font-size:13px;font-weight:700;color:var(--c1)}
+.brp-rsub{font-size:10px;color:var(--c3);margin-top:1px}
+.brp-ft{padding:12px 20px 18px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #f0f0f0}
+.brp-users{max-height:180px;overflow-y:auto;border:1.5px solid var(--border);border-radius:10px;margin-bottom:12px}
+.brp-user{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #f5f7fa;transition:background .1s}
+.brp-user:last-child{border-bottom:none}
+.brp-user:hover{background:#fafbff}
+.brp-u-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden}
+.brp-u-name{font-size:12px;font-weight:700;color:var(--c1)}
+.brp-u-sub{font-size:10px;color:var(--c3);margin-top:2px;display:flex;align-items:center;gap:4px}
+.brp-sec-lbl{font-size:10px;font-weight:700;color:var(--c3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-top:4px;display:flex;align-items:center;gap:5px}
+.brp-sel-wrap{position:relative;margin-bottom:4px}
+.brp-sel{width:100%;padding:11px 40px 11px 14px;border:2px solid #e2e8f0;border-radius:12px;font-size:13px;font-weight:600;color:var(--c1);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M0 0l6 7 6-7z' fill='%236366f1'/%3E%3C/svg%3E") no-repeat right 14px center;-webkit-appearance:none;appearance:none;cursor:pointer;font-family:inherit;transition:border .15s,box-shadow .15s}
+.brp-sel:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+.brp-sel:hover{border-color:#a5b4fc}
 </style>
 
 <!-- ── Hero ── -->
@@ -439,12 +585,13 @@ Layout::head($TH ? 'จัดการผู้ใช้' : 'User Management');
     <div class="usr-ie-wrap">
         <button class="usr-btn usr-btn-g" onclick="toggleImportExport()"><i class="fas fa-exchange-alt"></i> Import/Export</button>
         <div class="usr-ie-dd" id="ieDropdown">
-            <div class="usr-ie-head"><i class="fas fa-file-csv" style="color:#6366f1"></i> <?php echo $TH ? 'จัดการข้อมูลผู้ใช้' : 'User Data'; ?></div>
+            <div class="usr-ie-head"><i class="fas fa-exchange-alt" style="color:#6366f1"></i> <?php echo $TH ? 'จัดการข้อมูลผู้ใช้' : 'User Data'; ?></div>
+            <button class="usr-ie-item" onclick="exportUsersXLSX()"><i class="fas fa-file-excel" style="color:#16a34a"></i><div><div class="usr-ie-title">Export XLSX</div><div class="usr-ie-desc"><?php echo $TH ? 'ดาวน์โหลดเป็น Excel (.xlsx)' : 'Download as Excel (.xlsx)'; ?></div></div></button>
             <button class="usr-ie-item" onclick="exportUsersCSV()"><i class="fas fa-download" style="color:#059669"></i><div><div class="usr-ie-title">Export CSV</div><div class="usr-ie-desc"><?php echo $TH ? 'ดาวน์โหลดข้อมูลทั้งหมด' : 'Download all user data'; ?></div></div></button>
             <button class="usr-ie-item" onclick="exportUsersJSON()"><i class="fas fa-code" style="color:#6366f1"></i><div><div class="usr-ie-title">Export JSON</div><div class="usr-ie-desc"><?php echo $TH ? 'สำรองข้อมูลแบบ JSON' : 'Backup as JSON'; ?></div></div></button>
             <div class="usr-ie-div"></div>
-            <button class="usr-ie-item" onclick="downloadTemplate()"><i class="fas fa-file-alt" style="color:#d97706"></i><div><div class="usr-ie-title"><?php echo $TH ? 'ดาวน์โหลด Template' : 'Download Template'; ?></div><div class="usr-ie-desc"><?php echo $TH ? 'แบบฟอร์ม CSV สำหรับ import' : 'CSV template for import'; ?></div></div></button>
-            <button class="usr-ie-item" onclick="openImportModal()"><i class="fas fa-upload" style="color:#2563eb"></i><div><div class="usr-ie-title"><?php echo $TH ? 'Import จาก CSV' : 'Import from CSV'; ?></div><div class="usr-ie-desc"><?php echo $TH ? 'นำเข้าผู้ใช้จากไฟล์' : 'Import users from file'; ?></div></div></button>
+            <button class="usr-ie-item" onclick="downloadTemplate()"><i class="fas fa-file-alt" style="color:#d97706"></i><div><div class="usr-ie-title"><?php echo $TH ? 'ดาวน์โหลด Template CSV' : 'Download CSV Template'; ?></div><div class="usr-ie-desc"><?php echo $TH ? 'แบบฟอร์มสำหรับ import' : 'CSV template for import'; ?></div></div></button>
+            <button class="usr-ie-item" onclick="openImportModal()"><i class="fas fa-file-import" style="color:#2563eb"></i><div><div class="usr-ie-title"><?php echo $TH ? 'Import XLSX / CSV' : 'Import XLSX / CSV'; ?></div><div class="usr-ie-desc"><?php echo $TH ? 'นำเข้าผู้ใช้จาก Excel หรือ CSV' : 'Import users from Excel or CSV'; ?></div></div></button>
         </div>
     </div>
     <button class="usr-btn usr-btn-p" onclick="openAddModal()"><i class="fas fa-user-plus"></i> <?php echo $TH ? 'เพิ่มผู้ใช้' : 'Add User'; ?></button>
@@ -605,6 +752,15 @@ Layout::head($TH ? 'จัดการผู้ใช้' : 'User Management');
             <button class="usr-mx" onclick="closeRoomModal()"><i class="fas fa-times"></i></button>
         </div>
         <div class="usr-mb">
+            <!-- Bulk mode banner (shown only when multiple users selected) -->
+            <div id="rmBulkBanner" class="rm-bulk-banner" style="display:none">
+                <div class="rm-bulk-hd">
+                    <i class="fas fa-users"></i>
+                    <span><?php echo $TH?'กำหนดห้องแบบกลุ่ม':'Bulk room assignment'?> — <strong id="rmBulkCount">0</strong> <?php echo $TH?'ผู้ใช้ที่เลือก':'selected users'?></span>
+                </div>
+                <div class="rm-bulk-avatars" id="rmBulkAvatars"></div>
+                <div class="rm-bulk-ft"><i class="fas fa-info-circle" style="color:#d97706;flex-shrink:0;margin-top:1px"></i> <span id="rmBulkHint"></span></div>
+            </div>
             <!-- User header -->
             <div class="rm-user-hdr">
                 <div class="rm-user-av" id="rmUserAv" style="background:#6366f1">—</div>
@@ -633,30 +789,95 @@ Layout::head($TH ? 'จัดการผู้ใช้' : 'User Management');
     </div>
 </div>
 
-<!-- Import CSV -->
-<div class="usr-ov" id="importModal">
-    <div class="usr-md" style="max-width:780px">
-        <div class="usr-mh">
-            <h3><i class="fas fa-file-import" style="color:#2563eb"></i> Import <?php echo $TH ? 'ผู้ใช้จาก CSV' : 'Users from CSV'; ?></h3>
-            <button class="usr-mx" onclick="closeImportModal()"><i class="fas fa-times"></i></button>
+<!-- Import Wizard -->
+<div class="uiw-ov" id="importWizard" style="display:none">
+    <div class="uiw-box">
+        <div class="uiw-hd">
+            <div class="uiw-hd-ic"><i class="fas fa-file-import"></i></div>
+            <div>
+                <h3><?php echo $TH?'นำเข้าข้อมูลผู้ใช้':'Import Users'; ?></h3>
+                <p id="uiwSubtitle"><?php echo $TH?'รองรับไฟล์ .xlsx และ .csv':'Supports .xlsx and .csv files'; ?></p>
+            </div>
+            <button class="uiw-hd-x" onclick="uiwClose()"><i class="fas fa-times"></i></button>
         </div>
-        <div class="usr-mb">
-            <div id="importStep1">
-                <div class="imp-info-box"><i class="fas fa-info-circle"></i><div><strong><?php echo $TH ? 'รูปแบบ CSV ที่รองรับ' : 'Supported CSV Format'; ?></strong><p><?php echo $TH ? 'ไฟล์ต้องมี header: ' : 'File must have header: '; ?><code>ชื่อ นามสกุล, username, password, email, phone, role, ศูนย์, ฝ่าย, งาน</code></p><p style="margin-top:4px"><?php echo $TH ? 'หรือใช้' : 'Or use'; ?> <a href="#" onclick="downloadTemplate();return false">Template</a></p></div></div>
-                <div class="imp-upload-zone" id="impDropZone" onclick="document.getElementById('impFileInput').click()"><i class="fas fa-cloud-upload-alt"></i><h4><?php echo $TH ? 'ลากไฟล์มาวาง หรือคลิกเพื่อเลือกไฟล์' : 'Drag file here or click to browse'; ?></h4><p><?php echo $TH ? 'รองรับ .csv, .txt — สูงสุด 5MB' : 'Supports .csv, .txt — max 5MB'; ?></p></div>
-                <input type="file" id="impFileInput" accept=".csv,.txt" style="display:none" onchange="onImportFileSelect(this)">
-                <div class="imp-file-info" id="impFileInfo" style="display:none"><i class="fas fa-file-csv" style="color:#059669;font-size:20px"></i><div style="flex:1"><div id="impFileName" style="font-weight:600"></div><div id="impFileMeta" style="font-size:11px;color:var(--c3)"></div></div><button class="usr-btn usr-btn-d" style="padding:4px 10px;font-size:11px" onclick="clearImportFile()"><i class="fas fa-times"></i></button></div>
-                <div style="margin-top:16px"><label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="impUpdateExisting" style="accent-color:#6366f1"> <span><?php echo $TH ? 'อัปเดตผู้ใช้ที่มีอยู่แล้ว (ถ้า username ซ้ำ)' : 'Update existing users if username matches'; ?></span></label></div>
-                <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)"><button class="ci-btn ci-btn-secondary" onclick="closeImportModal()"><?php echo $TH ? 'ยกเลิก' : 'Cancel'; ?></button><button class="usr-btn usr-btn-p" id="btnPreviewImport" onclick="previewImport()" disabled><i class="fas fa-search"></i> <?php echo $TH ? 'ตรวจสอบข้อมูล' : 'Preview'; ?></button></div>
+        <div class="uiw-steps">
+            <div class="uiw-step active" id="uiwS1"><div class="uiw-sn">1</div><?php echo $TH?'อัปโหลด':'Upload'; ?></div>
+            <div class="uiw-sa"><i class="fas fa-chevron-right"></i></div>
+            <div class="uiw-step" id="uiwS2"><div class="uiw-sn">2</div><?php echo $TH?'กำหนด Column':'Map Columns'; ?></div>
+            <div class="uiw-sa"><i class="fas fa-chevron-right"></i></div>
+            <div class="uiw-step" id="uiwS3"><div class="uiw-sn">3</div><?php echo $TH?'ตรวจสอบ':'Preview'; ?></div>
+            <div class="uiw-sa"><i class="fas fa-chevron-right"></i></div>
+            <div class="uiw-step" id="uiwS4"><div class="uiw-sn">4</div><?php echo $TH?'ผลลัพธ์':'Results'; ?></div>
+        </div>
+        <div class="uiw-bd">
+            <!-- Step 1: Upload -->
+            <div id="uiwStep1">
+                <div class="uiw-drop" id="uiwDrop" onclick="document.getElementById('uiwFileInput').click()">
+                    <div class="uiw-drop-ic"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <h4><?php echo $TH?'ลากไฟล์มาวาง หรือคลิกเพื่อเลือกไฟล์':'Drag & drop or click to browse'; ?></h4>
+                    <p><?php echo $TH?'รองรับ .xlsx (Excel) และ .csv · สูงสุด 10MB':'Supports .xlsx and .csv · Max 10MB'; ?></p>
+                </div>
+                <input type="file" id="uiwFileInput" accept=".xlsx,.csv,.txt" style="display:none" onchange="uiwOnFile(this)">
+                <div id="uiwFileCard" style="display:none" class="uiw-fcard">
+                    <div class="uiw-fic" id="uiwFileIc" style="background:#16a34a"><i class="fas fa-file-excel"></i></div>
+                    <div style="flex:1">
+                        <div style="font-size:14px;font-weight:700" id="uiwFileName"></div>
+                        <div style="font-size:11px;color:var(--c3);margin-top:3px" id="uiwFileMeta"></div>
+                    </div>
+                    <button class="usr-btn usr-btn-d" style="padding:4px 10px;font-size:11px" onclick="uiwClearFile()"><i class="fas fa-times"></i></button>
+                </div>
+                <div style="margin-top:14px;padding:11px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;font-size:12px;color:#92400e">
+                    <i class="fas fa-lightbulb" style="margin-right:6px;color:#d97706"></i>
+                    <?php echo $TH?'<strong>Username และ Password</strong> จะถูกกำหนดจาก <strong>รหัสพนักงาน</strong> โดยอัตโนมัติ':'<strong>Username & Password</strong> will be set from <strong>Employee ID</strong> automatically'; ?>
+                </div>
             </div>
-            <div id="importStep2" style="display:none">
-                <div class="imp-stats" id="impStats"></div>
-                <div class="ci-table-wrap" style="max-height:400px;overflow-y:auto;margin-top:12px"><table class="ci-table ci-table-sm" id="impPreviewTable"><thead><tr><th style="width:30px">#</th><th><?php echo $TH ? 'ชื่อ-นามสกุล' : 'Name'; ?></th><th>Username</th><th>Email</th><th>Role</th><th><?php echo $TH ? 'งาน' : 'Section'; ?></th><th><?php echo $TH ? 'สถานะ' : 'Status'; ?></th></tr></thead><tbody id="impPreviewBody"></tbody></table></div>
-                <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)"><button class="ci-btn ci-btn-secondary" onclick="backToStep1()"><i class="fas fa-arrow-left"></i> <?php echo $TH ? 'กลับ' : 'Back'; ?></button><button class="usr-btn usr-btn-p" id="btnDoImport" onclick="executeImport()"><i class="fas fa-file-import"></i> <?php echo $TH ? 'นำเข้าข้อมูล' : 'Import'; ?></button></div>
+            <!-- Step 2: Column Mapping -->
+            <div id="uiwStep2" style="display:none">
+                <p style="font-size:12px;color:var(--c3);margin:0 0 13px"><?php echo $TH?'ระบบตรวจพบ Column ต่อไปนี้ กรุณาตรวจสอบการจับคู่ให้ถูกต้อง':'Columns detected from file. Verify the field mapping below.'; ?></p>
+                <div style="display:grid;grid-template-columns:1fr 26px 1fr;gap:0 5px;margin-bottom:7px;padding:0 2px">
+                    <div style="font-size:10px;font-weight:700;color:var(--c3);text-transform:uppercase;letter-spacing:.3px"><?php echo $TH?'Column ในไฟล์':'File Column'; ?></div>
+                    <div></div>
+                    <div style="font-size:10px;font-weight:700;color:var(--c3);text-transform:uppercase;letter-spacing:.3px"><?php echo $TH?'ฟิลด์ระบบ':'System Field'; ?></div>
+                </div>
+                <div id="uiwMapRows"></div>
+                <div class="uiw-sample-box">
+                    <div class="uiw-sample-title"><i class="fas fa-eye" style="margin-right:4px"></i><?php echo $TH?'ตัวอย่างข้อมูล 3 แถวแรก':'Preview: first 3 rows'; ?></div>
+                    <div id="uiwSampleContent" style="overflow-x:auto;font-size:11px"></div>
+                </div>
             </div>
-            <div id="importStep3" style="display:none">
-                <div id="impResult"></div>
-                <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)"><button class="usr-btn usr-btn-p" onclick="closeImportModal();loadData()"><i class="fas fa-check"></i> <?php echo $TH ? 'เสร็จสิ้น' : 'Done'; ?></button></div>
+            <!-- Step 3: Preview & Validate -->
+            <div id="uiwStep3" style="display:none">
+                <div class="uiw-sum" id="uiwSum"></div>
+                <div class="uiw-ftabs" id="uiwFtabs"></div>
+                <div class="uiw-tbl-w"><table class="uiw-tbl"><thead><tr>
+                    <th>#</th>
+                    <th><?php echo $TH?'รหัส/Username':'ID / Username'; ?></th>
+                    <th><?php echo $TH?'ชื่อ-นามสกุล':'Full Name'; ?></th>
+                    <th><?php echo $TH?'ตำแหน่ง':'Position'; ?></th>
+                    <th><?php echo $TH?'ฝ่าย/งาน':'Dept / Section'; ?></th>
+                    <th>Email</th>
+                    <th><?php echo $TH?'สถานะ':'Status'; ?></th>
+                </tr></thead><tbody id="uiwPreviewBody"></tbody></table></div>
+                <div style="margin-top:10px;font-size:12px">
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                        <input type="checkbox" id="uiwUpdateExisting" style="accent-color:#6366f1">
+                        <span><?php echo $TH?'อัปเดตผู้ใช้ที่มี username ซ้ำ':'Update existing users with matching username'; ?></span>
+                    </label>
+                </div>
+            </div>
+            <!-- Step 4: Results -->
+            <div id="uiwStep4" style="display:none">
+                <div class="uiw-res-hd" id="uiwResHd"></div>
+                <div class="uiw-prog"><div class="uiw-prog-bar" id="uiwProgBar" style="width:0%"></div></div>
+                <div class="uiw-res-grid" id="uiwResGrid"></div>
+                <div id="uiwErrList"></div>
+            </div>
+        </div>
+        <div class="uiw-ft">
+            <div><button class="usr-btn usr-btn-g" id="uiwBtnBack" onclick="uiwBack()" style="display:none"><i class="fas fa-arrow-left"></i> <?php echo $TH?'กลับ':'Back'; ?></button></div>
+            <div style="display:flex;gap:8px">
+                <button class="usr-btn usr-btn-g" id="uiwBtnCancel" onclick="uiwClose()"><?php echo $TH?'ยกเลิก':'Cancel'; ?></button>
+                <button class="usr-btn usr-btn-p" id="uiwBtnNext" onclick="uiwNext()" disabled><i class="fas fa-arrow-right"></i> <?php echo $TH?'ถัดไป':'Next'; ?></button>
             </div>
         </div>
     </div>
@@ -681,6 +902,243 @@ const TH = <?php echo $TH ? 'true' : 'false'; ?>;
 let allUsers = [], allRoles = [], allStores = [];
 let currentFilter = 'all', currentView = 'table';
 let roomState = { userId:null, allRooms:[], selected:[], primary:null, buildings:[] };
+let selectedUsers = new Set();
+let _bulkRoomUserIds = null;
+
+/* ─── Bulk Selection ─── */
+function toggleSelect(userId, cb) {
+    userId = parseInt(userId);
+    if (cb.checked) selectedUsers.add(userId);
+    else selectedUsers.delete(userId);
+    const tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('sel-row', cb.checked);
+    const card = cb.closest('.usr-card');
+    if (card) card.classList.toggle('sel-card', cb.checked);
+    updateBulkBar();
+}
+
+function toggleSelectAll(cb) {
+    const vis = [...document.querySelectorAll('.usr-cb[id^="cb_"]')].map(c => parseInt(c.id.replace('cb_','')));
+    vis.forEach(id => {
+        if (cb.checked) selectedUsers.add(id); else selectedUsers.delete(id);
+        const c = document.getElementById('cb_' + id);
+        if (c) {
+            c.checked = cb.checked;
+            const tr = c.closest('tr'); if (tr) tr.classList.toggle('sel-row', cb.checked);
+            const card = c.closest('.usr-card'); if (card) card.classList.toggle('sel-card', cb.checked);
+        }
+    });
+    updateBulkBar();
+}
+
+function updateBulkBar() {
+    const n = selectedUsers.size;
+    const bar = document.getElementById('bulkBar');
+    if (!bar) return;
+    bar.classList.toggle('show', n > 0);
+    const cntEl = document.getElementById('bulkCnt');
+    if (cntEl) cntEl.textContent = n;
+    const cbAll = document.getElementById('cbSelectAll');
+    if (cbAll) {
+        const vis = [...document.querySelectorAll('.usr-cb[id^="cb_"]')].map(c => parseInt(c.id.replace('cb_','')));
+        const allSel = vis.length > 0 && vis.every(id => selectedUsers.has(id));
+        cbAll.checked = allSel;
+        cbAll.indeterminate = !allSel && vis.some(id => selectedUsers.has(id));
+    }
+}
+
+function clearSelection() {
+    selectedUsers.clear();
+    document.querySelectorAll('.usr-cb[id^="cb_"]').forEach(c => {
+        c.checked = false;
+        const tr = c.closest('tr'); if (tr) tr.classList.remove('sel-row');
+        const card = c.closest('.usr-card'); if (card) card.classList.remove('sel-card');
+    });
+    const cbAll = document.getElementById('cbSelectAll');
+    if (cbAll) { cbAll.checked = false; cbAll.indeterminate = false; }
+    updateBulkBar();
+}
+
+/* ─── Bulk Confirm Modal ─── */
+let _bkcCallback = null;
+
+function showBulkConfirm({ icon, iconBg, iconColor, title, desc, users, confirmLabel, confirmClass, requireType }) {
+    document.getElementById('bkcIcon').className = `fas ${icon}`;
+    const ic = document.getElementById('bkcIc');
+    ic.style.background = iconBg; ic.style.color = iconColor;
+    document.getElementById('bkcTitle').textContent = title;
+    document.getElementById('bkcDesc').textContent = desc;
+    document.getElementById('bkcUserList').innerHTML = users.map(u => {
+        const ini = ((u.first_name||'')[0]||'') + ((u.last_name||'')[0]||'');
+        const bg  = roleAvBg[u.role_name] || '#6366f1';
+        const nm  = `${u.first_name||''} ${u.last_name||''}`.trim();
+        return `<div class="bkc-user">
+            <div class="bkc-av" style="background:${bg}">${escHtml(ini.toUpperCase()||'?')}</div>
+            <div>
+                <div class="bkc-uname">${escHtml(nm)}</div>
+                <div class="bkc-usub">@${escHtml(u.username||'')} <span class="usr-role ${roleColors[u.role_name]||'usr-role-visitor'}" style="font-size:9px;padding:1px 6px"><i class="fas ${roleIcons[u.role_name]||'fa-user'}"></i> ${escHtml(u.role_display||u.role_name||'')}</span></div>
+            </div>
+        </div>`;
+    }).join('');
+    const typeWrap = document.getElementById('bkcTypeWrap');
+    const typeInp  = document.getElementById('bkcTypeInp');
+    if (requireType) {
+        typeWrap.style.display = '';
+        typeInp.value = '';
+        typeInp.classList.remove('match');
+        document.getElementById('bkcTypeLbl').textContent = TH ? 'พิมพ์ DELETE เพื่อยืนยันการลบถาวร' : 'Type DELETE to confirm permanent deletion';
+    } else {
+        typeWrap.style.display = 'none';
+    }
+    const confirmBtn = document.getElementById('bkcConfirmBtn');
+    confirmBtn.textContent = confirmLabel;
+    confirmBtn.className = `usr-btn ${confirmClass}`;
+    confirmBtn.style.minWidth = '100px';
+    confirmBtn.disabled = !!requireType;
+    document.getElementById('bkcOv').classList.add('show');
+    if (requireType) setTimeout(() => typeInp.focus(), 180);
+}
+
+function onBkcType(inp) {
+    const ok = inp.value.trim().toUpperCase() === 'DELETE';
+    inp.classList.toggle('match', ok);
+    document.getElementById('bkcConfirmBtn').disabled = !ok;
+}
+
+function closeBulkConfirm() {
+    document.getElementById('bkcOv').classList.remove('show');
+    _bkcCallback = null;
+}
+
+function execBulkConfirm() {
+    const cb = _bkcCallback;
+    closeBulkConfirm();
+    if (cb) cb();
+}
+
+async function bulkToggle(makeActive) {
+    if (!isAdmin) return;
+    const ids = [...selectedUsers].filter(id => id !== currentUserId);
+    if (!ids.length) { showToast(TH?'ไม่มีผู้ใช้ที่เลือกได้':'No eligible users selected','err'); return; }
+    const label = makeActive ? (TH?'เปิดใช้งาน':'Activate') : (TH?'ปิดใช้งาน':'Deactivate');
+    const users = ids.map(id => allUsers.find(x => parseInt(x.id) === id)).filter(Boolean);
+    _bkcCallback = async () => {
+        let ok = 0, fail = 0;
+        await Promise.all(ids.map(async id => {
+            try {
+                const res = await apiFetch('/v1/api/auth.php?action=users_update', { method:'POST', body:JSON.stringify({ user_id: id, is_active: makeActive ? 1 : 0 }) });
+                if (res.success) ok++; else fail++;
+            } catch { fail++; }
+        }));
+        showToast(TH ? `${label}สำเร็จ ${ok} รายการ${fail?' · ผิดพลาด '+fail:''}` : `${label}d ${ok}${fail?' · '+fail+' failed':''}`, fail && !ok ? 'err' : 'ok');
+        clearSelection(); loadData();
+    };
+    showBulkConfirm({
+        icon: makeActive ? 'fa-check-circle' : 'fa-ban',
+        iconBg: makeActive ? '#dcfce7' : '#fee2e2',
+        iconColor: makeActive ? '#15803d' : '#b91c1c',
+        title: label,
+        desc: TH ? `${users.length} ผู้ใช้ต่อไปนี้จะถูก${label}` : `${users.length} user(s) below will be ${makeActive ? 'activated' : 'deactivated'}`,
+        users,
+        confirmLabel: label,
+        confirmClass: makeActive ? 'usr-btn-p' : 'usr-btn-d',
+        requireType: false,
+    });
+}
+
+async function bulkDelete() {
+    if (!isAdmin) return;
+    const ids = [...selectedUsers].filter(id => id !== currentUserId);
+    if (!ids.length) { showToast(TH?'ไม่มีผู้ใช้ที่เลือกได้':'No eligible users selected','err'); return; }
+    const inactive = ids.filter(id => { const u = allUsers.find(x => parseInt(x.id) === id); return u && !parseInt(u.is_active); });
+    if (!inactive.length) { showToast(TH?'เฉพาะผู้ใช้ที่ปิดใช้งานเท่านั้นที่ลบได้':'Only inactive users can be deleted','err'); return; }
+    const users = inactive.map(id => allUsers.find(x => parseInt(x.id) === id)).filter(Boolean);
+    _bkcCallback = async () => {
+        let ok = 0, fail = 0;
+        for (const id of inactive) {
+            try { const res = await apiFetch('/v1/api/auth.php?action=users_delete', { method:'POST', body:JSON.stringify({ user_id: id }) }); if (res.success) ok++; else fail++; }
+            catch { fail++; }
+        }
+        showToast(TH ? `ลบสำเร็จ ${ok} รายการ${fail?' · ผิดพลาด '+fail:''}` : `Deleted ${ok}${fail?' · '+fail+' failed':''}`, fail && !ok ? 'err' : 'ok');
+        clearSelection(); loadData();
+    };
+    showBulkConfirm({
+        icon: 'fa-trash',
+        iconBg: '#fee2e2',
+        iconColor: '#b91c1c',
+        title: TH ? 'ลบผู้ใช้ถาวร' : 'Delete Users',
+        desc: TH ? `${users.length} ผู้ใช้ต่อไปนี้จะถูกลบออกจากระบบอย่างถาวร` : `${users.length} user(s) below will be permanently deleted`,
+        users,
+        confirmLabel: TH ? 'ลบถาวร' : 'Delete',
+        confirmClass: 'usr-btn-d',
+        requireType: true,
+    });
+}
+
+function openBulkRolePicker() {
+    if (!isAdmin || !selectedUsers.size) return;
+    const ids = [...selectedUsers];
+    const n   = ids.length;
+    // Subtitle
+    const sub = document.getElementById('brpSub');
+    if (sub) sub.innerHTML = `<i class="fas fa-users"></i> ${TH ? `เปลี่ยนสิทธิ์ผู้ใช้ ${n} รายการที่เลือก` : `Change role for ${n} selected user(s)`}`;
+    // User list
+    const uList = document.getElementById('brpUserList');
+    if (uList) uList.innerHTML = ids.map(id => {
+        const u = allUsers.find(x => parseInt(x.id) === id);
+        if (!u) return '';
+        const ini = ((u.first_name||'')[0]||'') + ((u.last_name||'')[0]||'');
+        const bg  = roleAvBg[u.role_name] || '#6366f1';
+        const nm  = `${u.first_name||''} ${u.last_name||''}`.trim();
+        return `<div class="brp-user">
+            <div class="brp-u-av" style="background:${bg}">${escHtml(ini.toUpperCase()||'?')}</div>
+            <div style="flex:1;min-width:0">
+                <div class="brp-u-name">${escHtml(nm)}</div>
+                <div class="brp-u-sub">@${escHtml(u.username||'')} <span class="usr-role ${roleColors[u.role_name]||'usr-role-visitor'}" style="font-size:9px;padding:1px 6px"><i class="fas ${roleIcons[u.role_name]||'fa-user'}"></i> ${escHtml(u.role_display||u.role_name||'')}</span></div>
+            </div>
+        </div>`;
+    }).join('');
+    // Role dropdown
+    const sel = document.getElementById('brpRoleSelect');
+    if (sel) {
+        sel.innerHTML = `<option value="">${TH ? '— เลือกสิทธิ์ —' : '— Select role —'}</option>` +
+            allRoles.map(r => `<option value="${r.id}" data-name="${escHtml(r.display_name)}">${escHtml(r.display_name)}</option>`).join('');
+        sel.value = '';
+    }
+    document.getElementById('bulkRolePicker').classList.add('show');
+    if (sel) setTimeout(() => sel.focus(), 120);
+}
+
+function closeBulkRolePicker() { document.getElementById('bulkRolePicker').classList.remove('show'); }
+
+function pickBulkRole(btn) {
+    document.querySelectorAll('.brp-role').forEach(b => b.classList.remove('picked'));
+    btn.classList.add('picked');
+}
+
+async function applyBulkRole() {
+    const sel = document.getElementById('brpRoleSelect');
+    if (!sel || !sel.value) { showToast(TH?'กรุณาเลือกสิทธิ์':'Please select a role','err'); return; }
+    const roleId   = parseInt(sel.value);
+    const roleName = sel.options[sel.selectedIndex]?.dataset?.name || sel.options[sel.selectedIndex]?.text || '';
+    const ids = [...selectedUsers].filter(id => id !== currentUserId);
+    if (!ids.length) { closeBulkRolePicker(); return; }
+    closeBulkRolePicker();
+    let ok = 0, fail = 0;
+    await Promise.all(ids.map(async id => {
+        try { const res = await apiFetch('/v1/api/auth.php?action=users_update', { method:'POST', body:JSON.stringify({ user_id: id, role_id: roleId }) }); if (res.success) ok++; else fail++; }
+        catch { fail++; }
+    }));
+    showToast(TH ? `เปลี่ยนสิทธิ์เป็น "${roleName}" สำเร็จ ${ok} รายการ${fail?' · ผิดพลาด '+fail:''}` : `Changed to "${roleName}": ${ok} done${fail?' · '+fail+' failed':''}`, fail && !ok ? 'err' : 'ok');
+    clearSelection(); loadData();
+}
+
+function bulkManageRooms() {
+    const ids = [...selectedUsers];
+    if (!ids.length) return;
+    _bulkRoomUserIds = ids;
+    openRoomModal(ids[0]);
+}
 
 /* ─── Role/Avatar config ─── */
 const roleColors = { admin:'usr-role-admin', ceo:'usr-role-ceo', lab_manager:'usr-role-lab_manager', user:'usr-role-user', visitor:'usr-role-visitor' };
@@ -782,8 +1240,12 @@ function renderUsersTable(users) {
         wrap.innerHTML = `<div class="usr-empty"><i class="fas fa-users"></i><p>${TH ? 'ไม่พบผู้ใช้' : 'No users found'}</p></div>`;
         return;
     }
+    const allVis = users.map(u => parseInt(u.id));
+    const allSel = allVis.length > 0 && allVis.every(id => selectedUsers.has(id));
+    const someSel = !allSel && allVis.some(id => selectedUsers.has(id));
     wrap.innerHTML = `<div class="usr-tw"><table class="usr-t">
         <thead><tr>
+            <th class="cb-col"><input type="checkbox" class="usr-cb" id="cbSelectAll" ${allSel ? 'checked' : ''} onclick="toggleSelectAll(this)" title="${TH?'เลือกทั้งหมด':'Select all'}"></th>
             <th>${TH ? 'ชื่อ-สกุล' : 'Name'}</th>
             <th>${TH ? 'บทบาท' : 'Role'}</th>
             <th>${TH ? 'ฝ่าย' : 'Division'}</th>
@@ -797,7 +1259,9 @@ function renderUsersTable(users) {
             const active   = parseInt(u.is_active);
             const isSelf   = parseInt(u.id) === currentUserId;
             const roomCount = parseInt(u.room_count || 0);
-            return `<tr class="${!active ? 'inactive-row' : ''}" onclick="showDetail(${u.id})">
+            const isSel    = selectedUsers.has(parseInt(u.id));
+            return `<tr class="${!active ? 'inactive-row' : ''}${isSel ? ' sel-row' : ''}" onclick="showDetail(${u.id})">
+                <td class="cb-col" onclick="event.stopPropagation()"><input type="checkbox" class="usr-cb" id="cb_${u.id}" ${isSel ? 'checked' : ''} onchange="toggleSelect(${u.id},this)"></td>
                 <td>
                     <div style="display:flex;align-items:center;gap:10px">
                         ${usrAvatar(u, 38, '50%')}
@@ -832,6 +1296,8 @@ function renderUsersTable(users) {
             </tr>`;
         }).join('')}</tbody>
     </table></div>`;
+    const cbAll = document.getElementById('cbSelectAll');
+    if (cbAll) cbAll.indeterminate = someSel;
 }
 
 /* ─── Grid View ─── */
@@ -845,10 +1311,12 @@ function renderUsersGrid(users) {
         const active   = parseInt(u.is_active);
         const isSelf   = parseInt(u.id) === currentUserId;
         const roomCount = parseInt(u.room_count || 0);
+        const isSel    = selectedUsers.has(parseInt(u.id));
         const stripeColors = { admin:'#dc2626', ceo:'#2563eb', lab_manager:'#d97706', user:'#16a34a', visitor:'#64748b' };
         const stripe = stripeColors[u.role_name] || '#6366f1';
-        return `<div class="usr-card ${!active ? 'inactive-card' : ''}" onclick="showDetail(${u.id})">
+        return `<div class="usr-card ${!active ? 'inactive-card' : ''}${isSel ? ' sel-card' : ''}" onclick="showDetail(${u.id})">
             <div class="usr-card-stripe" style="background:${stripe}"></div>
+            <div class="card-cb-ov" onclick="event.stopPropagation()"><input type="checkbox" class="usr-cb" id="cb_${u.id}" ${isSel ? 'checked' : ''} onchange="toggleSelect(${u.id},this)"></div>
             <div class="usr-card-hd" style="margin-top:6px">
                 ${usrAvatar(u, 48, '14px')}
                 <div class="usr-card-info">
@@ -1492,6 +1960,36 @@ async function openRoomModal(userId) {
     }
     document.getElementById('rmUserName').textContent = u ? `${u.first_name||''} ${u.last_name||''}`.trim() : `#${userId}`;
     document.getElementById('rmUserAt').textContent = u ? `@${u.username||''}  ·  ${u.role_display||u.role_name||''}` : '';
+
+    // Bulk banner — show selected users when assigning rooms in bulk
+    const _bulkBanner  = document.getElementById('rmBulkBanner');
+    const _bulkAvatars = document.getElementById('rmBulkAvatars');
+    const _bulkCount   = document.getElementById('rmBulkCount');
+    const _bulkHint    = document.getElementById('rmBulkHint');
+    const _bulkIds = _bulkRoomUserIds && _bulkRoomUserIds.length > 1 ? _bulkRoomUserIds : null;
+    if (_bulkBanner) {
+        _bulkBanner.style.display = _bulkIds ? '' : 'none';
+        if (_bulkIds) {
+            if (_bulkCount) _bulkCount.textContent = _bulkIds.length;
+            const uName = u ? `${u.first_name||''} ${u.last_name||''}`.trim() : `#${userId}`;
+            if (_bulkHint) _bulkHint.innerHTML = TH
+                ? `โหลดห้องจาก <strong>${escHtml(uName)}</strong> เป็นต้นแบบ · หลังบันทึกระบบจะถามว่าจะใช้ห้องเดียวกันกับผู้ใช้ที่เหลือ`
+                : `Rooms loaded from <strong>${escHtml(uName)}</strong> as baseline · after saving you'll be asked to apply to the remaining users`;
+            if (_bulkAvatars) _bulkAvatars.innerHTML = _bulkIds.map(id => {
+                const pu = allUsers.find(x => parseInt(x.id) === parseInt(id));
+                if (!pu) return '';
+                const ini = ((pu.first_name||'')[0]||'') + ((pu.last_name||'')[0]||'');
+                const bg  = roleAvBg[pu.role_name] || '#6366f1';
+                const nm  = `${pu.first_name||''} ${pu.last_name||''}`.trim();
+                const isBase = parseInt(id) === parseInt(userId);
+                return `<div class="rm-bulk-chip${isBase ? ' primary-user' : ''}">
+                    <div class="rm-bulk-av-mini" style="background:${bg}">${escHtml(ini.toUpperCase()||'?')}</div>
+                    <span>${escHtml(nm)}</span>${isBase ? ' <i class="fas fa-star" style="font-size:8px;margin-left:2px" title="${TH?\'โหลดห้องจากผู้ใช้นี้\':\'Baseline user\'}"></i>' : ''}
+                </div>`;
+            }).join('');
+        }
+    }
+
     document.getElementById('rmSearch').value = '';
     document.getElementById('rmBldFilter').innerHTML = `<option value="">${TH?'ทุกอาคาร':'All buildings'}</option>`;
     document.getElementById('rmList').innerHTML = `<div class="usr-ld"><i class="fas fa-circle-notch fa-spin"></i></div>`;
@@ -1539,7 +2037,7 @@ async function openRoomModal(userId) {
     }
 }
 
-function closeRoomModal() { document.getElementById('roomModal')?.classList.remove('show'); resetRoomState(); }
+function closeRoomModal() { document.getElementById('roomModal')?.classList.remove('show'); resetRoomState(); _bulkRoomUserIds = null; }
 function resetRoomState() { roomState = { userId:null, allRooms:[], selected:[], primary:null, buildings:[] }; }
 
 function updateRoomChip() {
@@ -1629,9 +2127,28 @@ async function saveRoomAccess() {
             body: JSON.stringify({ user_id: roomState.userId, room_ids: roomState.selected, primary_room_id: roomState.primary })
         });
         if (!res.success) throw new Error(res.error || 'Save failed');
-        showToast(TH?'บันทึกการกำหนดห้องเรียบร้อย':'Room access saved', 'ok');
+        const savedRoomIds = [...roomState.selected];
+        const savedPrimary = roomState.primary;
+        const otherIds = (_bulkRoomUserIds || []).filter(id => id !== roomState.userId);
         delete _rmpCache[roomState.userId];
-        closeRoomModal(); loadData();
+        closeRoomModal();
+        if (otherIds.length) {
+            const doAll = confirm(TH ? `ใช้ห้องเดียวกันกับอีก ${otherIds.length} ผู้ใช้ที่เลือก?` : `Apply same rooms to ${otherIds.length} other selected user(s)?`);
+            if (doAll) {
+                await Promise.all(otherIds.map(id =>
+                    apiFetch('/v1/api/auth.php?action=user_room_access_update', { method:'POST', body:JSON.stringify({ user_id: id, room_ids: savedRoomIds, primary_room_id: savedPrimary }) }).catch(()=>{})
+                ));
+                otherIds.forEach(id => delete _rmpCache[id]);
+                showToast(TH ? `กำหนดห้องเรียบร้อย ${otherIds.length+1} ผู้ใช้` : `Rooms assigned to ${otherIds.length+1} users`, 'ok');
+            } else {
+                showToast(TH?'บันทึกการกำหนดห้องเรียบร้อย':'Room access saved', 'ok');
+            }
+            clearSelection();
+        } else {
+            showToast(TH?'บันทึกการกำหนดห้องเรียบร้อย':'Room access saved', 'ok');
+        }
+        _bulkRoomUserIds = null;
+        loadData();
     } catch(e) { showToast(e.message || 'Save failed', 'err'); }
     finally { btn.disabled = false; btn.innerHTML = `<i class="fas fa-save"></i> ${TH?'บันทึก':'Save'}`; }
 }
@@ -1647,9 +2164,10 @@ function showToast(msg, type = 'ok') {
 }
 
 /* ─── Close on backdrop ─── */
-['userModal','detailModal','roomModal','importModal'].forEach(id => {
+['userModal','detailModal','roomModal'].forEach(id => {
     document.getElementById(id)?.addEventListener('click', e => { if (e.target === e.currentTarget) e.target.classList.remove('show'); });
 });
+document.getElementById('importWizard')?.addEventListener('click', e => { if (e.target === e.currentTarget) uiwClose(); });
 
 /* ─── Import / Export ─── */
 function toggleImportExport() { document.getElementById('ieDropdown').classList.toggle('show'); }
@@ -1657,104 +2175,313 @@ document.addEventListener('click', e => { if (!e.target.closest('.usr-ie-wrap'))
 function exportUsersCSV()  { document.getElementById('ieDropdown').classList.remove('show'); window.location.href = '/v1/api/user_import.php?action=export&format=csv'; }
 function exportUsersJSON() { document.getElementById('ieDropdown').classList.remove('show'); window.location.href = '/v1/api/user_import.php?action=export&format=json'; }
 function downloadTemplate(){ document.getElementById('ieDropdown').classList.remove('show'); window.location.href = '/v1/api/user_import.php?action=export_template'; }
+function exportUsersXLSX() {
+    document.getElementById('ieDropdown').classList.remove('show');
+    if (!allUsers.length) { showToast(TH?'ไม่มีข้อมูลผู้ใช้':'No user data', 'err'); return; }
+    const rows = allUsers.map(u => ({
+        'ID': u.id,
+        'ชื่อ-นามสกุล': u.full_name_th || ((u.first_name||'') + ' ' + (u.last_name||'')).trim(),
+        'Username': u.username, 'Email': u.email, 'Phone': u.phone||'',
+        'Role': u.role_name||'', 'Department': u.department||'', 'Position': u.position||'',
+        'Lab': u.primary_room_name||'', 'Active': parseInt(u.is_active)?'Yes':'No',
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Users');
+    XLSX.writeFile(wb, 'users_export_' + new Date().toISOString().slice(0,10) + '.xlsx');
+}
 
-let importFile = null;
+/* ─── Import Wizard ─── */
+const UIW = { file:null, headers:[], rawRows:[], mapping:{}, parsedUsers:[], step:1, pf:'all' };
+const UIW_FIELDS = [
+    {k:'employee_id', l: TH?'รหัสพนักงาน (Username)':'Employee ID (Username)', req:true},
+    {k:'fullname',    l: TH?'ชื่อ-นามสกุล':'Full Name',                        req:true},
+    {k:'position',   l: TH?'ตำแหน่ง':'Position',                               req:false},
+    {k:'section',    l: TH?'งาน (Section)':'Section / Unit',                    req:false},
+    {k:'department', l: TH?'ฝ่าย (Department)':'Department / Division',         req:false},
+    {k:'email',      l: TH?'อีเมล':'Email',                                     req:false},
+    {k:'phone',      l: TH?'เบอร์โทร':'Phone',                                  req:false},
+    {k:'ignore',     l: TH?'— ไม่ใช้ —':'— Ignore —',                          req:false},
+];
+const UIW_HINTS = {
+    employee_id:['รหัสพนัก','รหัส','emp','employee','staffid','staff_id'],
+    fullname:   ['ชื่อ','name','fullname','full_name','นามสกุล'],
+    position:   ['ตำแหน่ง','position','positionname'],
+    section:    ['งาน','section','unit'],
+    department: ['ฝ่าย','department','division','dept'],
+    email:      ['email','อีเมล','mail','emailname'],
+    phone:      ['tel','phone','โทร','เบอร์','mobile'],
+};
+
 function openImportModal() {
     document.getElementById('ieDropdown').classList.remove('show');
-    importFile = null;
-    document.getElementById('impFileInput').value = '';
-    document.getElementById('impFileInfo').style.display = 'none';
-    document.getElementById('impDropZone').style.display = '';
-    document.getElementById('btnPreviewImport').disabled = true;
-    ['importStep1','importStep2','importStep3'].forEach((id,i) => document.getElementById(id).style.display = i===0?'':'none');
-    document.getElementById('impUpdateExisting').checked = false;
-    document.getElementById('importModal').classList.add('show');
+    Object.assign(UIW,{file:null,headers:[],rawRows:[],mapping:{},parsedUsers:[],step:1,pf:'all'});
+    document.getElementById('uiwFileInput').value='';
+    document.getElementById('uiwFileCard').style.display='none';
+    document.getElementById('uiwDrop').style.display='';
+    _uiwGo(1);
+    document.getElementById('importWizard').style.display='flex';
 }
-function closeImportModal() { document.getElementById('importModal').classList.remove('show'); importFile = null; }
+function uiwClose(){ document.getElementById('importWizard').style.display='none'; }
 
-const impDrop = document.getElementById('impDropZone');
-if (impDrop) {
-    impDrop.addEventListener('dragover', e => { e.preventDefault(); impDrop.classList.add('dragover'); });
-    impDrop.addEventListener('dragleave', () => impDrop.classList.remove('dragover'));
-    impDrop.addEventListener('drop', e => { e.preventDefault(); impDrop.classList.remove('dragover'); if (e.dataTransfer.files.length) { document.getElementById('impFileInput').files = e.dataTransfer.files; onImportFileSelect(document.getElementById('impFileInput')); } });
-}
-
-function onImportFileSelect(input) {
-    if (!input.files.length) return;
-    const f = input.files[0];
-    if (!['csv','txt'].includes(f.name.split('.').pop().toLowerCase())) { showToast(TH?'กรุณาเลือกไฟล์ CSV เท่านั้น':'Please select a CSV file', 'err'); return; }
-    if (f.size > 5*1024*1024) { showToast(TH?'ไฟล์ใหญ่เกิน 5MB':'File exceeds 5MB', 'err'); return; }
-    importFile = f;
-    document.getElementById('impFileName').textContent = f.name;
-    document.getElementById('impFileMeta').textContent = formatFileSize(f.size) + ' · ' + f.name.split('.').pop().toUpperCase();
-    document.getElementById('impFileInfo').style.display = 'flex';
-    document.getElementById('impDropZone').style.display = 'none';
-    document.getElementById('btnPreviewImport').disabled = false;
+function _uiwGo(n){
+    UIW.step=n;
+    [1,2,3,4].forEach(i=>{
+        document.getElementById('uiwStep'+i).style.display=i===n?'':'none';
+        document.getElementById('uiwS'+i).className='uiw-step'+(i<n?' done':i===n?' active':'');
+    });
+    const bb=document.getElementById('uiwBtnBack'); bb.style.display=n>1&&n<4?'':'none';
+    const nb=document.getElementById('uiwBtnNext');
+    const bc=document.getElementById('uiwBtnCancel');
+    if(n===4){ nb.innerHTML=`<i class="fas fa-check"></i> ${TH?'เสร็จสิ้น':'Done'}`; nb.disabled=false; bc.style.display='none'; }
+    else if(n===3){ const cnt=UIW.parsedUsers.filter(r=>r.st==='new').length; nb.innerHTML=`<i class="fas fa-file-import"></i> ${TH?`นำเข้า ${cnt} รายการ`:`Import ${cnt} users`}`; nb.disabled=cnt===0; bc.style.display=''; }
+    else { nb.innerHTML=`<i class="fas fa-arrow-right"></i> ${TH?'ถัดไป':'Next'}`; nb.disabled=n===1&&!UIW.file; bc.style.display=''; }
+    const sub={1:TH?'รองรับไฟล์ .xlsx และ .csv':'Supports .xlsx and .csv',2:TH?'ตรวจสอบการจับคู่ column':'Verify column mapping',3:TH?'ตรวจสอบข้อมูลก่อนนำเข้า':'Review data before import',4:TH?'ผลการนำเข้าข้อมูล':'Import results'};
+    document.getElementById('uiwSubtitle').textContent=sub[n]||'';
 }
 
-function clearImportFile() { importFile = null; document.getElementById('impFileInput').value=''; document.getElementById('impFileInfo').style.display='none'; document.getElementById('impDropZone').style.display=''; document.getElementById('btnPreviewImport').disabled=true; }
-function formatFileSize(bytes) { if (bytes<1024) return bytes+' B'; if (bytes<1024*1024) return (bytes/1024).toFixed(1)+' KB'; return (bytes/(1024*1024)).toFixed(2)+' MB'; }
+async function uiwNext(){
+    if(UIW.step===1){ _uiwRenderMapping(); _uiwGo(2); }
+    else if(UIW.step===2){
+        const empCol=UIW.mapping.employee_id;
+        if(empCol===undefined){ showToast(TH?'กรุณากำหนด column สำหรับ "รหัสพนักงาน"':'Please map the Employee ID column','err'); return; }
+        _uiwBuild(); _uiwRenderPreview(); _uiwGo(3);
+    }
+    else if(UIW.step===3){ await _uiwImport(); }
+    else if(UIW.step===4){ uiwClose(); loadData(); }
+}
+function uiwBack(){ if(UIW.step===2)_uiwGo(1); else if(UIW.step===3)_uiwGo(2); }
 
-async function previewImport() {
-    if (!importFile) return;
-    const btn = document.getElementById('btnPreviewImport');
-    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    try {
-        const fd = new FormData(); fd.append('csv_file', importFile);
-        const res = await fetch('/v1/api/user_import.php?action=import_preview', { method:'POST', body:fd, credentials:'same-origin' });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Preview failed');
-        const s = data.stats;
-        document.getElementById('impStats').innerHTML = `
-            <div class="imp-stat"><div class="imp-stat-val">${s.total}</div><div class="imp-stat-lbl">${TH?'ทั้งหมด':'Total'}</div></div>
-            <div class="imp-stat new"><div class="imp-stat-val">${s.new}</div><div class="imp-stat-lbl">${TH?'เพิ่มใหม่':'New'}</div></div>
-            <div class="imp-stat update"><div class="imp-stat-val">${s.update}</div><div class="imp-stat-lbl">${TH?'อัปเดต':'Update'}</div></div>
-            <div class="imp-stat error"><div class="imp-stat-val">${s.error}</div><div class="imp-stat-lbl">${TH?'ข้อผิดพลาด':'Errors'}</div></div>`;
-        document.getElementById('impPreviewBody').innerHTML = data.preview.map(p => {
-            const badge = p.status==='new'?'imp-badge-new':p.status==='update'?'imp-badge-update':'imp-badge-error';
-            const label = p.status==='new'?(TH?'เพิ่มใหม่':'New'):p.status==='update'?(TH?'อัปเดต':'Update'):(TH?'ข้อผิดพลาด':'Error');
-            return `<tr><td>${p.row}</td><td style="font-size:12px;font-weight:500">${escHtml(p.name)}</td><td><code style="font-size:11px">${escHtml(p.username)}</code></td><td style="font-size:11px">${escHtml(p.email)}</td><td><span class="${badge}">${escHtml(p.role)}</span></td><td style="font-size:11px">${escHtml(p.unit)}</td><td><span class="${badge}">${label}</span></td></tr>`;
-        }).join('');
-        document.getElementById('importStep1').style.display = 'none';
-        document.getElementById('importStep2').style.display = '';
-        document.getElementById('btnDoImport').disabled = (s.new + s.update === 0);
-    } catch(e) { showToast(e.message || 'Preview error', 'err'); }
-    finally { btn.disabled = false; btn.innerHTML = `<i class="fas fa-search"></i> ${TH?'ตรวจสอบ':'Preview'}`; }
+/* file read */
+function uiwOnFile(inp){
+    if(!inp.files.length) return;
+    const f=inp.files[0], ext=f.name.split('.').pop().toLowerCase();
+    if(!['xlsx','csv','txt'].includes(ext)){ showToast(TH?'รองรับเฉพาะ .xlsx และ .csv':'Only .xlsx and .csv supported','err'); return; }
+    if(f.size>10*1024*1024){ showToast(TH?'ไฟล์ใหญ่เกิน 10MB':'File exceeds 10MB','err'); return; }
+    UIW.file=f;
+    document.getElementById('uiwFileName').textContent=f.name;
+    const isX=ext==='xlsx';
+    document.getElementById('uiwFileIc').innerHTML=isX?'<i class="fas fa-file-excel"></i>':'<i class="fas fa-file-csv"></i>';
+    document.getElementById('uiwFileIc').style.background=isX?'#16a34a':'#2563eb';
+    const reader=new FileReader();
+    reader.onload=ev=>{
+        try{
+            const wb=XLSX.read(ev.target.result,{type:'array'});
+            const ws=wb.Sheets[wb.SheetNames[0]];
+            const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+            const ne=data.filter(r=>r.some(c=>String(c).trim()));
+            if(ne.length<2){ showToast(TH?'ไฟล์ไม่มีข้อมูล':'No data in file','err'); return; }
+            UIW.headers=ne[0].map(h=>String(h).trim());
+            UIW.rawRows=ne.slice(1).filter(r=>r.some(c=>String(c).trim()));
+            _uiwAutoMap();
+            document.getElementById('uiwFileMeta').textContent=_uiwSz(f.size)+' · '+ext.toUpperCase()+' · '+UIW.rawRows.length+(TH?' แถว':' rows');
+            document.getElementById('uiwFileCard').style.display='flex';
+            document.getElementById('uiwDrop').style.display='none';
+            document.getElementById('uiwBtnNext').disabled=false;
+        }catch(e){ showToast((TH?'อ่านไฟล์ไม่ได้: ':'Cannot read: ')+e.message,'err'); }
+    };
+    reader.readAsArrayBuffer(f);
+}
+function uiwClearFile(){ UIW.file=null; document.getElementById('uiwFileInput').value=''; document.getElementById('uiwFileCard').style.display='none'; document.getElementById('uiwDrop').style.display=''; document.getElementById('uiwBtnNext').disabled=true; }
+function _uiwSz(b){ return b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB'; }
+
+function _uiwAutoMap(){
+    UIW.mapping={};
+    UIW.headers.forEach((h,i)=>{
+        const lh=h.toLowerCase();
+        for(const[f,hints]of Object.entries(UIW_HINTS)){
+            if(UIW.mapping[f]!==undefined) continue;
+            if(hints.some(hint=>lh.includes(hint.toLowerCase()))){ UIW.mapping[f]=i; break; }
+        }
+    });
 }
 
-function backToStep1() { document.getElementById('importStep1').style.display=''; document.getElementById('importStep2').style.display='none'; }
+function _uiwRenderMapping(){
+    document.getElementById('uiwMapRows').innerHTML=UIW.headers.map((h,i)=>{
+        const mapped=Object.entries(UIW.mapping).find(([,idx])=>idx===i)?.[0]||'ignore';
+        return `<div class="uiw-map-grid">
+            <div class="uiw-map-src" title="${escHtml(h)}">${escHtml(h)}</div>
+            <div class="uiw-map-arr"><i class="fas fa-long-arrow-alt-right"></i></div>
+            <select class="uiw-map-sel" data-col="${i}" onchange="_uiwMapChg(this)">
+                ${UIW_FIELDS.map(f=>`<option value="${f.k}"${mapped===f.k?' selected':''}>${f.l}</option>`).join('')}
+            </select>
+        </div>`;
+    }).join('');
+    const sr=UIW.rawRows.slice(0,3);
+    document.getElementById('uiwSampleContent').innerHTML=
+        '<table style="border-collapse:collapse;width:100%"><thead><tr>'+
+        UIW.headers.map(h=>`<th style="padding:3px 8px;background:#e0e7ff;color:#312e81;font-weight:700;white-space:nowrap;border:1px solid #c7d2fe;font-size:11px">${escHtml(h)}</th>`).join('')+
+        '</tr></thead><tbody>'+sr.map(r=>'<tr>'+UIW.headers.map((_,i)=>`<td style="padding:3px 8px;border:1px solid #e2e8f0;white-space:nowrap">${escHtml(String(r[i]??''))}</td>`).join('')+'</tr>').join('')+
+        '</tbody></table>';
+}
+function _uiwMapChg(sel){
+    const ci=parseInt(sel.dataset.col), nf=sel.value;
+    Object.keys(UIW.mapping).forEach(k=>{ if(UIW.mapping[k]===ci) delete UIW.mapping[k]; });
+    if(nf!=='ignore'){
+        if(UIW.mapping[nf]!==undefined){ const p=document.querySelector(`.uiw-map-sel[data-col="${UIW.mapping[nf]}"]`); if(p)p.value='ignore'; }
+        UIW.mapping[nf]=ci;
+    }
+}
 
-async function executeImport() {
-    if (!importFile) return;
-    const btn = document.getElementById('btnDoImport');
-    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    try {
-        const fd = new FormData(); fd.append('csv_file', importFile);
-        fd.append('update_existing', document.getElementById('impUpdateExisting').checked ? '1' : '0');
-        fd.append('default_password', '123');
-        const res = await fetch('/v1/api/user_import.php?action=import', { method:'POST', body:fd, credentials:'same-origin' });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Import failed');
-        const r = data.data;
-        const hasErrors = r.errors && r.errors.length > 0;
-        document.getElementById('impResult').innerHTML = `
-            <div class="imp-result-card" style="background:${hasErrors?'#fff7ed':'#f0fdf4'};color:${hasErrors?'#9a3412':'#065f46'}">
-                <i class="fas fa-${hasErrors?'exclamation-triangle':'check-circle'}"></i>
-                <h3>${hasErrors?(TH?'นำเข้าเสร็จสิ้น (มีข้อผิดพลาด)':'Done with errors'):(TH?'นำเข้าสำเร็จ!':'Import successful!')}</h3>
-                <p>${TH?'ระบบได้ประมวลผลข้อมูลเรียบร้อยแล้ว':'Data processed successfully'}</p>
-                <div class="imp-result-detail">
-                    <div class="imp-result-item"><div class="val" style="color:#059669">${r.inserted}</div><div class="lbl">${TH?'เพิ่มใหม่':'Added'}</div></div>
-                    <div class="imp-result-item"><div class="val" style="color:#2563eb">${r.updated}</div><div class="lbl">${TH?'อัปเดต':'Updated'}</div></div>
-                    <div class="imp-result-item"><div class="val" style="color:#888">${r.skipped}</div><div class="lbl">${TH?'ข้าม':'Skipped'}</div></div>
-                </div>
-            </div>
-            ${hasErrors ? '<div style="margin-top:8px;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:12px;color:#991b1b"><strong>Errors:</strong><ul style="margin:4px 0 0 16px">' + r.errors.map(e => '<li>' + escHtml(e) + '</li>').join('') + '</ul></div>' : ''}
-            <p style="margin-top:12px;font-size:12px;color:var(--c3)"><i class="fas fa-key" style="margin-right:4px"></i> ${TH?'รหัสผ่านเริ่มต้น:':'Default password:'} <code>123</code></p>`;
-        document.getElementById('importStep2').style.display = 'none';
-        document.getElementById('importStep3').style.display = '';
-    } catch(e) { showToast(e.message || 'Import error', 'err'); btn.disabled = false; btn.innerHTML = `<i class="fas fa-file-import"></i> ${TH?'นำเข้า':'Import'}`; }
+function _uiwBuild(){
+    const exist=new Set(allUsers.map(u=>(u.username||'').toLowerCase()));
+    UIW.parsedUsers=UIW.rawRows.map((row,i)=>{
+        const g=f=>{ const idx=UIW.mapping[f]; return idx!==undefined?String(row[idx]??'').trim():''; };
+        const empId=g('employee_id'), fn=g('fullname');
+        let email=g('email'); if(!email&&empId) email=empId+'@sut.ac.th';
+        const errs=[]; let st='new';
+        if(!empId){ errs.push(TH?'ไม่มีรหัสพนักงาน':'Missing employee ID'); st='err'; }
+        if(!fn) errs.push(TH?'ไม่มีชื่อ':'Missing name');
+        if(empId&&exist.has(empId.toLowerCase())) st=st==='err'?'err':'dup';
+        let fName='',lName='',fnTh=fn;
+        if(fn){ const c=fn.replace(/^(นาย|นางสาว|นาง|ดร\.|Dr\.|Mr\.|Mrs\.|Ms\.)\s*/u,''); const p=c.split(/\s+/); fName=p[0]||empId; lName=p.slice(1).join(' '); }
+        else fName=empId;
+        return {row:i+1,username:empId,fullname:fn,fnTh,fName,lName,pos:g('position'),sec:g('section'),dept:g('department'),email,phone:g('phone'),st,errs};
+    });
+}
+
+function _uiwRenderPreview(){
+    const u=UIW.parsedUsers, cnt={all:u.length,new:0,dup:0,err:0};
+    u.forEach(r=>{ cnt[r.st]=(cnt[r.st]||0)+1; });
+    document.getElementById('uiwSum').innerHTML=[
+        ['#6366f1',cnt.all,TH?'ทั้งหมด':'Total'],
+        ['#15803d',cnt.new,TH?'เพิ่มใหม่':'New'],
+        ['#d97706',cnt.dup,TH?'ซ้ำ (username)':'Duplicate'],
+        ['#dc2626',cnt.err,TH?'ข้อผิดพลาด':'Error'],
+    ].map(([c,v,l])=>`<div class="uiw-sum-c"><div class="uiw-sum-v" style="color:${c}">${v}</div><div class="uiw-sum-l">${l}</div></div>`).join('');
+    UIW.pf='all'; _uiwTabs(cnt); _uiwTable('all');
+    const ic=u.filter(r=>r.st==='new').length;
+    document.getElementById('uiwBtnNext').innerHTML=`<i class="fas fa-file-import"></i> ${TH?`นำเข้า ${ic} รายการ`:`Import ${ic} users`}`;
+    document.getElementById('uiwBtnNext').disabled=ic===0;
+}
+function _uiwTabs(cnt){
+    document.getElementById('uiwFtabs').innerHTML=[
+        ['all',TH?'ทั้งหมด':'All',cnt.all],
+        ['new',TH?'เพิ่มใหม่':'New',cnt.new],
+        ['dup',TH?'ซ้ำ':'Duplicate',cnt.dup],
+        ['err',TH?'ผิดพลาด':'Error',cnt.err],
+    ].map(([k,l,c])=>`<button class="uiw-ftab${UIW.pf===k?' on':''}" onclick="UIW.pf='${k}';_uiwTabRefresh()">${l} <strong>(${c})</strong></button>`).join('');
+}
+function _uiwTabRefresh(){
+    const cnt={all:UIW.parsedUsers.length,new:0,dup:0,err:0};
+    UIW.parsedUsers.forEach(r=>{ cnt[r.st]=(cnt[r.st]||0)+1; });
+    _uiwTabs(cnt); _uiwTable(UIW.pf);
+}
+function _uiwTable(f){
+    const rows=f==='all'?UIW.parsedUsers:UIW.parsedUsers.filter(r=>r.st===f);
+    const bd={new:`<span class="uiw-badge uiw-new"><i class="fas fa-plus-circle"></i> ${TH?'ใหม่':'New'}</span>`,dup:`<span class="uiw-badge uiw-dup"><i class="fas fa-exclamation-circle"></i> ${TH?'ซ้ำ':'Dup'}</span>`,err:`<span class="uiw-badge uiw-err"><i class="fas fa-times-circle"></i> ${TH?'ผิดพลาด':'Error'}</span>`};
+    document.getElementById('uiwPreviewBody').innerHTML=rows.map(r=>`<tr>
+        <td style="color:var(--c3)">${r.row}</td>
+        <td><code style="font-size:11px;background:#f1f5f9;padding:2px 5px;border-radius:4px">${escHtml(r.username)||'<span style="color:#dc2626">—</span>'}</code></td>
+        <td style="font-size:12px;font-weight:500">${escHtml(r.fullname)||'<span style="color:var(--c3)">—</span>'}</td>
+        <td style="font-size:11px;color:var(--c3)">${escHtml(r.pos||r.sec)}</td>
+        <td style="font-size:11px;color:var(--c3)">${escHtml(r.dept)}</td>
+        <td style="font-size:11px">${escHtml(r.email)}</td>
+        <td>${bd[r.st]||''}${r.errs.length?`<div style="font-size:10px;color:#dc2626;margin-top:2px">${r.errs.join(', ')}</div>`:''}</td>
+    </tr>`).join('')||`<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--c3)">${TH?'ไม่มีข้อมูล':'No data'}</td></tr>`;
+}
+
+async function _uiwImport(){
+    const upd=document.getElementById('uiwUpdateExisting').checked;
+    const todo=UIW.parsedUsers.filter(r=>r.st==='new'||(upd&&r.st==='dup'));
+    if(!todo.length){ showToast(TH?'ไม่มีรายการที่นำเข้าได้':'Nothing to import','err'); return; }
+    document.getElementById('uiwBtnNext').disabled=true;
+    document.getElementById('uiwBtnBack').style.display='none';
+    _uiwGo(4);
+    document.getElementById('uiwResHd').innerHTML=`<div class="uiw-res-ic" style="background:#e0e7ff;color:#6366f1"><i class="fas fa-spinner fa-spin"></i></div><h4 style="margin:0 0 4px;font-weight:700">${TH?'กำลังนำเข้า...':'Importing...'}</h4><p style="font-size:12px;color:var(--c3);margin:0">${TH?`กำลังประมวลผล ${todo.length} รายการ`:`Processing ${todo.length} records`}</p>`;
+    document.getElementById('uiwProgBar').style.width='20%';
+    document.getElementById('uiwResGrid').innerHTML=''; document.getElementById('uiwErrList').innerHTML='';
+    try{
+        const resp=await fetch('/v1/api/user_import.php?action=import_json',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({update_existing:upd,rows:todo.map(u=>({username:u.username,fullname:u.fnTh,first_name:u.fName,last_name:u.lName,position:u.pos,section:u.sec,department:u.dept,email:u.email,phone:u.phone}))})});
+        const data=await resp.json();
+        if(!data.success) throw new Error(data.error||'Import failed');
+        document.getElementById('uiwProgBar').style.width='100%';
+        const s=data.stats, he=s.errors>0;
+        document.getElementById('uiwResHd').innerHTML=`<div class="uiw-res-ic" style="background:${he?'#fef9c3':'#dcfce7'};color:${he?'#854d0e':'#15803d'}"><i class="fas fa-${he?'exclamation-circle':'check-circle'}"></i></div><h4 style="font-size:17px;font-weight:800;margin:0 0 4px">${he?(TH?'นำเข้าเสร็จสิ้น (มีข้อผิดพลาด)':'Done with errors'):(TH?'นำเข้าสำเร็จ!':'Import Successful!')}</h4><p style="font-size:12px;color:var(--c3);margin:0">${TH?`ประมวลผล ${s.total} รายการ`:`Processed ${s.total} records`}</p>`;
+        document.getElementById('uiwResGrid').innerHTML=[['#16a34a',s.created,TH?'เพิ่มใหม่':'Created'],['#d97706',s.skipped,TH?'ข้าม':'Skipped'],['#dc2626',s.errors,TH?'ผิดพลาด':'Errors']].map(([c,v,l])=>`<div class="uiw-res-c"><div class="uiw-res-v" style="color:${c}">${v}</div><div class="uiw-res-l">${l}</div></div>`).join('');
+        const errs=(data.results||[]).filter(r=>r.status==='error');
+        if(errs.length) document.getElementById('uiwErrList').innerHTML=`<div style="margin-top:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:12px;color:#991b1b"><strong>${TH?'รายการที่ผิดพลาด:':'Errors:'}</strong><ul style="margin:6px 0 0 16px">${errs.map(e=>`<li>${TH?'แถว':'Row'} ${e.row} (${escHtml(e.username)}): ${escHtml(e.reason)}</li>`).join('')}</ul></div>`;
+        document.getElementById('uiwBtnNext').disabled=false;
+        document.getElementById('uiwBtnNext').innerHTML=`<i class="fas fa-check"></i> ${TH?'เสร็จสิ้น':'Done'}`;
+        if(!he) showToast(TH?`นำเข้าสำเร็จ ${s.created} รายการ`:`Imported ${s.created} users`,'ok');
+    }catch(e){
+        document.getElementById('uiwResHd').innerHTML=`<div class="uiw-res-ic" style="background:#fee2e2;color:#b91c1c"><i class="fas fa-times-circle"></i></div><h4 style="margin:0 0 4px;font-weight:700">${TH?'เกิดข้อผิดพลาด':'Error'}</h4><p style="font-size:12px;color:#b91c1c;margin:0">${escHtml(e.message)}</p>`;
+        document.getElementById('uiwProgBar').style.width='100%'; document.getElementById('uiwProgBar').style.background='#dc2626';
+        document.getElementById('uiwBtnNext').disabled=false; document.getElementById('uiwBtnNext').innerHTML=`<i class="fas fa-times"></i> ${TH?'ปิด':'Close'}`;
+    }
+}
+
+/* drag & drop */
+const _dd=document.getElementById('uiwDrop');
+if(_dd){
+    _dd.addEventListener('dragover',e=>{e.preventDefault();_dd.classList.add('ov');});
+    _dd.addEventListener('dragleave',()=>_dd.classList.remove('ov'));
+    _dd.addEventListener('drop',e=>{e.preventDefault();_dd.classList.remove('ov');if(e.dataTransfer.files.length){document.getElementById('uiwFileInput').files=e.dataTransfer.files;uiwOnFile(document.getElementById('uiwFileInput'));}});
 }
 
 loadData();
 </script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+<!-- ════ BULK ACTION BAR ════ -->
+<div class="bulk-bar" id="bulkBar">
+    <div class="bulk-cnt"><span class="n" id="bulkCnt">0</span>&nbsp;<?php echo $TH?'รายการที่เลือก':'selected'?></div>
+    <div class="bulk-sep"></div>
+    <div class="bulk-acts">
+        <?php if ($isAdmin): ?>
+        <button class="blk blk-role" onclick="openBulkRolePicker()"><i class="fas fa-shield-alt"></i> <?php echo $TH?'เปลี่ยนสิทธิ์':'Role'?></button>
+        <button class="blk blk-on" onclick="bulkToggle(true)"><i class="fas fa-check"></i> <?php echo $TH?'เปิดใช้งาน':'Activate'?></button>
+        <button class="blk blk-off" onclick="bulkToggle(false)"><i class="fas fa-ban"></i> <?php echo $TH?'ปิดใช้งาน':'Deactivate'?></button>
+        <button class="blk blk-room" onclick="bulkManageRooms()"><i class="fas fa-map-marker-alt"></i> <?php echo $TH?'จัดการห้อง':'Rooms'?></button>
+        <button class="blk blk-del" onclick="bulkDelete()"><i class="fas fa-trash"></i> <?php echo $TH?'ลบ':'Delete'?></button>
+        <?php endif; ?>
+    </div>
+    <button class="blk blk-clr" onclick="clearSelection()" title="<?php echo $TH?'ยกเลิกการเลือก':'Clear selection'?>"><i class="fas fa-times"></i></button>
+</div>
+
+<!-- ════ BULK CONFIRM MODAL ════ -->
+<div class="bkc-ov" id="bkcOv">
+    <div class="bkc-box">
+        <div class="bkc-hd">
+            <div class="bkc-ic" id="bkcIc"><i id="bkcIcon" class="fas fa-check-circle"></i></div>
+            <div class="bkc-title" id="bkcTitle"></div>
+            <div class="bkc-desc" id="bkcDesc"></div>
+        </div>
+        <div class="bkc-users" id="bkcUserList"></div>
+        <div class="bkc-type-wrap" id="bkcTypeWrap" style="display:none">
+            <div class="bkc-type-lbl" id="bkcTypeLbl"><?php echo $TH?'พิมพ์ DELETE เพื่อยืนยัน':'Type DELETE to confirm'?></div>
+            <input type="text" class="bkc-type-inp" id="bkcTypeInp" placeholder="DELETE" oninput="onBkcType(this)" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="bkc-ft">
+            <button class="usr-btn usr-btn-g" onclick="closeBulkConfirm()"><?php echo $TH?'ยกเลิก':'Cancel'?></button>
+            <button class="usr-btn usr-btn-p" id="bkcConfirmBtn" onclick="execBulkConfirm()"><?php echo $TH?'ยืนยัน':'Confirm'?></button>
+        </div>
+    </div>
+</div>
+
+<!-- ════ BULK ROLE PICKER ════ -->
+<div class="brp-ov" id="bulkRolePicker">
+    <div class="brp-box">
+        <div class="brp-hd">
+            <div class="brp-hd-ic"><i class="fas fa-shield-alt"></i></div>
+            <h3><?php echo $TH?'เปลี่ยนสิทธิ์ผู้ใช้':'Change User Role'?></h3>
+            <button class="usr-mx" onclick="closeBulkRolePicker()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="brp-bd">
+            <div class="brp-sub" id="brpSub"><i class="fas fa-users"></i> <?php echo $TH?'ผู้ใช้ที่เลือก':'Selected users'?></div>
+            <div class="brp-users" id="brpUserList"></div>
+            <div class="brp-sec-lbl"><i class="fas fa-angle-right" style="font-size:9px;color:#6366f1"></i> <?php echo $TH?'เลือกสิทธิ์ใหม่':'Select new role'?></div>
+            <div class="brp-sel-wrap">
+                <select id="brpRoleSelect" class="brp-sel">
+                    <option value=""><?php echo $TH?'— เลือกสิทธิ์ —':'— Select role —'?></option>
+                </select>
+            </div>
+        </div>
+        <div class="brp-ft">
+            <button class="usr-btn usr-btn-g" onclick="closeBulkRolePicker()"><?php echo $TH?'ยกเลิก':'Cancel'?></button>
+            <button class="usr-btn usr-btn-p" onclick="applyBulkRole()"><i class="fas fa-check"></i> <?php echo $TH?'ยืนยัน':'Apply'?></button>
+        </div>
+    </div>
+</div>
+
 </body></html>
