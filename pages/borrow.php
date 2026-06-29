@@ -3315,12 +3315,14 @@ async function startScanCamera() {
         await scannerInstance.start(
             { facingMode: 'environment' },
             { fps: 10, qrbox: { width: 250, height: 100 }, formatsToSupport: [
+                // Restricted to what this app actually generates (QR_CODE for
+                // containers.qr_code, CODE_128 for bottle barcodes). Extra
+                // alphanumeric-capable formats like CODE_39/CODE_93/EAN can be
+                // misidentified for CODE_128 by the pure-JS decoder iOS Safari
+                // is forced to use (no native BarcodeDetector support there),
+                // returning a garbled code that matches nothing in the DB.
                 Html5QrcodeSupportedFormats.QR_CODE,
-                Html5QrcodeSupportedFormats.CODE_128,
-                Html5QrcodeSupportedFormats.CODE_39,
-                Html5QrcodeSupportedFormats.EAN_13,
-                Html5QrcodeSupportedFormats.EAN_8,
-                Html5QrcodeSupportedFormats.CODE_93
+                Html5QrcodeSupportedFormats.CODE_128
             ]},
             (decodedText) => {
                 // Success — barcode found

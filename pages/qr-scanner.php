@@ -1833,17 +1833,23 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             if (!qr) qr = new Html5Qrcode('qrBox');
 
             // ── Scan formats ───────────────────────────────────────────────
+            // Restricted to exactly what this app generates: QR_CODE for
+            // containers.qr_code, CODE_128 for bottle barcodes (JsBarcode,
+            // see pages/stock.php). Extra linear formats (CODE_39/CODE_93/
+            // EAN/UPC/ITF) are NOT used anywhere, but their bar patterns can
+            // closely resemble CODE_128 for alphanumeric strings like
+            // "F91011A6900002" — when included, the decoder can misidentify
+            // a real CODE_128 barcode as one of these and return a garbled
+            // string that matches nothing in the database. This is far more
+            // likely on iOS, which has no native BarcodeDetector API and so
+            // always falls back to the library's pure-JS decoder (see
+            // useBarCodeDetectorIfSupported below) — that decoder is more
+            // prone to this cross-format misread than Android's hardware
+            // decoder. Keeping only the two real formats removes the
+            // ambiguity entirely.
             const formats = [
                 Html5QrcodeSupportedFormats.QR_CODE,
                 Html5QrcodeSupportedFormats.CODE_128,
-                Html5QrcodeSupportedFormats.CODE_39,
-                Html5QrcodeSupportedFormats.CODE_93,
-                Html5QrcodeSupportedFormats.EAN_13,
-                Html5QrcodeSupportedFormats.EAN_8,
-                Html5QrcodeSupportedFormats.ITF,
-                Html5QrcodeSupportedFormats.UPC_A,
-                Html5QrcodeSupportedFormats.UPC_E,
-                Html5QrcodeSupportedFormats.DATA_MATRIX,
             ];
 
             // ── qrbox ──────────────────────────────────────────────────────
