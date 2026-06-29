@@ -1978,7 +1978,19 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 try {
                     await withTimeout(qr.start({ facingMode: activeFacing }, iosCfg, onScan, () => {}), 8000, 'ios-soft');
                     started = true;
-                } catch (e) { errors.push('ios-soft:' + e.message); if (/timed out/.test(e.message)) await resetQrInstance(); }
+                } catch (e) {
+                    errors.push('ios-soft:' + e.message);
+                    // Always reset before falling back to Strategy B, not just
+                    // on a timeout — iOS Safari can leave the Html5Qrcode
+                    // instance in a state where a second start() attempt on
+                    // the SAME instance silently fails too, even for a quick
+                    // rejection like OverconstrainedError/NotAllowedError, not
+                    // just a hang. A clean instance + brief cooldown before
+                    // retrying is what actually works on iOS (confirmed in an
+                    // earlier working version of this file).
+                    await resetQrInstance();
+                    await new Promise(r => setTimeout(r, 200));
+                }
 
                 if (!started) {
                     try {
@@ -1988,7 +2000,7 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                         if (!cam) throw new Error('No cameras');
                         await withTimeout(qr.start(cam.id, iosCfg, onScan, () => {}), 8000, 'ios-id');
                         started = true;
-                    } catch (e) { errors.push('ios-id:' + e.message); if (/timed out/.test(e.message)) await resetQrInstance(); }
+                    } catch (e) { errors.push('ios-id:' + e.message); }
                 }
 
             // ══ Android / Desktop path ═════════════════════════════════════
