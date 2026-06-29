@@ -1654,7 +1654,7 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                  on iOS Safari (longstanding WebKit/library limitation), so on
                  iOS this button is the primary way to scan: it captures the
                  current frame as a still image and decodes that instead. -->
-            <button class="sc-capture-btn" id="captureBtn" onclick="captureAndDecode()" style="display:none">
+            <button class="sc-capture-btn" id="captureBtn" onclick="captureAndDecode()">
                 <i class="fas fa-camera"></i>
                 <span><?php echo $TH ? 'แตะเพื่อสแกน' : 'Tap to Scan' ?></span>
             </button>
