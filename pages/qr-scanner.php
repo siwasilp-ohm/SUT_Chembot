@@ -1729,6 +1729,7 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                       (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
 
         let qr = null, camOn = false, cameras = [], torchOn = false;
+        let camBusy = false; // guard: prevent concurrent startCam / switchCam calls
         let activeFacing = 'environment'; // 'environment' | 'user'
         let cart = []; // {barcode,chemName,cas,unit,qty,remaining,sourceType,sourceId,relation,activeBorrow}
         let selAction = null;
@@ -1786,6 +1787,16 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
         }
 
         async function startCam(facing) {
+            if (camBusy) return; // prevent concurrent calls (rapid switch taps)
+            camBusy = true;
+            try {
+                await _startCam(facing);
+            } finally {
+                camBusy = false;
+            }
+        }
+
+        async function _startCam(facing) {
             if (facing !== undefined) activeFacing = facing;
 
             g('noCam').style.display = 'none';
@@ -1811,7 +1822,8 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                     qr = null;
                 }
                 // Let camera hardware fully release before restarting
-                await new Promise(r => setTimeout(r, isIOS ? 400 : 150));
+                // Android needs more time than iOS (hardware handoff between cameras)
+                await new Promise(r => setTimeout(r, isIOS ? 400 : 300));
             }
 
             // html5-qrcode is designed to be reused across stop/start cycles.
@@ -1979,27 +1991,27 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             g('camTogBtn').classList.add('on');
             g('camIco').className = 'fas fa-video-slash';
 
-            // Switch button: always show on mobile (all phones have front + rear)
-            if (isMobile) {
-                g('swBtn').style.display = '';
-            } else {
-                const list = await getCameraList();
-                if (list.length > 1) g('swBtn').style.display = '';
-            }
-            if (isMobile) g('torchBtn').style.display = '';
-
-            // Android/desktop: populate camera ID cache via enumerateDevices()
-            // Safe to call while camera is running — does NOT open a new stream.
-            // Labels are available after permission is granted.
-            // Used by Strategy 0 on next switch so we always target the correct physical camera.
-            if (!isIOS && !cameras.length && navigator.mediaDevices?.enumerateDevices) {
-                navigator.mediaDevices.enumerateDevices().then(devs => {
+            // Android/desktop: populate camera ID cache NOW (await) so IDs are ready
+            // before switch button appears. enumerateDevices() is safe while camera
+            // is running — it reads the device list without opening a new stream.
+            // Labels are populated after permission is granted (camera just started).
+            if (!isIOS && navigator.mediaDevices?.enumerateDevices) {
+                try {
+                    const devs = await navigator.mediaDevices.enumerateDevices();
                     const cams = devs
                         .filter(d => d.kind === 'videoinput')
                         .map(d => ({ id: d.deviceId, label: d.label || '' }));
                     if (cams.length) cameras = cams;
-                }).catch(() => {});
+                } catch (_) {}
             }
+
+            // Switch button — shown AFTER camera IDs are cached above
+            if (isMobile) {
+                g('swBtn').style.display = '';
+            } else {
+                if (cameras.length > 1) g('swBtn').style.display = '';
+            }
+            if (isMobile) g('torchBtn').style.display = '';
 
             g('swBtn').title = activeFacing === 'environment'
                 ? (TH ? 'สลับเป็นกล้องหน้า' : 'Switch to front cam')
@@ -2026,18 +2038,15 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
 
         // Toggle between rear ↔ front camera
         async function switchCam() {
-            if (!camOn) return;
+            if (!camOn || camBusy) return;
             const next = activeFacing === 'environment' ? 'user' : 'environment';
-            // Spin icon for feedback
             const ico = g('swIco');
             ico.style.transition = 'transform .4s';
             ico.style.transform = 'rotate(180deg)';
             g('swBtn').disabled = true;
             await startCam(next);
-            setTimeout(() => {
-                ico.style.transform = '';
-                g('swBtn').disabled = false;
-            }, 420);
+            ico.style.transform = '';
+            g('swBtn').disabled = false;
         }
 
         async function toggleTorch() {
