@@ -1910,6 +1910,14 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 if (f) { f.style.width = size + 'px'; f.style.height = size + 'px'; }
                 return { width: size, height: size };
             };
+            // iOS/WebKit: video.clientWidth/clientHeight report 0 the first
+            // time a qrbox callback fires (the absolutely-positioned video
+            // needs a layout tick before it reports real dimensions). A
+            // qrboxFn returning {0,0} can make qr.start() fail to actually
+            // open the camera at all. A fixed pixel size sidesteps the race
+            // entirely — used only on iOS; Android/desktop keep the
+            // function-based box above.
+            const qrboxIOS = 250;
 
             let started = false;
             const errors = [];
@@ -1925,7 +1933,7 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             if (isIOS) {
                 const iosCfg = {
                     fps: 10,
-                    qrbox: qrboxFn,
+                    qrbox: qrboxIOS,
                     rememberLastUsedCamera: false,
                     formatsToSupport: SCAN_FORMATS,
                     experimentalFeatures: { useBarCodeDetectorIfSupported: false },
