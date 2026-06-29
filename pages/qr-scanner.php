@@ -1900,13 +1900,34 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                     }
                 };
 
-                // Strategy 1 — exact facingMode (best for Android rear camera)
-                try {
-                    await qr.start({ facingMode: { exact: activeFacing } }, cfg, onScan, () => {});
-                    started = true;
-                } catch (e) { errors.push('exact:' + e.message); }
+                // Strategy 0 — device ID from cache (most reliable for switching)
+                // facingMode constraints can return the wrong camera after a switch on Android;
+                // a device ID always targets the correct physical camera.
+                if (!started && cameras.length) {
+                    try {
+                        let cam;
+                        if (activeFacing === 'environment') {
+                            cam = cameras.find(c => /(back|rear|environment|post)/i.test(c.label))
+                                || cameras[cameras.length - 1]; // back cam = typically last
+                        } else {
+                            cam = cameras.find(c => /(front|user|selfie|face)/i.test(c.label))
+                                || cameras[0]; // front cam = typically first
+                        }
+                        if (!cam) throw new Error('No match in cache');
+                        await qr.start(cam.id, cfg, onScan, () => {});
+                        started = true;
+                    } catch (e) { errors.push('cached:' + e.message); }
+                }
 
-                // Strategy 2 — soft facingMode + resolution hints
+                // Strategy 1 — exact facingMode (first launch before IDs are cached)
+                if (!started) {
+                    try {
+                        await qr.start({ facingMode: { exact: activeFacing } }, cfg, onScan, () => {});
+                        started = true;
+                    } catch (e) { errors.push('exact:' + e.message); }
+                }
+
+                // Strategy 2 — soft facingMode
                 if (!started) {
                     try {
                         await qr.start({ facingMode: activeFacing }, cfg, onScan, () => {});
@@ -1914,9 +1935,10 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                     } catch (e) { errors.push('soft:' + e.message); }
                 }
 
-                // Strategy 3 — enumerate cameras and pick by label / position
+                // Strategy 3 — enumerate cameras fresh and pick by label / position
                 if (!started) {
                     try {
+                        cameras = []; // clear cache to force fresh enumeration
                         const list = await getCameraList();
                         let cam;
                         if (activeFacing === 'environment') {
@@ -1958,8 +1980,6 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             g('camIco').className = 'fas fa-video-slash';
 
             // Switch button: always show on mobile (all phones have front + rear)
-            // Do NOT call getCameras() here — calling it while camera is running
-            // opens a second getUserMedia request which fails on iOS (stream conflict)
             if (isMobile) {
                 g('swBtn').style.display = '';
             } else {
@@ -1967,6 +1987,19 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 if (list.length > 1) g('swBtn').style.display = '';
             }
             if (isMobile) g('torchBtn').style.display = '';
+
+            // Android/desktop: populate camera ID cache via enumerateDevices()
+            // Safe to call while camera is running — does NOT open a new stream.
+            // Labels are available after permission is granted.
+            // Used by Strategy 0 on next switch so we always target the correct physical camera.
+            if (!isIOS && !cameras.length && navigator.mediaDevices?.enumerateDevices) {
+                navigator.mediaDevices.enumerateDevices().then(devs => {
+                    const cams = devs
+                        .filter(d => d.kind === 'videoinput')
+                        .map(d => ({ id: d.deviceId, label: d.label || '' }));
+                    if (cams.length) cameras = cams;
+                }).catch(() => {});
+            }
 
             g('swBtn').title = activeFacing === 'environment'
                 ? (TH ? 'สลับเป็นกล้องหน้า' : 'Switch to front cam')
