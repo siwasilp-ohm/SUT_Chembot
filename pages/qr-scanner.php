@@ -559,62 +559,26 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
         }
     }
 
-    /* iOS tap-to-capture button */
+    /* iOS manual "scan now" override — auto-capture handles scanning by
+       itself, so this is a compact secondary icon button living alongside
+       switch/torch in the top bar, not a big competing call-to-action. */
     .sc-capture-btn {
-        position: absolute;
-        bottom: 14px;
-        left: 50%;
-        transform: translateX(-50%);
         display: none;
         align-items: center;
-        gap: 9px;
-        height: 50px;
-        padding: 0 24px;
-        border: none;
-        border-radius: 28px;
-        background: linear-gradient(135deg, var(--g), var(--gd));
-        color: #fff;
-        font-size: 13.5px;
-        font-weight: 800;
-        letter-spacing: .2px;
-        cursor: pointer;
-        z-index: 12;
-        box-shadow: 0 8px 22px rgba(16, 185, 129, .45), 0 0 0 5px rgba(16, 185, 129, .14);
-        transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    .sc-capture-btn i {
-        font-size: 16px
+        justify-content: center;
     }
 
     .sc-capture-btn.show {
-        display: flex;
-        animation: capPulse 2.4s ease-in-out infinite
+        display: flex
     }
 
-    .sc-capture-btn:active {
-        transform: translateX(-50%) scale(.93);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, .45), 0 0 0 3px rgba(16, 185, 129, .14);
-        filter: brightness(1.06)
+    .sc-capture-btn .spin-ico {
+        animation: spinIco .8s linear infinite
     }
 
-    .sc-capture-btn:disabled {
-        opacity: .55;
-        cursor: not-allowed;
-        animation: none
-    }
-
-    @keyframes capPulse {
-
-        0%,
-        100% {
-            box-shadow: 0 8px 22px rgba(16, 185, 129, .45), 0 0 0 5px rgba(16, 185, 129, .14)
-        }
-
-        50% {
-            box-shadow: 0 8px 26px rgba(16, 185, 129, .6), 0 0 0 9px rgba(16, 185, 129, .07)
-        }
+    @keyframes spinIco {
+        from { transform: rotate(0deg) }
+        to   { transform: rotate(360deg) }
     }
 
     /* no-cam */
@@ -1604,6 +1568,14 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                     <span id="badgeCnt">0</span> <?php echo $TH ? 'รายการ' : 'items' ?>
                 </div>
                 <div class="sc-tb-row">
+                    <!-- iOS only: auto-capture runs in the background (see
+                         startAutoCapture), this is just a manual override to
+                         force an immediate attempt instead of waiting for
+                         the next automatic tick. -->
+                    <button class="sc-tb sc-capture-btn" id="captureBtn" onclick="captureAndDecode()"
+                        title="<?php echo $TH ? 'สแกนตอนนี้' : 'Scan now' ?>">
+                        <i class="fas fa-camera-retro"></i>
+                    </button>
                     <button class="sc-tb" id="swBtn" onclick="switchCam()" style="display:none"
                         title="<?php echo $TH ? 'สลับกล้อง' : 'Switch camera' ?>">
                         <i class="fas fa-sync-alt" id="swIco"></i>
@@ -1666,15 +1638,6 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 <div class="dot"></div>
                 <span><?php echo $TH ? 'กำลังสแกน — ส่งขวดถัดไปได้เลย' : 'Scanning continuously — present next bottle' ?></span>
             </div>
-
-            <!-- iOS: tap-to-capture button. Continuous live decode is unreliable
-                 on iOS Safari (longstanding WebKit/library limitation), so on
-                 iOS this button is the primary way to scan: it captures the
-                 current frame as a still image and decodes that instead. -->
-            <button class="sc-capture-btn" id="captureBtn" onclick="captureAndDecode()">
-                <i class="fas fa-camera"></i>
-                <span><?php echo $TH ? 'แตะเพื่อสแกน' : 'Tap to Scan' ?></span>
-            </button>
         </div>
 
         <!-- Hidden, isolated Html5Qrcode instance used only for decoding a
@@ -1936,6 +1899,7 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             }
 
             // Stop any existing session
+            stopAutoCapture();
             if (qr && camOn) { try { await qr.stop(); } catch (e) {} camOn = false; }
             if (!qr) qr = new Html5Qrcode('qrBox');
 
@@ -2078,15 +2042,17 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
 
             // Show our custom frame
             showFrame();
-            // iOS: continuous live decode doesn't fire reliably (see
-            // captureAndDecode below), so show the tap-to-capture button as
-            // the primary scan method instead of the "scanning continuously"
-            // hint, which would otherwise mislead the user.
+            // iOS: continuous LIVE decode doesn't fire reliably (see
+            // captureAndDecode above), so the same "scanning continuously"
+            // experience is produced differently underneath — an automatic
+            // capture-and-decode tick every second instead of the library's
+            // own frame-by-frame decode loop. Visually identical to Android,
+            // no tap required. The capture button stays available as a
+            // manual "scan now" override.
+            g('scHint').style.display = 'flex';
             if (isIOS) {
-                g('scHint').style.display = 'none';
                 g('captureBtn').classList.add('show');
-            } else {
-                g('scHint').style.display = 'flex';
+                startAutoCapture();
             }
             g('camTogBtn').classList.add('on');
             g('camIco').className = 'fas fa-video-slash';
@@ -2106,6 +2072,7 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
         function stopCam() {
             if (qr && camOn) qr.stop().catch(() => {});
             camOn = false;
+            stopAutoCapture();
             hideFrame();
             g('scHint').style.display = 'none';
             g('captureBtn').classList.remove('show');
@@ -2214,39 +2181,51 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
         // separate Html5Qrcode instance (qrFile) because the library refuses
         // to run a file scan on an instance that has an active camera scan
         // running ("Cannot start file scan - ongoing camera scan").
-        async function captureAndDecode() {
+        //
+        // Runs automatically on a timer (startAutoCapture/stopAutoCapture
+        // below) so iOS behaves like Android — no tap needed. `silent`
+        // distinguishes an automatic background tick (stay quiet on "not
+        // ready yet" / "nothing found this frame", which is the normal
+        // steady state while aiming) from an explicit manual tap on the
+        // capture button (always give feedback either way).
+        async function captureAndDecode(silent = false) {
             if (captureBusy || !camOn) return;
             captureBusy = true;
             const btn = g('captureBtn');
-            const origHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = spn() + ` <span>${TH ? 'กำลังอ่าน...' : 'Reading...'}</span>`;
+            const ico = btn.querySelector('i');
+            if (!silent) {
+                btn.disabled = true;
+                ico.className = 'fas fa-spinner spin-ico';
+            }
 
             try {
                 const video = document.querySelector('#qrBox video');
                 if (!video) {
-                    toast(TH ? 'กล้องยังไม่พร้อม ลองอีกครั้ง' : 'Camera not ready, try again', 'err');
+                    if (!silent) toast(TH ? 'กล้องยังไม่พร้อม ลองอีกครั้ง' : 'Camera not ready, try again', 'err');
                     return;
                 }
 
-                // This runs inside a real tap/click handler — exactly the
-                // user-gesture context iOS Safari sometimes needs to actually
-                // resume playback if the stream stalled after the camera
+                // Kicking play() on every attempt (including silent/automatic
+                // ones) is what lets this self-heal without ever requiring a
+                // manual toggle first: if the stream stalled after the camera
                 // "opened" (qr.start() resolving doesn't guarantee the video
-                // element is actually playing frames yet on iOS).
+                // element is actually playing frames yet on iOS), the very
+                // next automatic tick nudges it back to life on its own.
                 try { await video.play(); } catch (_) {}
 
                 // videoWidth/videoHeight only populate once the stream's
                 // metadata has loaded, which can lag slightly behind the
                 // camera becoming visible on iOS. Poll briefly instead of
-                // failing on the very first check.
-                const deadline = Date.now() + 1500;
+                // failing on the very first check. Short window for silent/
+                // automatic ticks (next tick will just retry anyway); longer
+                // for an explicit manual tap.
+                const deadline = Date.now() + (silent ? 400 : 1500);
                 while (!video.videoWidth && Date.now() < deadline) {
                     await new Promise(r => setTimeout(r, 100));
                 }
 
                 if (!video.videoWidth) {
-                    toast(TH ? 'กล้องยังไม่พร้อม ลองอีกครั้ง' : 'Camera not ready, try again', 'err');
+                    if (!silent) toast(TH ? 'กล้องยังไม่พร้อม ลองอีกครั้ง' : 'Camera not ready, try again', 'err');
                     return;
                 }
 
@@ -2255,25 +2234,46 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 canvas.height = video.videoHeight;
                 canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+                // PNG (lossless), not JPEG: JPEG's compression artifacts blur
+                // the sharp bar edges 1D barcodes depend on enough to break
+                // decoding, while a QR code's built-in error correction
+                // tolerates it fine — which is exactly why QR worked but
+                // CODE_128 barcodes didn't under the previous JPEG capture.
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
                 if (!blob) {
-                    toast(TH ? 'ถ่ายภาพไม่สำเร็จ ลองอีกครั้ง' : 'Capture failed, try again', 'err');
+                    if (!silent) toast(TH ? 'ถ่ายภาพไม่สำเร็จ ลองอีกครั้ง' : 'Capture failed, try again', 'err');
                     return;
                 }
-                const file = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
+                const file = new File([blob], 'capture.png', { type: 'image/png' });
 
                 if (!qrFile) qrFile = new Html5Qrcode('qrFileBox', { formatsToSupport: SCAN_FORMATS, verbose: false });
                 try {
                     const decodedText = await qrFile.scanFile(file, false);
                     await onScan(decodedText);
                 } catch (e) {
-                    toast(TH ? 'ไม่พบ QR/Barcode ในภาพ ลองจัดให้อยู่กลางกรอบ' : 'No QR/Barcode found — try centering it in the frame', 'err');
+                    if (!silent) toast(TH ? 'ไม่พบ QR/Barcode ในภาพ ลองจัดให้อยู่กลางกรอบ' : 'No QR/Barcode found — try centering it in the frame', 'err');
                 }
             } finally {
                 captureBusy = false;
-                btn.disabled = false;
-                btn.innerHTML = origHtml;
+                if (!silent) {
+                    btn.disabled = false;
+                    ico.className = 'fas fa-camera-retro';
+                }
             }
+        }
+
+        // ── Auto-capture loop: ticks captureAndDecode(silent) on an
+        // interval so iOS scans continuously like Android, with no tap
+        // required. The manual capture button stays available as a
+        // "scan now" override (e.g. if the user wants to force an
+        // immediate attempt rather than wait for the next tick).
+        let autoCaptureTimer = null;
+        function startAutoCapture() {
+            stopAutoCapture();
+            autoCaptureTimer = setInterval(() => captureAndDecode(true), 1000);
+        }
+        function stopAutoCapture() {
+            if (autoCaptureTimer) { clearInterval(autoCaptureTimer); autoCaptureTimer = null; }
         }
 
         // ─── CART ───
