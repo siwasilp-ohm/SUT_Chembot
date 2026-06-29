@@ -1571,6 +1571,17 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
     .t-info {
         background: linear-gradient(135deg, #1e40af, #60a5fa)
     }
+
+    /* brief pulse when a repeated toast refreshes instead of stacking a duplicate */
+    .sc-toast.bump {
+        animation: tBump .32s ease
+    }
+
+    @keyframes tBump {
+        0% { transform: scale(1) }
+        35% { transform: scale(1.05) }
+        100% { transform: scale(1) }
+    }
 </style>
 
 <body>
@@ -2413,10 +2424,28 @@ ${over ? `<div class="sc-warn-msg"><i class="fas fa-exclamation-triangle"></i>${
         const spn = () => '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:tIn .6s linear infinite"></span>';
 
         function toast(msg, type = 'info') {
-            const w = g('toastEl'), t = document.createElement('div');
+            const w = g('toastEl');
+
+            // If the exact same message is already showing (e.g. scanning the
+            // same barcode repeatedly), don't stack a visually overlapping
+            // duplicate — just refresh its lifetime and give it a small pulse
+            // to acknowledge the repeat happened.
+            const existing = Array.from(w.children).find(el => el.dataset.msg === msg);
+            if (existing) {
+                clearTimeout(existing._timer);
+                existing._timer = setTimeout(() => existing.remove(), 3200);
+                existing.classList.remove('bump');
+                void existing.offsetWidth; // restart the animation
+                existing.classList.add('bump');
+                return;
+            }
+
+            const t = document.createElement('div');
             t.className = 'sc-toast ' + (type === 'ok' ? 't-ok' : type === 'err' ? 't-err' : 't-info');
+            t.dataset.msg = msg;
             t.innerHTML = `<i class="fas fa-${type === 'ok' ? 'check-circle' : type === 'err' ? 'times-circle' : 'info-circle'}"></i> ${x(msg)}`;
-            w.appendChild(t); setTimeout(() => t.remove(), 3200);
+            w.appendChild(t);
+            t._timer = setTimeout(() => t.remove(), 3200);
         }
 
         async function api(url, opts = {}) {
