@@ -280,15 +280,7 @@ CREATE TABLE containers (
     lab_id INT NOT NULL,
     -- Location
     location_slot_id INT,
-    location_path VARCHAR(500) GENERATED ALWAYS AS (
-        CONCAT_WS(' > ', 
-            (SELECT b.name FROM buildings b JOIN rooms r ON r.building_id = b.id JOIN cabinets c ON c.room_id = r.id JOIN shelves s ON s.cabinet_id = c.id JOIN slots sl ON sl.shelf_id = s.id WHERE sl.id = location_slot_id),
-            (SELECT r.name FROM rooms r JOIN cabinets c ON c.room_id = r.id JOIN shelves s ON s.cabinet_id = c.id JOIN slots sl ON sl.shelf_id = s.id WHERE sl.id = location_slot_id),
-            (SELECT c.name FROM cabinets c JOIN shelves s ON s.cabinet_id = c.id JOIN slots sl ON sl.shelf_id = s.id WHERE sl.id = location_slot_id),
-            (SELECT s.name FROM shelves s JOIN slots sl ON sl.shelf_id = s.id WHERE sl.id = location_slot_id),
-            (SELECT sl.name FROM slots sl WHERE sl.id = location_slot_id)
-        )
-    ) STORED,
+    location_path VARCHAR(500),
     -- Container Details
     container_type ENUM('bottle', 'vial', 'flask', 'canister', 'cylinder', 'ampoule', 'bag', 'other') DEFAULT 'bottle',
     container_material ENUM('glass', 'plastic', 'metal', 'other') DEFAULT 'glass',
@@ -331,7 +323,7 @@ CREATE TABLE containers (
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE RESTRICT,
     FOREIGN KEY (lab_id) REFERENCES labs(id) ON DELETE RESTRICT,
     FOREIGN KEY (location_slot_id) REFERENCES slots(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE container_history (

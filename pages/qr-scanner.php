@@ -1731,6 +1731,8 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
         let qr = null, camOn = false, cameras = [], torchOn = false;
         let camBusy = false; // guard: prevent concurrent startCam / switchCam calls
         let activeFacing = 'environment'; // 'environment' | 'user'
+        let currentDeviceId = null; // deviceId of the camera track currently running
+        let facingMap = {}; // facing ('environment'|'user') -> confirmed-working deviceId, learned at runtime
         let cart = []; // {barcode,chemName,cas,unit,qty,remaining,sourceType,sourceId,relation,activeBorrow}
         let selAction = null;
         let lastScanTs = 0;
@@ -1912,20 +1914,33 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                     }
                 };
 
-                // Strategy 0 — device ID from cache (most reliable for switching)
-                // facingMode constraints can return the wrong camera after a switch on Android;
-                // a device ID always targets the correct physical camera.
+                // Strategy 0 — deviceId learned from a previous successful start of this
+                // exact facing mode. Most reliable: it's a real, browser-confirmed ID,
+                // not a guess from a label or position.
+                if (!started && facingMap[activeFacing]) {
+                    try {
+                        await qr.start(facingMap[activeFacing], cfg, onScan, () => {});
+                        started = true;
+                    } catch (e) { errors.push('learned:' + e.message); }
+                }
+
+                // Strategy 0b — device ID from cache, matched by label, EXCLUDING the
+                // currently-running device. Many Android browsers (Firefox Android,
+                // some in-app WebViews, Samsung Internet) return blank/generic camera
+                // labels even after permission is granted, so the label regex can fail
+                // to match. Falling back to a positional guess ("back is last camera")
+                // is not guaranteed by spec and is backwards on many real devices —
+                // that mismatch is what causes "switch to rear camera" to silently
+                // reopen the front camera. Instead, fall back to "any camera that
+                // isn't the one currently active," which guarantees an actual switch.
                 if (!started && cameras.length) {
                     try {
-                        let cam;
-                        if (activeFacing === 'environment') {
-                            cam = cameras.find(c => /(back|rear|environment|post)/i.test(c.label))
-                                || cameras[cameras.length - 1]; // back cam = typically last
-                        } else {
-                            cam = cameras.find(c => /(front|user|selfie|face)/i.test(c.label))
-                                || cameras[0]; // front cam = typically first
-                        }
-                        if (!cam) throw new Error('No match in cache');
+                        const re = activeFacing === 'environment'
+                            ? /(back|rear|environment|post)/i
+                            : /(front|user|selfie|face)/i;
+                        let cam = cameras.find(c => re.test(c.label) && c.id !== currentDeviceId);
+                        if (!cam) cam = cameras.find(c => c.id !== currentDeviceId);
+                        if (!cam) cam = cameras[0];
                         await qr.start(cam.id, cfg, onScan, () => {});
                         started = true;
                     } catch (e) { errors.push('cached:' + e.message); }
@@ -1947,19 +1962,18 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                     } catch (e) { errors.push('soft:' + e.message); }
                 }
 
-                // Strategy 3 — enumerate cameras fresh and pick by label / position
+                // Strategy 3 — enumerate cameras fresh and pick by label, excluding
+                // whichever device is currently active (see Strategy 0b note above).
                 if (!started) {
                     try {
                         cameras = []; // clear cache to force fresh enumeration
                         const list = await getCameraList();
-                        let cam;
-                        if (activeFacing === 'environment') {
-                            cam = list.find(c => /(back|rear|environment|post)/i.test(c.label))
-                                || list[list.length - 1] || list[0];
-                        } else {
-                            cam = list.find(c => /(front|user|selfie|face)/i.test(c.label))
-                                || list[0];
-                        }
+                        const re = activeFacing === 'environment'
+                            ? /(back|rear|environment|post)/i
+                            : /(front|user|selfie|face)/i;
+                        let cam = list.find(c => re.test(c.label) && c.id !== currentDeviceId);
+                        if (!cam) cam = list.find(c => c.id !== currentDeviceId);
+                        if (!cam) cam = list[0];
                         if (!cam) throw new Error('No cameras');
                         await qr.start(cam.id, cfg, onScan, () => {});
                         started = true;
@@ -1982,6 +1996,16 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
 
             // ── Success ────────────────────────────────────────────────────
             camOn = true;
+
+            // Learn the real deviceId the browser actually opened for this facing
+            // mode, so future switches can target it directly instead of guessing.
+            try {
+                const settings = qr.getRunningTrackSettings ? qr.getRunningTrackSettings() : null;
+                if (settings && settings.deviceId) {
+                    currentDeviceId = settings.deviceId;
+                    facingMap[activeFacing] = settings.deviceId;
+                }
+            } catch (_) {}
 
             stripLibraryOverlays();
             setTimeout(stripLibraryOverlays, 400);
