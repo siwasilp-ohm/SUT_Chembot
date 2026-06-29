@@ -559,6 +559,64 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
         }
     }
 
+    /* iOS tap-to-capture button */
+    .sc-capture-btn {
+        position: absolute;
+        bottom: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: none;
+        align-items: center;
+        gap: 9px;
+        height: 50px;
+        padding: 0 24px;
+        border: none;
+        border-radius: 28px;
+        background: linear-gradient(135deg, var(--g), var(--gd));
+        color: #fff;
+        font-size: 13.5px;
+        font-weight: 800;
+        letter-spacing: .2px;
+        cursor: pointer;
+        z-index: 12;
+        box-shadow: 0 8px 22px rgba(16, 185, 129, .45), 0 0 0 5px rgba(16, 185, 129, .14);
+        transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .sc-capture-btn i {
+        font-size: 16px
+    }
+
+    .sc-capture-btn.show {
+        display: flex;
+        animation: capPulse 2.4s ease-in-out infinite
+    }
+
+    .sc-capture-btn:active {
+        transform: translateX(-50%) scale(.93);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, .45), 0 0 0 3px rgba(16, 185, 129, .14);
+        filter: brightness(1.06)
+    }
+
+    .sc-capture-btn:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+        animation: none
+    }
+
+    @keyframes capPulse {
+
+        0%,
+        100% {
+            box-shadow: 0 8px 22px rgba(16, 185, 129, .45), 0 0 0 5px rgba(16, 185, 129, .14)
+        }
+
+        50% {
+            box-shadow: 0 8px 26px rgba(16, 185, 129, .6), 0 0 0 9px rgba(16, 185, 129, .07)
+        }
+    }
+
     /* no-cam */
     .sc-nocam {
         position: absolute;
@@ -1591,7 +1649,25 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 <div class="dot"></div>
                 <span><?php echo $TH ? 'กำลังสแกน — ส่งขวดถัดไปได้เลย' : 'Scanning continuously — present next bottle' ?></span>
             </div>
+
+            <!-- iOS: tap-to-capture button. Continuous live decode is unreliable
+                 on iOS Safari (longstanding WebKit/library limitation), so on
+                 iOS this button is the primary way to scan: it captures the
+                 current frame as a still image and decodes that instead. -->
+            <button class="sc-capture-btn" id="captureBtn" onclick="captureAndDecode()" style="display:none">
+                <i class="fas fa-camera"></i>
+                <span><?php echo $TH ? 'แตะเพื่อสแกน' : 'Tap to Scan' ?></span>
+            </button>
         </div>
+
+        <!-- Hidden, isolated Html5Qrcode instance used only for decoding a
+             captured still image (scanFile) on iOS — kept separate from the
+             live-preview instance because the library refuses to run a file
+             scan while a camera scan is active on the same instance.
+             Not display:none: some canvas operations inside the library
+             misbehave against a zero-size/hidden container, so this is
+             shrunk to 1x1 and visually hidden instead. -->
+        <div id="qrFileBox" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none"></div>
 
         <!-- CONTROL PANEL / SHEET -->
         <div class="sc-sheet">
@@ -1733,10 +1809,21 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
         let activeFacing = 'environment'; // 'environment' | 'user'
         let currentDeviceId = null; // deviceId of the camera track currently running
         let facingMap = {}; // facing ('environment'|'user') -> confirmed-working deviceId, learned at runtime
+        let qrFile = null; // separate Html5Qrcode instance used only for iOS tap-to-capture decoding
+        let captureBusy = false; // guard: prevent overlapping capture taps
         let cart = []; // {barcode,chemName,cas,unit,qty,remaining,sourceType,sourceId,relation,activeBorrow}
         let selAction = null;
         let lastScanTs = 0;
         const COOLDOWN = 1800;
+        // Shared by both the live camera scan and the iOS capture-and-decode
+        // path (see captureAndDecode below): the only formats this app ever
+        // generates (QR_CODE for containers.qr_code, CODE_128 for bottle
+        // barcodes). Restricting both decode paths the same way avoids
+        // cross-format misreads in either of them.
+        const SCAN_FORMATS = [
+            Html5QrcodeSupportedFormats.QR_CODE,
+            Html5QrcodeSupportedFormats.CODE_128,
+        ];
 
         // ─── CAMERA ───
         function showHttpsWarn() {
@@ -1841,24 +1928,9 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             if (!qr) qr = new Html5Qrcode('qrBox');
 
             // ── Scan formats ───────────────────────────────────────────────
-            // Restricted to exactly what this app generates: QR_CODE for
-            // containers.qr_code, CODE_128 for bottle barcodes (JsBarcode,
-            // see pages/stock.php). Extra linear formats (CODE_39/CODE_93/
-            // EAN/UPC/ITF) are NOT used anywhere, but their bar patterns can
-            // closely resemble CODE_128 for alphanumeric strings like
-            // "F91011A6900002" — when included, the decoder can misidentify
-            // a real CODE_128 barcode as one of these and return a garbled
-            // string that matches nothing in the database. This is far more
-            // likely on iOS, which has no native BarcodeDetector API and so
-            // always falls back to the library's pure-JS decoder (see
-            // useBarCodeDetectorIfSupported below) — that decoder is more
-            // prone to this cross-format misread than Android's hardware
-            // decoder. Keeping only the two real formats removes the
-            // ambiguity entirely.
-            const formats = [
-                Html5QrcodeSupportedFormats.QR_CODE,
-                Html5QrcodeSupportedFormats.CODE_128,
-            ];
+            // See SCAN_FORMATS declaration above for why this is restricted
+            // to just QR_CODE + CODE_128.
+            const formats = SCAN_FORMATS;
 
             // ── qrbox ──────────────────────────────────────────────────────
             // iOS/WebKit: video.clientWidth/clientHeight = 0 when qrboxFn first fires
@@ -2081,7 +2153,16 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             setTimeout(stripLibraryOverlays, 400);
 
             showFrame();
-            g('scHint').style.display = 'flex';
+            // iOS: continuous live decode doesn't fire reliably (see
+            // captureAndDecode notes above), so show the tap-to-capture
+            // button as the primary scan method instead of the "scanning
+            // continuously" hint, which would otherwise mislead the user.
+            if (isIOS) {
+                g('scHint').style.display = 'none';
+                g('captureBtn').classList.add('show');
+            } else {
+                g('scHint').style.display = 'flex';
+            }
             g('camTogBtn').classList.add('on');
             g('camIco').className = 'fas fa-video-slash';
 
@@ -2103,6 +2184,7 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             camOn = false;
             hideFrame();
             g('scHint').style.display = 'none';
+            g('captureBtn').classList.remove('show');
             g('camTogBtn').classList.remove('on');
             g('camIco').className = 'fas fa-camera';
             g('swBtn').style.display = 'none';
@@ -2191,6 +2273,57 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             }
 
             await addToCart(code);
+        }
+
+        // ── iOS: capture the current frame as a still image and decode that
+        // instead of relying on continuous live-video decoding. html5-qrcode's
+        // live decode path is a longstanding, still-unresolved problem on iOS
+        // Safari (the camera preview renders fine, but the decoder never
+        // fires) — this is documented across years of upstream issues with no
+        // fix. scanFile() decodes a single static image instead, which is a
+        // completely different code path that does not share that limitation.
+        // Uses a separate Html5Qrcode instance (qrFile) because the library
+        // refuses to run a file scan on an instance that has an active camera
+        // scan running.
+        async function captureAndDecode() {
+            if (captureBusy || !camOn) return;
+            captureBusy = true;
+            const btn = g('captureBtn');
+            const origHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = spn() + ` <span>${TH ? 'กำลังอ่าน...' : 'Reading...'}</span>`;
+
+            try {
+                const video = document.querySelector('#qrBox video');
+                if (!video || !video.videoWidth) {
+                    toast(TH ? 'กล้องยังไม่พร้อม ลองอีกครั้ง' : 'Camera not ready, try again', 'err');
+                    return;
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+                if (!blob) {
+                    toast(TH ? 'ถ่ายภาพไม่สำเร็จ ลองอีกครั้ง' : 'Capture failed, try again', 'err');
+                    return;
+                }
+                const file = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
+
+                if (!qrFile) qrFile = new Html5Qrcode('qrFileBox', { formatsToSupport: SCAN_FORMATS, verbose: false });
+                try {
+                    const decodedText = await qrFile.scanFile(file, false);
+                    await onScan(decodedText);
+                } catch (e) {
+                    toast(TH ? 'ไม่พบ QR/Barcode ในภาพ ลองจัดให้อยู่กลางกรอบ' : 'No QR/Barcode found — try centering it in the frame', 'err');
+                }
+            } finally {
+                captureBusy = false;
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+            }
         }
 
         // ─── CART ───
