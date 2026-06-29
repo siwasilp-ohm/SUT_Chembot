@@ -2169,7 +2169,28 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
 
             try {
                 const video = document.querySelector('#qrBox video');
-                if (!video || !video.videoWidth) {
+                if (!video) {
+                    toast(TH ? 'กล้องยังไม่พร้อม ลองอีกครั้ง' : 'Camera not ready, try again', 'err');
+                    return;
+                }
+
+                // This runs inside a real tap/click handler — exactly the
+                // user-gesture context iOS Safari sometimes needs to actually
+                // resume playback if the stream stalled after the camera
+                // "opened" (qr.start() resolving doesn't guarantee the video
+                // element is actually playing frames yet on iOS).
+                try { await video.play(); } catch (_) {}
+
+                // videoWidth/videoHeight only populate once the stream's
+                // metadata has loaded, which can lag slightly behind the
+                // camera becoming visible on iOS. Poll briefly instead of
+                // failing on the very first check.
+                const deadline = Date.now() + 1500;
+                while (!video.videoWidth && Date.now() < deadline) {
+                    await new Promise(r => setTimeout(r, 100));
+                }
+
+                if (!video.videoWidth) {
                     toast(TH ? 'กล้องยังไม่พร้อม ลองอีกครั้ง' : 'Camera not ready, try again', 'err');
                     return;
                 }
