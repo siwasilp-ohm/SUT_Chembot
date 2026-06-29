@@ -1937,6 +1937,17 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                     rememberLastUsedCamera: false,
                     formatsToSupport: SCAN_FORMATS,
                     experimentalFeatures: { useBarCodeDetectorIfSupported: false },
+                    // ideal-only hints (no min/max) request a higher-resolution
+                    // stream without ever being able to throw
+                    // OverconstrainedError — that only happens with hard
+                    // min/max ranges combined with facingMode, not plain
+                    // ideal hints. More native resolution directly helps
+                    // captureAndDecode's frame-crop (see getFrameCropRect)
+                    // have more real pixels per barcode bar to work with.
+                    videoConstraints: {
+                        width:  { ideal: 1920 },
+                        height: { ideal: 1080 },
+                    },
                 };
 
                 try {
@@ -1965,6 +1976,39 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                         await withTimeout(qr.start(cam.id, iosCfg, onScan, () => {}), 8000, 'ios-id');
                         started = true;
                     } catch (e) { errors.push('ios-id:' + e.message); }
+                }
+
+                // ── Verify the browser actually opened the camera we asked
+                // for, same as the Android path: a facingMode constraint is
+                // a REQUEST, not a guarantee. If iOS resolved "environment"
+                // to the front camera anyway, a manual switch-camera tap
+                // would happen to "fix" it (it explicitly picks a device by
+                // list position) while a fresh page load would not — which
+                // is exactly the "works after I switch cameras" symptom.
+                // Correct it automatically instead of waiting for that.
+                if (started) {
+                    try {
+                        const settings = qr.getRunningTrackSettings ? qr.getRunningTrackSettings() : null;
+                        if (settings && settings.facingMode && settings.facingMode !== activeFacing) {
+                            await resetQrInstance();
+                            await new Promise(r => setTimeout(r, 200));
+                            const list = await getCameraList();
+                            const wrongId = settings.deviceId;
+                            const cam = list.find(c => c.id !== wrongId) || null;
+                            if (cam) {
+                                try {
+                                    await withTimeout(qr.start(cam.id, iosCfg, onScan, () => {}), 8000, 'ios-correct');
+                                } catch (e) {
+                                    // Correction failed — revert to the original so
+                                    // there's still a visible, working camera
+                                    // rather than nothing.
+                                    try {
+                                        await withTimeout(qr.start({ facingMode: activeFacing }, iosCfg, onScan, () => {}), 8000, 'ios-revert');
+                                    } catch (_) { started = false; }
+                                }
+                            }
+                        }
+                    } catch (_) { /* getRunningTrackSettings unsupported — nothing to verify against */ }
                 }
 
             // ══ Android / Desktop path ═════════════════════════════════════
@@ -2188,6 +2232,48 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
         // ready yet" / "nothing found this frame", which is the normal
         // steady state while aiming) from an explicit manual tap on the
         // capture button (always give feedback either way).
+
+        // Maps the on-screen .sc-frame box (CSS pixels) to the matching
+        // region in the video's native sensor coordinates, accounting for
+        // object-fit:cover (the video is scaled up to fill its container
+        // and center-cropped on whichever axis overflows — the inverse of
+        // that has to be undone to find what part of the real sensor frame
+        // corresponds to the visible box). Falls back to the full frame if
+        // anything is unavailable. A 25% margin is added around the strict
+        // box so a barcode that's slightly larger than the frame, or not
+        // perfectly centered, doesn't get clipped.
+        function getFrameCropRect(video) {
+            const vw = video.videoWidth, vh = video.videoHeight;
+            const full = { x: 0, y: 0, w: vw, h: vh };
+            const cam = g('camZone'), frame = g('scFrame');
+            if (!cam || !frame || frame.style.display === 'none') return full;
+
+            const camRect = cam.getBoundingClientRect();
+            const frameRect = frame.getBoundingClientRect();
+            if (!camRect.width || !camRect.height || !frameRect.width || !frameRect.height) return full;
+
+            const scale = Math.max(camRect.width / vw, camRect.height / vh);
+            if (!scale) return full;
+            const offsetX = (vw * scale - camRect.width) / 2;
+            const offsetY = (vh * scale - camRect.height) / 2;
+
+            const fx = frameRect.left - camRect.left;
+            const fy = frameRect.top - camRect.top;
+
+            let x = (fx + offsetX) / scale;
+            let y = (fy + offsetY) / scale;
+            let w = frameRect.width / scale;
+            let h = frameRect.height / scale;
+
+            const mx = w * 0.25, my = h * 0.25;
+            x -= mx; y -= my; w += mx * 2; h += my * 2;
+
+            x = Math.max(0, x); y = Math.max(0, y);
+            w = Math.min(vw - x, w); h = Math.min(vh - y, h);
+            if (w <= 0 || h <= 0) return full;
+
+            return { x, y, w, h };
+        }
         async function captureAndDecode(silent = false) {
             if (captureBusy || !camOn) return;
             captureBusy = true;
@@ -2229,16 +2315,23 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                     return;
                 }
 
+                // Crop to roughly the on-screen scan frame instead of capturing
+                // the full native sensor frame. At normal scanning distance, a
+                // 1D barcode held to "fill" the small on-screen box is still
+                // tiny within the camera's full native resolution — its bars
+                // can end up only a few pixels wide once the full frame is
+                // decoded, too thin to read reliably. A QR code tolerates this
+                // fine (built-in error correction, denser 2D data), which is
+                // exactly why QR worked here but CODE_128 didn't. Cropping to
+                // the visible frame "zooms in," giving far more pixels per bar.
+                const crop = getFrameCropRect(video);
                 const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                canvas.width = crop.w;
+                canvas.height = crop.h;
+                canvas.getContext('2d').drawImage(video, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h);
 
-                // PNG (lossless), not JPEG: JPEG's compression artifacts blur
-                // the sharp bar edges 1D barcodes depend on enough to break
-                // decoding, while a QR code's built-in error correction
-                // tolerates it fine — which is exactly why QR worked but
-                // CODE_128 barcodes didn't under the previous JPEG capture.
+                // PNG (lossless), not JPEG: JPEG's compression artifacts would
+                // blur those same sharp bar edges further.
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
                 if (!blob) {
                     if (!silent) toast(TH ? 'ถ่ายภาพไม่สำเร็จ ลองอีกครั้ง' : 'Capture failed, try again', 'err');
