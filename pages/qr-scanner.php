@@ -1886,8 +1886,38 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
         // ── Enumerate cameras once and cache ──
         async function getCameraList() {
             if (cameras.length) return cameras;
-            try { cameras = await Html5Qrcode.getCameras(); } catch (e) { cameras = []; }
+            try { cameras = await withTimeout(Html5Qrcode.getCameras(), 8000, 'getCameras'); } catch (e) { cameras = []; }
             return cameras;
+        }
+
+        // getUserMedia/qr.start() can occasionally just HANG on iOS — never
+        // resolving and never rejecting (e.g. camera contention with another
+        // app/tab, a stuck permission prompt, certain restriction settings).
+        // Every camera-open strategy below assumes a promise that eventually
+        // settles one way or the other; a hang would freeze execution
+        // mid-await forever, with no catch block ever firing, no fallback
+        // strategy ever attempted, and no error UI ever shown — just a blank
+        // black screen (the camera zone's default background) with nothing
+        // visibly happening. Racing every attempt against a hard timeout
+        // guarantees forward progress no matter what the browser does.
+        function withTimeout(promise, ms, label) {
+            return Promise.race([
+                promise,
+                new Promise((_, reject) => setTimeout(() => reject(new Error(label + ' timed out after ' + ms + 'ms')), ms))
+            ]);
+        }
+
+        // If a timeout fires, the real qr.start() call underneath may still
+        // be silently in flight (timing out doesn't cancel it — there's no
+        // way to cancel a getUserMedia call). Calling qr.start() again on
+        // the same instance for the next fallback strategy while that's
+        // still pending risks the library rejecting with an "operation
+        // already in progress"-type error. Discard the instance and its DOM
+        // and start fresh before trying anything else.
+        async function resetQrInstance() {
+            try { await qr.stop(); } catch (_) {}
+            document.getElementById('qrBox').innerHTML = '';
+            qr = new Html5Qrcode('qrBox');
         }
 
         async function startCam(facing) {
@@ -1946,9 +1976,9 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 };
 
                 try {
-                    await qr.start({ facingMode: activeFacing }, iosCfg, onScan, () => {});
+                    await withTimeout(qr.start({ facingMode: activeFacing }, iosCfg, onScan, () => {}), 8000, 'ios-soft');
                     started = true;
-                } catch (e) { errors.push('ios-soft:' + e.message); }
+                } catch (e) { errors.push('ios-soft:' + e.message); if (/timed out/.test(e.message)) await resetQrInstance(); }
 
                 if (!started) {
                     try {
@@ -1956,9 +1986,9 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                         const cam = (activeFacing === 'environment')
                             ? (list[list.length - 1] || list[0]) : list[0];
                         if (!cam) throw new Error('No cameras');
-                        await qr.start(cam.id, iosCfg, onScan, () => {});
+                        await withTimeout(qr.start(cam.id, iosCfg, onScan, () => {}), 8000, 'ios-id');
                         started = true;
-                    } catch (e) { errors.push('ios-id:' + e.message); }
+                    } catch (e) { errors.push('ios-id:' + e.message); if (/timed out/.test(e.message)) await resetQrInstance(); }
                 }
 
             // ══ Android / Desktop path ═════════════════════════════════════
@@ -1978,16 +2008,16 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
 
                 // Strategy 1 — exact facingMode (ideal for mobile)
                 try {
-                    await qr.start({ facingMode: { exact: activeFacing } }, cfg, onScan, () => {});
+                    await withTimeout(qr.start({ facingMode: { exact: activeFacing } }, cfg, onScan, () => {}), 8000, 'exact');
                     started = true;
-                } catch (e) { errors.push('exact:' + e.message); }
+                } catch (e) { errors.push('exact:' + e.message); if (/timed out/.test(e.message)) await resetQrInstance(); }
 
                 // Strategy 2 — non-exact facingMode
                 if (!started) {
                     try {
-                        await qr.start({ facingMode: activeFacing }, cfg, onScan, () => {});
+                        await withTimeout(qr.start({ facingMode: activeFacing }, cfg, onScan, () => {}), 8000, 'soft');
                         started = true;
-                    } catch (e) { errors.push('soft:' + e.message); }
+                    } catch (e) { errors.push('soft:' + e.message); if (/timed out/.test(e.message)) await resetQrInstance(); }
                 }
 
                 // Strategy 3 — enumerate and pick by label
@@ -2003,9 +2033,9 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                                 || list[0];
                         }
                         if (!cam) throw new Error('No cameras');
-                        await qr.start(cam.id, cfg, onScan, () => {});
+                        await withTimeout(qr.start(cam.id, cfg, onScan, () => {}), 8000, 'id');
                         started = true;
-                    } catch (e) { errors.push('id:' + e.message); }
+                    } catch (e) { errors.push('id:' + e.message); if (/timed out/.test(e.message)) await resetQrInstance(); }
                 }
             }
 
