@@ -1922,9 +1922,17 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                     rememberLastUsedCamera: false,
                     formatsToSupport: formats,
                     experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+                    // ideal-only hints, no min/max. Hard min/max combined with
+                    // a facingMode constraint can throw OverconstrainedError
+                    // on some Android devices/camera combos, which silently
+                    // pushes the camera-open logic down into less reliable
+                    // fallback strategies (label-matching / position guesses)
+                    // instead of just opening the requested camera directly.
+                    // ideal hints request good resolution without ever
+                    // causing a hard rejection.
                     videoConstraints: {
-                        width:  { min: 480, ideal: 1280, max: 1920 },
-                        height: { min: 360, ideal: 720,  max: 1080 },
+                        width:  { ideal: 1280 },
+                        height: { ideal: 720  },
                     }
                 };
 
@@ -2408,8 +2416,13 @@ ${over ? `<div class="sc-warn-msg"><i class="fas fa-exclamation-triangle"></i>${
                 bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('show'); })
             );
             renderCart();
-            // Auto-start camera
-            startCam();
+            // Auto-start camera — always explicitly request the rear/environment
+            // camera by default. This is a barcode/QR scanner for bottles on a
+            // shelf; the rear camera is what's actually needed in practice, so
+            // defaulting to it directly means most users never have to rely on
+            // the switch-camera button (and whatever device-specific quirks it
+            // may still run into) at all.
+            startCam('environment');
         });
     </script>
     <?php Layout::footer(); ?>
