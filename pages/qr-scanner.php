@@ -1724,6 +1724,9 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
         const IS_MANAGER = <?php echo json_encode($isManager); ?>;
         const API = '/v1/api/borrow.php';
         const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+        // iOS Safari: exact facingMode unsupported, no BarcodeDetector, needs softer constraints
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+                      (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
 
         let qr = null, camOn = false, cameras = [], torchOn = false;
         let activeFacing = 'environment'; // 'environment' | 'user'
@@ -1827,9 +1830,10 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 qrbox: qrboxFn,
                 rememberLastUsedCamera: false,
                 formatsToSupport: formats,
-                experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+                // BarcodeDetector not available on iOS/Safari — disabling avoids library quirks
+                experimentalFeatures: { useBarCodeDetectorIfSupported: !isIOS },
                 videoConstraints: {
-                    facingMode: activeFacing,
+                    // facingMode NOT duplicated here — set only in the camera-selector arg below
                     width:  { min: 480, ideal: 1280, max: 1920 },
                     height: { min: 360, ideal: 720,  max: 1080 },
                 }
@@ -1838,13 +1842,15 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             let started = false;
             const errors = [];
 
-            // Strategy 1 — exact facingMode (ideal for mobile)
-            try {
-                await qr.start({ facingMode: { exact: activeFacing } }, cfg, onScan, () => {});
-                started = true;
-            } catch (e) { errors.push('exact:' + e.message); }
+            // Strategy 1 — exact facingMode (Android/desktop only; iOS throws OverconstrainedError)
+            if (!isIOS) {
+                try {
+                    await qr.start({ facingMode: { exact: activeFacing } }, cfg, onScan, () => {});
+                    started = true;
+                } catch (e) { errors.push('exact:' + e.message); }
+            }
 
-            // Strategy 2 — non-exact facingMode
+            // Strategy 2 — soft facingMode (works on iOS Safari and most browsers)
             if (!started) {
                 try {
                     await qr.start({ facingMode: activeFacing }, cfg, onScan, () => {});
@@ -1852,7 +1858,16 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 } catch (e) { errors.push('soft:' + e.message); }
             }
 
-            // Strategy 3 — enumerate and pick by label
+            // Strategy 3 — soft facingMode, no width/height constraints (iOS fallback)
+            if (!started) {
+                try {
+                    const minCfg = { ...cfg, videoConstraints: {} };
+                    await qr.start({ facingMode: activeFacing }, minCfg, onScan, () => {});
+                    started = true;
+                } catch (e) { errors.push('minimal:' + e.message); }
+            }
+
+            // Strategy 4 — enumerate cameras and pick by label
             if (!started) {
                 try {
                     const list = await getCameraList();
