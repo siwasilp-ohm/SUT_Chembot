@@ -2019,29 +2019,12 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             // ── Success ────────────────────────────────────────────────────
             camOn = true;
 
-            // Learn the real deviceId the browser actually opened for this facing
-            // mode, so future switches can target it directly instead of guessing.
-            try {
-                const settings = qr.getRunningTrackSettings ? qr.getRunningTrackSettings() : null;
-                if (settings && settings.deviceId) {
-                    currentDeviceId = settings.deviceId;
-                    facingMap[activeFacing] = settings.deviceId;
-                }
-            } catch (_) {}
-
-            stripLibraryOverlays();
-            setTimeout(stripLibraryOverlays, 400);
-
-            showFrame();
-            g('scHint').style.display = 'flex';
-            g('camTogBtn').classList.add('on');
-            g('camIco').className = 'fas fa-video-slash';
-
-            // Android/desktop: populate camera ID cache NOW (await) so IDs are ready
-            // before switch button appears. enumerateDevices() is safe while camera
-            // is running — it reads the device list without opening a new stream.
-            // Labels are populated after permission is granted (camera just started).
-            if (!isIOS && navigator.mediaDevices?.enumerateDevices) {
+            // Refresh the camera ID cache NOW, with real labels (now that
+            // permission is granted — labels are blank until then). The
+            // verification step right below needs an accurate list to pick
+            // a correction from if the wrong camera came up; the switch
+            // button below also needs it ready before it's shown.
+            if (navigator.mediaDevices?.enumerateDevices) {
                 try {
                     const devs = await navigator.mediaDevices.enumerateDevices();
                     const cams = devs
@@ -2050,6 +2033,57 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                     if (cams.length) cameras = cams;
                 } catch (_) {}
             }
+
+            const getSettingsSafe = () => {
+                try { return qr.getRunningTrackSettings ? qr.getRunningTrackSettings() : null; }
+                catch (_) { return null; }
+            };
+
+            let settings = getSettingsSafe();
+
+            // ── Verify the browser actually opened the camera we asked for ──
+            // A facingMode/deviceId constraint is a REQUEST, not a guarantee —
+            // on some Android devices the browser silently resolves
+            // "environment" to the front camera anyway (a device/Chrome-build
+            // quirk, not something a constraint can force). getSettings()
+            // reports what's ACTUALLY running; if it disagrees with what we
+            // asked for, self-correct by trying every other known camera in
+            // turn until one *confirms* the facing we wanted, instead of
+            // blindly trusting that the request worked.
+            if (settings && settings.facingMode && settings.facingMode !== activeFacing && cameras.length > 1) {
+                const wrongId = settings.deviceId;
+                for (const cam of cameras) {
+                    if (cam.id === wrongId) continue;
+                    try {
+                        await qr.stop();
+                        document.getElementById('qrBox').innerHTML = '';
+                        qr = new Html5Qrcode('qrBox');
+                        const retryCfg = isIOS
+                            ? { fps: 10, qrbox: qrboxIOS, rememberLastUsedCamera: false, formatsToSupport: formats, experimentalFeatures: { useBarCodeDetectorIfSupported: false } }
+                            : { fps: 20, qrbox: qrboxFn, rememberLastUsedCamera: false, formatsToSupport: formats, experimentalFeatures: { useBarCodeDetectorIfSupported: true }, videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } } };
+                        await qr.start(cam.id, retryCfg, onScan, () => {});
+                        const s2 = getSettingsSafe();
+                        if (s2 && s2.facingMode === activeFacing) { settings = s2; break; }
+                        settings = s2 || settings; // keep best-effort result if facingMode is unreported
+                    } catch (_) { /* this candidate failed to open — try the next one */ }
+                }
+            }
+
+            // Learn the real deviceId the browser actually opened (now verified
+            // where possible) for this facing mode, so future switches can
+            // target it directly instead of guessing.
+            if (settings && settings.deviceId) {
+                currentDeviceId = settings.deviceId;
+                facingMap[activeFacing] = settings.deviceId;
+            }
+
+            stripLibraryOverlays();
+            setTimeout(stripLibraryOverlays, 400);
+
+            showFrame();
+            g('scHint').style.display = 'flex';
+            g('camTogBtn').classList.add('on');
+            g('camIco').className = 'fas fa-video-slash';
 
             // Switch button — shown AFTER camera IDs are cached above
             if (isMobile) {
