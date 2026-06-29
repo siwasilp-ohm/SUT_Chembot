@@ -1815,21 +1815,29 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
 
             // ── Stop existing session ──────────────────────────────────────
             if (qr && camOn) {
-                let cleanStop = false;
-                try { await qr.stop(); cleanStop = true; } catch (e) {}
+                try { await qr.stop(); } catch (e) {}
                 camOn = false;
-                if (!cleanStop) {
-                    // stop() threw — instance may be corrupt; discard and clean DOM
-                    document.getElementById('qrBox').innerHTML = '';
-                    qr = null;
-                }
-                // Let camera hardware fully release before restarting
-                // Android needs more time than iOS (hardware handoff between cameras)
-                await new Promise(r => setTimeout(r, isIOS ? 400 : 300));
+                // Always fully tear down and recreate the Html5Qrcode instance
+                // (and its <video>/<canvas> DOM) before opening a different
+                // camera. Reusing the same instance across a camera SWITCH
+                // (as opposed to simply restarting the same camera) is a
+                // known source of a frozen/stuck preview on Android Chrome:
+                // qr.stop() releases the MediaStream, but the old <video>
+                // element and the library's internal track references can
+                // remain bound to the previous camera, so the next start()
+                // call succeeds internally (no thrown error) while the
+                // visible frame never actually updates to the new camera.
+                // A clean teardown removes any chance of that stale state
+                // carrying over.
+                document.getElementById('qrBox').innerHTML = '';
+                qr = null;
+                // Let camera hardware fully release before restarting.
+                // Switching to a DIFFERENT physical camera needs more time
+                // than restarting the same one — the previous lens needs a
+                // full hardware teardown before the next can initialize.
+                await new Promise(r => setTimeout(r, isIOS ? 400 : 500));
             }
 
-            // html5-qrcode is designed to be reused across stop/start cycles.
-            // Only create a new instance when there is none (first launch or after corrupt stop).
             if (!qr) qr = new Html5Qrcode('qrBox');
 
             // ── Scan formats ───────────────────────────────────────────────
