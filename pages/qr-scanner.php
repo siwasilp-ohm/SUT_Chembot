@@ -1801,8 +1801,14 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             }
 
             // Stop any existing session
-            if (qr && camOn) { try { await qr.stop(); } catch (e) {} camOn = false; }
-            if (!qr) qr = new Html5Qrcode('qrBox');
+            if (qr && camOn) {
+                try { await qr.stop(); } catch (e) {}
+                camOn = false;
+                // WebKit needs time to fully release the camera track before restarting
+                if (isIOS) await new Promise(r => setTimeout(r, 350));
+            }
+            // Always recreate instance after stop (avoids stale state on iOS/WebKit)
+            qr = new Html5Qrcode('qrBox');
 
             // qrbox callback — sets our custom frame dimensions too
             const qrboxFn = (w, h) => {
@@ -1825,15 +1831,21 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 Html5QrcodeSupportedFormats.DATA_MATRIX,
             ];
 
-            const cfg = {
-                fps: 20,
+            // Base scan config (no videoConstraints — set per-strategy below)
+            const baseCfg = {
+                fps: 15,
                 qrbox: qrboxFn,
                 rememberLastUsedCamera: false,
                 formatsToSupport: formats,
-                // BarcodeDetector not available on iOS/Safari — disabling avoids library quirks
-                experimentalFeatures: { useBarCodeDetectorIfSupported: !isIOS },
+                experimentalFeatures: { useBarCodeDetectorIfSupported: false },
+            };
+
+            // Non-iOS config includes resolution hints
+            const desktopCfg = {
+                ...baseCfg,
+                fps: 20,
+                experimentalFeatures: { useBarCodeDetectorIfSupported: true },
                 videoConstraints: {
-                    // facingMode NOT duplicated here — set only in the camera-selector arg below
                     width:  { min: 480, ideal: 1280, max: 1920 },
                     height: { min: 360, ideal: 720,  max: 1080 },
                 }
@@ -1842,47 +1854,58 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             let started = false;
             const errors = [];
 
-            // Strategy 1 — exact facingMode (Android/desktop only; iOS throws OverconstrainedError)
-            if (!isIOS) {
+            if (isIOS) {
+                // iOS/Safari: simplest possible constraint — facingMode only, no resolution ranges
+                // Resolution constraints combined with facingMode cause OverconstrainedError on Safari
                 try {
-                    await qr.start({ facingMode: { exact: activeFacing } }, cfg, onScan, () => {});
+                    await qr.start({ facingMode: activeFacing }, baseCfg, onScan, () => {});
+                    started = true;
+                } catch (e) { errors.push('ios-facing:' + e.message); }
+
+                // iOS fallback: pick by camera ID (back = last in list, front = first)
+                if (!started) {
+                    try {
+                        const list = await getCameraList();
+                        const cam = activeFacing === 'environment'
+                            ? (list[list.length - 1] || list[0])
+                            : list[0];
+                        if (!cam) throw new Error('No cameras');
+                        await qr.start(cam.id, baseCfg, onScan, () => {});
+                        started = true;
+                    } catch (e) { errors.push('ios-id:' + e.message); }
+                }
+            } else {
+                // Strategy 1 — exact facingMode (best for Android; fails on iOS)
+                try {
+                    await qr.start({ facingMode: { exact: activeFacing } }, desktopCfg, onScan, () => {});
                     started = true;
                 } catch (e) { errors.push('exact:' + e.message); }
-            }
 
-            // Strategy 2 — soft facingMode (works on iOS Safari and most browsers)
-            if (!started) {
-                try {
-                    await qr.start({ facingMode: activeFacing }, cfg, onScan, () => {});
-                    started = true;
-                } catch (e) { errors.push('soft:' + e.message); }
-            }
+                // Strategy 2 — soft facingMode + resolution hints
+                if (!started) {
+                    try {
+                        await qr.start({ facingMode: activeFacing }, desktopCfg, onScan, () => {});
+                        started = true;
+                    } catch (e) { errors.push('soft:' + e.message); }
+                }
 
-            // Strategy 3 — soft facingMode, no width/height constraints (iOS fallback)
-            if (!started) {
-                try {
-                    const minCfg = { ...cfg, videoConstraints: {} };
-                    await qr.start({ facingMode: activeFacing }, minCfg, onScan, () => {});
-                    started = true;
-                } catch (e) { errors.push('minimal:' + e.message); }
-            }
-
-            // Strategy 4 — enumerate cameras and pick by label
-            if (!started) {
-                try {
-                    const list = await getCameraList();
-                    let cam;
-                    if (activeFacing === 'environment') {
-                        cam = list.find(c => /(back|rear|environment|post)/i.test(c.label))
-                            || list[list.length - 1] || list[0];
-                    } else {
-                        cam = list.find(c => /(front|user|selfie|face)/i.test(c.label))
-                            || list[0];
-                    }
-                    if (!cam) throw new Error('No cameras');
-                    await qr.start(cam.id, cfg, onScan, () => {});
-                    started = true;
-                } catch (e) { errors.push('id:' + e.message); }
+                // Strategy 3 — enumerate and pick by label
+                if (!started) {
+                    try {
+                        const list = await getCameraList();
+                        let cam;
+                        if (activeFacing === 'environment') {
+                            cam = list.find(c => /(back|rear|environment|post)/i.test(c.label))
+                                || list[list.length - 1] || list[0];
+                        } else {
+                            cam = list.find(c => /(front|user|selfie|face)/i.test(c.label))
+                                || list[0];
+                        }
+                        if (!cam) throw new Error('No cameras');
+                        await qr.start(cam.id, desktopCfg, onScan, () => {});
+                        started = true;
+                    } catch (e) { errors.push('id:' + e.message); }
+                }
             }
 
             if (!started) {
@@ -1909,10 +1932,15 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             g('camTogBtn').classList.add('on');
             g('camIco').className = 'fas fa-video-slash';
 
-            // Enumerate cameras to decide whether to show switch button
-            const list = await getCameraList();
-            if (list.length > 1) g('swBtn').style.display = '';
-            // Torch only on mobile
+            // Switch button: always show on mobile (front+rear always available)
+            // Don't call getCameras() while camera is running — fails on iOS (stream conflict)
+            if (isMobile) {
+                g('swBtn').style.display = '';
+            } else {
+                // Desktop: enumerate to check if multiple cameras exist
+                const list = await getCameraList();
+                if (list.length > 1) g('swBtn').style.display = '';
+            }
             if (isMobile) g('torchBtn').style.display = '';
 
             // Icon hint: show which cam is active
