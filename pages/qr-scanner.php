@@ -1653,6 +1653,12 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 <button class="sc-open-btn" onclick="startCam()">
                     <i class="fas fa-camera"></i> <?php echo $TH ? 'เปิดกล้อง' : 'Open Camera' ?>
                 </button>
+                <!-- Raw browser error, shown on-device so it can be read/
+                     screenshotted without needing devtools (critical for
+                     diagnosing mobile-only camera failures we can't
+                     reproduce locally). Empty/hidden when there's nothing
+                     to show. -->
+                <code id="noCamDetail" style="display:none;margin-top:10px;max-width:260px;font-size:10px;color:#475569;background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:8px 10px;word-break:break-all;line-height:1.5"></code>
             </div>
 
             <!-- Hint -->
@@ -2012,6 +2018,13 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                           : 'Camera permission denied\nGo to browser settings and allow camera access')
                     : (TH ? 'ไม่พบกล้องหรือไม่รองรับ\nลองใช้ Manual Input แทน'
                           : 'Camera not found or not supported\nTry Manual Input instead');
+                const detail = g('noCamDetail');
+                if (errors.length) {
+                    detail.textContent = errors.join(' | ');
+                    detail.style.display = '';
+                } else {
+                    detail.style.display = 'none';
+                }
                 return;
             }
 
