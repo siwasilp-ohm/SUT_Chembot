@@ -562,6 +562,79 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], [
         }
     }
 
+    /* ── Zoom preset bar ── */
+    .sc-zoom-bar {
+        position: absolute;
+        bottom: 46px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: none;
+        align-items: center;
+        background: rgba(0, 0, 0, .54);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 22px;
+        padding: 4px;
+        gap: 2px;
+        z-index: 10;
+    }
+
+    .sc-zoom-bar.show { display: flex }
+
+    .sc-zoom-btn {
+        padding: 6px 14px;
+        border: none;
+        border-radius: 18px;
+        background: transparent;
+        color: rgba(255, 255, 255, .65);
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .15s, color .15s, transform .1s;
+        min-width: 44px;
+        letter-spacing: .2px;
+    }
+
+    .sc-zoom-btn.act {
+        background: rgba(255, 255, 255, .22);
+        color: #fff;
+    }
+
+    .sc-zoom-btn:active { transform: scale(.91) }
+
+    /* ── Tap-to-focus ring ── */
+    .sc-focus-ring {
+        position: absolute;
+        width: 66px;
+        height: 66px;
+        border: 2px solid rgba(255, 255, 255, .9);
+        border-radius: 6px;
+        pointer-events: none;
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.3);
+        transition: opacity .12s, transform .2s cubic-bezier(.34, 1.56, .64, 1);
+        z-index: 6;
+    }
+
+    .sc-focus-ring.act {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* corner accents — green to match the scan frame */
+    .sc-focus-ring::before,
+    .sc-focus-ring::after {
+        content: '';
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        border-style: solid;
+        border-color: var(--g);
+    }
+
+    .sc-focus-ring::before { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-radius: 3px 0 0 0 }
+    .sc-focus-ring::after  { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 3px 0 }
+
     /* iOS manual "scan now" override — auto-capture handles scanning by
        itself, so this is a compact secondary icon button living alongside
        switch/torch in the top bar, not a big competing call-to-action. */
@@ -1636,6 +1709,16 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], [
                 <code id="noCamDetail" style="display:none;margin-top:10px;max-width:260px;font-size:10px;color:#475569;background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:8px 10px;word-break:break-all;line-height:1.5"></code>
             </div>
 
+            <!-- Zoom presets — shown when camera is active -->
+            <div class="sc-zoom-bar" id="zoomBar">
+                <button class="sc-zoom-btn act" id="zbtn1" onclick="applyZoom(1)">1×</button>
+                <button class="sc-zoom-btn"     id="zbtn2" onclick="applyZoom(2)">2×</button>
+                <button class="sc-zoom-btn"     id="zbtn3" onclick="applyZoom(3)">3×</button>
+            </div>
+
+            <!-- Tap-to-focus ring indicator -->
+            <div class="sc-focus-ring" id="focusRing"></div>
+
             <!-- Hint -->
             <div class="sc-hint" id="scHint">
                 <div class="dot"></div>
@@ -1793,6 +1876,7 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], [
         let activeFacing = 'environment'; // 'environment' | 'user'
         let facingMap = {};         // { 'environment': deviceId, 'user': deviceId } — cached from confirmed opens
         let currentDeviceId = null; // device ID currently running
+        let zoomLevel = 1;          // digital zoom factor (1 | 2 | 3)
         let qrFile = null; // separate Html5Qrcode instance used only for iOS tap-to-capture decoding
         let captureBusy = false; // guard: prevent overlapping capture taps
         let cart = []; // {barcode,chemName,cas,unit,qty,remaining,sourceType,sourceId,relation,activeBorrow}
@@ -1823,6 +1907,60 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], [
         <div class="sc-https-code">https://${host}/v1/pages/qr-scanner.php</div>
         <p style="font-size:11px;color:#64748b">${TH ? 'หรือใช้ช่อง Manual Input ด้านล่างแทน' : 'Or use the manual input field below'}</p>`;
             g('camZone').appendChild(div);
+        }
+
+        // ── Digital zoom: scale video CSS + narrow capture crop ──────────
+        function applyZoom(level) {
+            zoomLevel = level;
+            // Visual zoom on the video preview via CSS transform
+            const video = document.querySelector('#qrBox video');
+            if (video) {
+                video.style.transition = 'transform .25s ease';
+                video.style.transformOrigin = 'center';
+                video.style.transform = level === 1 ? '' : `scale(${level})`;
+            }
+            // Sync button active states
+            document.querySelectorAll('.sc-zoom-btn').forEach(b => b.classList.remove('act'));
+            const ids = { 1: 'zbtn1', 2: 'zbtn2', 3: 'zbtn3' };
+            if (ids[level]) g(ids[level])?.classList.add('act');
+        }
+
+        // ── Tap-to-focus: show ring + request point-of-interest focus ────
+        function showFocusRing(px, py) {
+            const ring = g('focusRing');
+            ring.style.left = px + 'px';
+            ring.style.top  = py + 'px';
+            ring.classList.remove('act');
+            void ring.offsetWidth; // force reflow so transition re-fires
+            ring.classList.add('act');
+            clearTimeout(ring._t);
+            ring._t = setTimeout(() => ring.classList.remove('act'), 1100);
+        }
+
+        function initTapFocus() {
+            g('camZone').addEventListener('click', e => {
+                if (!camOn) return;
+                // ignore taps on any button or the zoom bar itself
+                if (e.target.closest('button, .sc-zoom-bar, .sc-topbar, #noCam')) return;
+                const rect = g('camZone').getBoundingClientRect();
+                const px = e.clientX - rect.left;
+                const py = e.clientY - rect.top;
+                showFocusRing(px, py);
+
+                // Request single-shot focus at the tapped point, then revert
+                // to continuous so the camera doesn't lock on a stale plane
+                const x = px / rect.width;
+                const y = py / rect.height;
+                if (qr?.applyVideoConstraints) {
+                    qr.applyVideoConstraints({
+                        advanced: [{ pointsOfInterest: [{ x, y }], focusMode: 'single-shot' }]
+                    }).catch(() => {}).finally(() => {
+                        setTimeout(() => {
+                            qr?.applyVideoConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
+                        }, 2000);
+                    });
+                }
+            });
         }
 
         // ── Strip library-injected overlays ──
@@ -1903,6 +2041,9 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], [
         async function _startCam(facing) {
             if (facing !== undefined) activeFacing = facing;
 
+            // Reset zoom to 1× on every new camera open (including switch)
+            // so the user always starts from a clean state
+            applyZoom(1);
             g('noCam').style.display = 'none';
             document.querySelector('.sc-https-warn')?.remove();
 
@@ -2113,6 +2254,7 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], [
 
             showFrame();
             g('scHint').style.display = 'flex';
+            g('zoomBar').classList.add('show');
             if (isIOS) {
                 g('captureBtn').classList.add('show');
                 startAutoCapture();
@@ -2136,6 +2278,8 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], [
             hideFrame();
             g('scHint').style.display = 'none';
             g('captureBtn').classList.remove('show');
+            g('zoomBar').classList.remove('show');
+            applyZoom(1); // reset zoom so next open starts at 1×
             g('camTogBtn').classList.remove('on');
             g('camIco').className = 'fas fa-camera';
             g('swBtn').style.display = 'none';
@@ -2335,6 +2479,16 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], [
 
             const mx = w * 0.25, my = h * 0.25;
             x -= mx; y -= my; w += mx * 2; h += my * 2;
+
+            // Digital zoom: crop proportionally tighter so each native pixel
+            // covers more barcode area — equivalent to zooming in the sensor.
+            // Works in sync with the CSS video transform (applyZoom) so what
+            // the user sees zoomed in on screen is exactly what we capture.
+            if (zoomLevel > 1) {
+                const cx = x + w / 2, cy = y + h / 2;
+                w /= zoomLevel; h /= zoomLevel;
+                x = cx - w / 2;  y = cy - h / 2;
+            }
 
             x = Math.max(0, x); y = Math.max(0, y);
             w = Math.min(vw - x, w); h = Math.min(vh - y, h);
@@ -2731,6 +2885,7 @@ ${over ? `<div class="sc-warn-msg"><i class="fas fa-exclamation-triangle"></i>${
                 bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('show'); })
             );
             renderCart();
+            initTapFocus(); // tap-to-focus on camera zone
             // Auto-start camera
             startCam();
         });
