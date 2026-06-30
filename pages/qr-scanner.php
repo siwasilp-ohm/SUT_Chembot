@@ -11,7 +11,10 @@ $isAdmin = $roleLevel >= 5;
 $isManager = $roleLevel >= 3;
 $lang = I18n::getCurrentLang();
 $TH = $lang === 'th';
-Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js']);
+Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], [
+    'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js',
+    'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js',
+]);
 ?>
 <style>
     :root {
@@ -2100,6 +2103,11 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 }
             } catch (_) {}
 
+            // Request continuous autofocus — helps keep barcodes in focus
+            // without requiring the user to tap. Silently ignored if the
+            // device or browser doesn't support focusMode.
+            try { await qr.applyVideoConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch (_) {}
+
             stripLibraryOverlays();
             setTimeout(stripLibraryOverlays, 400);
 
@@ -2226,6 +2234,51 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             }
 
             await addToCart(code);
+        }
+
+        // ── ZXing: used as a fallback decoder alongside html5-qrcode.
+        // Both internally use ZXing-js, but calling it directly lets us
+        // set TRY_HARDER mode and feed preprocessed canvases, which
+        // html5-qrcode's scanFile() doesn't do. The combination of a
+        // different call path + aggressive contrast preprocessing is what
+        // makes 1D barcodes decode on iOS when scanFile() alone fails.
+        let zxingReader = null;
+        function getZxingReader() {
+            if (zxingReader) return zxingReader;
+            if (!window.ZXing) return null;
+            try {
+                const hints = new Map([
+                    [ZXing.DecodeHintType.POSSIBLE_FORMATS,
+                     [ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.QR_CODE]],
+                    [ZXing.DecodeHintType.TRY_HARDER, true],
+                ]);
+                zxingReader = new ZXing.BrowserMultiFormatReader(hints);
+            } catch (_) {}
+            return zxingReader;
+        }
+
+        // Render srcCanvas into a new canvas at `scale`× size, converting
+        // to grayscale and boosting contrast in one GPU-accelerated step.
+        // Higher contrast makes bar/space boundaries crisp even when
+        // the camera's auto-focus left the image slightly soft.
+        function contrastCanvas(src, scale = 1, boost = 2.0) {
+            const dst = document.createElement('canvas');
+            dst.width  = Math.round(src.width  * scale);
+            dst.height = Math.round(src.height * scale);
+            const ctx  = dst.getContext('2d');
+            ctx.filter = `grayscale(1) contrast(${boost})`;
+            ctx.drawImage(src, 0, 0, dst.width, dst.height);
+            return dst;
+        }
+
+        // Decode `canvas` with ZXing; returns decoded text or null.
+        async function tryZxingDecode(canvas) {
+            const zr = getZxingReader();
+            if (!zr) return null;
+            try {
+                const result = await zr.decodeFromImageUrl(canvas.toDataURL('image/png'));
+                return result?.getText() ?? null;
+            } catch (_) { return null; }
         }
 
         // ── iOS: capture the current frame as a still image and decode that
@@ -2355,10 +2408,29 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                 const file = new File([blob], 'capture.png', { type: 'image/png' });
 
                 if (!qrFile) qrFile = new Html5Qrcode('qrFileBox', { formatsToSupport: SCAN_FORMATS, verbose: false });
-                try {
-                    const decodedText = await qrFile.scanFile(file, false);
-                    await onScan(decodedText);
-                } catch (e) {
+
+                let decoded = null;
+
+                // Pass 1 — html5-qrcode scanFile (fast; QR codes almost always
+                // succeed here; CODE_128 sometimes fails on iOS Safari due to
+                // focus/resolution, so we have more passes below).
+                try { decoded = await qrFile.scanFile(file, false); } catch (_) {}
+
+                // Pass 2 — ZXing direct (same pixel data, different decode path
+                // and TRY_HARDER mode; catches what scanFile misses on 1D barcodes).
+                if (!decoded) decoded = await tryZxingDecode(canvas);
+
+                // Pass 3 — ZXing on a grayscale+high-contrast version (sharpens
+                // bar edges blurred by auto-focus lag or motion).
+                if (!decoded) decoded = await tryZxingDecode(contrastCanvas(canvas));
+
+                // Pass 4 — ZXing at 2× upscale + contrast (only on manual tap,
+                // not auto-tick — avoids heavy canvas ops on every 1-second tick).
+                if (!decoded && !silent) decoded = await tryZxingDecode(contrastCanvas(canvas, 2, 2.2));
+
+                if (decoded) {
+                    await onScan(decoded);
+                } else {
                     if (!silent) toast(TH ? 'ไม่พบ QR/Barcode ในภาพ ลองจัดให้อยู่กลางกรอบ' : 'No QR/Barcode found — try centering it in the frame', 'err');
                 }
             } finally {
