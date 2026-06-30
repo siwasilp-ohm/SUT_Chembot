@@ -1937,78 +1937,42 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
                     rememberLastUsedCamera: false,
                     formatsToSupport: SCAN_FORMATS,
                     experimentalFeatures: { useBarCodeDetectorIfSupported: false },
-                    // ideal-only hints (no min/max) request a higher-resolution
-                    // stream without ever being able to throw
-                    // OverconstrainedError — that only happens with hard
-                    // min/max ranges combined with facingMode, not plain
-                    // ideal hints. More native resolution directly helps
-                    // captureAndDecode's frame-crop (see getFrameCropRect)
-                    // have more real pixels per barcode bar to work with.
-                    videoConstraints: {
-                        width:  { ideal: 1920 },
-                        height: { ideal: 1080 },
-                    },
+                    // Deliberately NO videoConstraints. Adding any (even
+                    // ideal-only hints) breaks camera opening on real iOS
+                    // hardware — confirmed by user regression, reverted.
                 };
 
+                // Strategy A (primary): open by device ID from the enumerated
+                // camera list. On iOS, list[0] is always the front camera and
+                // list[last] is the rear, so picking by index is far more
+                // reliable than facingMode hints (which Safari may silently
+                // ignore and open the front camera anyway). This also makes
+                // switchCam() reliable — it calls startCam('user'|'environment')
+                // which maps to list[0] or list[last] here.
                 try {
-                    await withTimeout(qr.start({ facingMode: activeFacing }, iosCfg, onScan, () => {}), 8000, 'ios-soft');
+                    const list = await getCameraList();
+                    const cam = (activeFacing === 'environment')
+                        ? (list[list.length - 1] || list[0]) : list[0];
+                    if (!cam) throw new Error('No cameras found');
+                    await withTimeout(qr.start(cam.id, iosCfg, onScan, () => {}), 8000, 'ios-id');
                     started = true;
                 } catch (e) {
-                    errors.push('ios-soft:' + e.message);
-                    // Always reset before falling back to Strategy B, not just
-                    // on a timeout — iOS Safari can leave the Html5Qrcode
-                    // instance in a state where a second start() attempt on
-                    // the SAME instance silently fails too, even for a quick
-                    // rejection like OverconstrainedError/NotAllowedError, not
-                    // just a hang. A clean instance + brief cooldown before
-                    // retrying is what actually works on iOS (confirmed in an
-                    // earlier working version of this file).
+                    errors.push('ios-id:' + e.message);
+                    // Reset before fallback — iOS can leave the instance in a
+                    // stuck state after any rejection, not just a timeout.
                     await resetQrInstance();
                     await new Promise(r => setTimeout(r, 200));
                 }
 
+                // Strategy B (fallback): soft facingMode hint. Less reliable
+                // than device ID on iOS (Safari may pick the front camera even
+                // when 'environment' is requested) but works on devices where
+                // getCameras() returns no usable IDs.
                 if (!started) {
                     try {
-                        const list = await getCameraList();
-                        const cam = (activeFacing === 'environment')
-                            ? (list[list.length - 1] || list[0]) : list[0];
-                        if (!cam) throw new Error('No cameras');
-                        await withTimeout(qr.start(cam.id, iosCfg, onScan, () => {}), 8000, 'ios-id');
+                        await withTimeout(qr.start({ facingMode: activeFacing }, iosCfg, onScan, () => {}), 8000, 'ios-soft');
                         started = true;
-                    } catch (e) { errors.push('ios-id:' + e.message); }
-                }
-
-                // ── Verify the browser actually opened the camera we asked
-                // for, same as the Android path: a facingMode constraint is
-                // a REQUEST, not a guarantee. If iOS resolved "environment"
-                // to the front camera anyway, a manual switch-camera tap
-                // would happen to "fix" it (it explicitly picks a device by
-                // list position) while a fresh page load would not — which
-                // is exactly the "works after I switch cameras" symptom.
-                // Correct it automatically instead of waiting for that.
-                if (started) {
-                    try {
-                        const settings = qr.getRunningTrackSettings ? qr.getRunningTrackSettings() : null;
-                        if (settings && settings.facingMode && settings.facingMode !== activeFacing) {
-                            await resetQrInstance();
-                            await new Promise(r => setTimeout(r, 200));
-                            const list = await getCameraList();
-                            const wrongId = settings.deviceId;
-                            const cam = list.find(c => c.id !== wrongId) || null;
-                            if (cam) {
-                                try {
-                                    await withTimeout(qr.start(cam.id, iosCfg, onScan, () => {}), 8000, 'ios-correct');
-                                } catch (e) {
-                                    // Correction failed — revert to the original so
-                                    // there's still a visible, working camera
-                                    // rather than nothing.
-                                    try {
-                                        await withTimeout(qr.start({ facingMode: activeFacing }, iosCfg, onScan, () => {}), 8000, 'ios-revert');
-                                    } catch (_) { started = false; }
-                                }
-                            }
-                        }
-                    } catch (_) { /* getRunningTrackSettings unsupported — nothing to verify against */ }
+                    } catch (e) { errors.push('ios-soft:' + e.message); }
                 }
 
             // ══ Android / Desktop path ═════════════════════════════════════
@@ -2142,11 +2106,18 @@ Layout::head($TH ? 'สแกน QR / Barcode' : 'Scan QR / Barcode', [], ['http
             ico.style.transition = 'transform .4s';
             ico.style.transform = 'rotate(180deg)';
             g('swBtn').disabled = true;
-            await startCam(next);
-            setTimeout(() => {
-                ico.style.transform = '';
-                g('swBtn').disabled = false;
-            }, 420);
+            try {
+                await startCam(next);
+            } finally {
+                // Always re-enable, even if startCam threw — an unguarded
+                // await here previously meant any failure left the switch
+                // button permanently disabled with no way to recover short
+                // of reloading the page.
+                setTimeout(() => {
+                    ico.style.transform = '';
+                    g('swBtn').disabled = false;
+                }, 420);
+            }
         }
 
         async function toggleTorch() {
