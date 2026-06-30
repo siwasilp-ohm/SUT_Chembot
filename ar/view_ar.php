@@ -344,6 +344,33 @@
         .ar-sds-empty p{font-size:12px;font-weight:600;margin:0 0 4px}
         .ar-sds-empty span{font-size:10.5px}
 
+        /* ═══ Transaction Sheet ═══ */
+        .txn-sheet-bd{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s ease}
+        .txn-sheet-bd.show{opacity:1;pointer-events:all}
+        .txn-sheet{position:fixed;bottom:0;left:0;right:0;z-index:501;background:linear-gradient(180deg,rgba(18,18,46,.98) 0%,rgba(10,10,26,.96) 100%);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);border:1px solid rgba(255,255,255,.09);border-bottom:none;border-radius:28px 28px 0 0;padding-bottom:env(safe-area-inset-bottom,0);transform:translateY(105%);transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 -24px 80px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.03) inset}
+        .txn-sheet::before{content:'';position:absolute;top:0;left:24px;right:24px;height:1px;background:linear-gradient(90deg,transparent,rgba(99,102,241,.5),transparent)}
+        .txn-sheet.show{transform:translateY(0)}
+        .txn-sheet-knob{width:44px;height:5px;border-radius:3px;background:rgba(255,255,255,.18);margin:14px auto 0}
+        .txn-sheet-hdr{padding:16px 22px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+        .txn-sheet-hdr-info .txn-sheet-title{font-size:17px;font-weight:800;background:linear-gradient(135deg,#fff,rgba(255,255,255,.75));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .txn-sheet-hdr-info .txn-sheet-sub{font-size:11px;color:rgba(255,255,255,.38);margin-top:3px}
+        .txn-sheet-close{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;outline:none;transition:all .2s;flex-shrink:0;margin-top:2px}
+        .txn-sheet-close:hover{background:rgba(255,255,255,.15);color:#fff}
+        .txn-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:10px 20px 28px}
+        .txn-ac{padding:18px 12px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.07);background:linear-gradient(180deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,.02) 100%);cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;overflow:hidden;outline:none;font-family:inherit}
+        .txn-ac::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,.07),transparent);pointer-events:none}
+        .txn-ac:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.14);box-shadow:0 10px 30px rgba(0,0,0,.3)}
+        .txn-ac:active{transform:scale(.95)}
+        .txn-ac:focus{box-shadow:0 0 0 3px rgba(99,102,241,.5)}
+        .txn-ac-ic{width:54px;height:54px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:23px;position:relative;flex-shrink:0}
+        .txn-ac-ic::after{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,.18),transparent);border-radius:18px 18px 0 0;pointer-events:none}
+        .txn-ac-lbl{font-size:14px;font-weight:800;color:#fff}
+        .txn-ac-desc{font-size:10px;color:rgba(255,255,255,.38);line-height:1.45;padding:0 2px}
+        @media(max-width:380px){.txn-ac-ic{width:46px;height:46px;font-size:19px;border-radius:14px}.txn-ac-lbl{font-size:13px}.txn-ac-desc{font-size:9px}.txn-action-grid{gap:8px;padding:8px 16px 24px}}
+        @media(min-width:769px){
+            .txn-sheet{left:auto;right:0;width:420px;border-radius:28px 28px 0 0}
+        }
+
         /* Landscape orientation adjustments */
         @media (orientation: landscape) and (max-height: 500px) {
             .ar-card{max-height:80vh;overflow-y:auto}
@@ -1165,8 +1192,42 @@ $typeBg = ['bottle'=>'rgba(99,102,241,.15)','vial'=>'rgba(168,85,247,.15)','flas
         <button id="btnAR" class="ar-act-ar"><i class="fas fa-vr-cardboard"></i> AR</button>
         <button id="btnARSpatial" class="ar-act-spatial"><i class="fas fa-cube"></i> Spatial</button>
         <?php endif; ?>
-        <?php $detailId = $isStock ? -(int)$container['id'] : (int)$container['id']; ?>
-        <a href="/v1/pages/stock.php" class="ar-act-primary"><i class="fas fa-box-open"></i> คลังสาร</a>
+        <button onclick="openTxnSheet()" class="ar-act-primary"><i class="fas fa-exchange-alt"></i> ธุรกรรม</button>
+    </div>
+</div>
+
+<!-- ═══ Transaction Sheet ═══ -->
+<div class="txn-sheet-bd" id="txnBd" onclick="closeTxnSheet()"></div>
+<div class="txn-sheet" id="txnSheet">
+    <div class="txn-sheet-knob"></div>
+    <div class="txn-sheet-hdr">
+        <div class="txn-sheet-hdr-info">
+            <div class="txn-sheet-title"><i class="fas fa-exchange-alt" style="font-size:15px;margin-right:8px;opacity:.6"></i>ธุรกรรม</div>
+            <div class="txn-sheet-sub">เลือกประเภทธุรกรรม &mdash; <?php echo htmlspecialchars(mb_strimwidth($chemName, 0, 32, '…'), ENT_QUOTES); ?></div>
+        </div>
+        <button class="txn-sheet-close" onclick="closeTxnSheet()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="txn-action-grid">
+        <button class="txn-ac" onclick="goTxn('use')">
+            <div class="txn-ac-ic" style="background:rgba(34,197,94,.15);color:#4ade80"><i class="fas fa-eye-dropper"></i></div>
+            <div class="txn-ac-lbl">ใช้สาร</div>
+            <div class="txn-ac-desc">เบิกใช้สารเคมีของตัวเอง หักปริมาณจาก stock ทันที</div>
+        </button>
+        <button class="txn-ac" onclick="goTxn('borrow')">
+            <div class="txn-ac-ic" style="background:rgba(99,102,241,.18);color:#818cf8"><i class="fas fa-hand-holding-medical"></i></div>
+            <div class="txn-ac-lbl">ยืมสาร</div>
+            <div class="txn-ac-desc">ยืมสารเคมีจากคลัง พร้อมกำหนดวันนำคืน</div>
+        </button>
+        <button class="txn-ac" onclick="goTxn('return')">
+            <div class="txn-ac-ic" style="background:rgba(245,158,11,.15);color:#fbbf24"><i class="fas fa-rotate-left"></i></div>
+            <div class="txn-ac-lbl">คืนสาร</div>
+            <div class="txn-ac-desc">คืนสารเคมีที่ยืมไปยังเจ้าของต้นทาง</div>
+        </button>
+        <button class="txn-ac" onclick="goTxn('transfer')">
+            <div class="txn-ac-ic" style="background:rgba(168,85,247,.15);color:#c084fc"><i class="fas fa-people-arrows"></i></div>
+            <div class="txn-ac-lbl">โอนสาร</div>
+            <div class="txn-ac-desc">โอนสารเคมีให้ผู้ใช้หรือห้องปฏิบัติการอื่น</div>
+        </button>
     </div>
 </div>
 
@@ -1346,6 +1407,35 @@ document.getElementById('btnARSpatial')?.addEventListener('click', openArSpatial
 // ═══ openDetail link back to containers page ═══
 function openDetail(id) {
     window.location.href = '/v1/pages/containers.php#detail-' + id;
+}
+
+// ═══ Transaction Sheet ═══
+function openTxnSheet() {
+    document.getElementById('txnSheet').classList.add('show');
+    document.getElementById('txnBd').classList.add('show');
+}
+function closeTxnSheet() {
+    document.getElementById('txnSheet').classList.remove('show');
+    document.getElementById('txnBd').classList.remove('show');
+}
+function goTxn(mode) {
+    closeTxnSheet();
+    if (mode === 'return') {
+        window.location.href = '/v1/pages/borrow.php';
+        return;
+    }
+    const item = {
+        id: <?php echo (int)$container['id']; ?>,
+        chemical_name: <?php echo json_encode($chemName, JSON_UNESCAPED_UNICODE); ?>,
+        remaining_qty: <?php echo (float)$curQty; ?>,
+        unit: <?php echo json_encode($unit, JSON_UNESCAPED_UNICODE); ?>,
+        owner_id: <?php echo (int)($container['owner_id'] ?? 0); ?>,
+        owner_name: <?php echo json_encode($ownerName, JSON_UNESCAPED_UNICODE); ?>,
+        bottle_code: <?php echo json_encode($bottleCode, JSON_UNESCAPED_UNICODE); ?>,
+        remaining_percentage: <?php echo round($remainingPercent, 1); ?>
+    };
+    try { sessionStorage.setItem('scanAction', JSON.stringify({ mode, item, timestamp: Date.now() })); } catch(_) {}
+    window.location.href = '/v1/pages/borrow.php?scan_action=1';
 }
 </script>
 </body>
